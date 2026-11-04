@@ -182,21 +182,22 @@ const State = {
     },
 
     getCoinLogo(crypto) {
-        if (!crypto) return '/assets/coins/generic.svg';
+        if (!crypto) return './assets/coins/generic.svg';
         const sym = (crypto.symbol || '').toLowerCase();
         const localSvgs = {
-            btc: '/assets/coins/btc.svg',
-            eth: '/assets/coins/eth.svg',
-            xmr: '/assets/coins/xmr.svg',
-            bdx: '/assets/coins/bdx.svg',
-            sol: '/assets/coins/sol.svg'
+            btc: './assets/coins/btc.svg',
+            eth: './assets/coins/eth.svg',
+            xmr: './assets/coins/xmr.svg',
+            bdx: './assets/coins/bdx.svg',
+            sol: './assets/coins/sol.svg'
         };
         if (localSvgs[sym]) return localSvgs[sym];
-        if (crypto.logo_url && crypto.logo_url.startsWith('/assets/')) return crypto.logo_url;
+        if (crypto.logo_url && crypto.logo_url.startsWith('/assets/')) return '.' + crypto.logo_url;
+        if (crypto.logo_url && crypto.logo_url.startsWith('./assets/')) return crypto.logo_url;
         if (crypto.logo_url && crypto.logo_url.startsWith('http') && !crypto.logo_url.includes('missing.png') && !crypto.logo_url.includes('example.com')) {
             return crypto.logo_url;
         }
-        return '/assets/coins/generic.svg';
+        return './assets/coins/generic.svg';
     }
 };
 
