@@ -112,6 +112,11 @@ const State = {
         this.notify('theme');
     },
 
+    setCryptos(cryptos) {
+        this.cryptos = cryptos || [];
+        this.notify('cryptos');
+    },
+
     setRates(data) {
         if (data.rates) this.rates = { ...this.rates, ...data.rates };
         if (data.lastUpdated) this.ratesLastUpdated = data.lastUpdated;

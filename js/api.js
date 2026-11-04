@@ -48,6 +48,8 @@ const API = {
     // Cryptocurrencies
     cryptos: {
         list: () => API.request('/cryptos'),
+        refreshRates: () => API.request('/cryptos/refresh', { method: 'POST' }),
+        getFeedStatus: () => API.request('/cryptos/feed-status'),
         get: (symbolOrSlug) => API.request(`/cryptos/${symbolOrSlug}`),
         getChart: (id, timeframe = '1D') => API.request(`/cryptos/${id}/chart?timeframe=${timeframe}`),
         getOrderBook: (id) => API.request(`/cryptos/${id}/orderbook`),

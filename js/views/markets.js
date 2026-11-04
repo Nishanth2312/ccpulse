@@ -32,15 +32,27 @@ const MarketsView = {
                     <h1 style="font-size: 1.8rem; font-weight: 800; margin-bottom: 6px;">
                         <i class="fa-solid fa-chart-line text-cyan"></i> Cryptocurrency Markets
                     </h1>
-                    <p style="color: var(--text-secondary); font-size: 0.95rem;">
-                        Real-time market registry dynamically driven by the platform engine. Displayed in <strong style="color: var(--color-primary);">${Currency.getActiveCode()}</strong>.
+                    <p style="color: var(--text-secondary); font-size: 0.95rem; margin-bottom: 8px;">
+                        Real-time live prices from CoinGecko API over the internet. Converted to <strong style="color: var(--color-primary);">${Currency.getActiveCode()}</strong>.
                     </p>
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <span style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.25); padding: 3px 10px; border-radius: 20px; font-size: 0.76rem; font-weight: 600;">
+                            <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; box-shadow: 0 0 6px #10B981; display: inline-block;"></span>
+                            CoinGecko Live API
+                        </span>
+                        <span id="market-last-updated" style="font-size: 0.78rem; color: var(--text-muted);">
+                            <i class="fa-regular fa-clock"></i> Updated ${new Date().toLocaleTimeString()}
+                        </span>
+                    </div>
                 </div>
                 <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap;">
                     <div style="position: relative;">
                         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.85rem;"></i>
                         <input type="text" id="market-search" placeholder="Search coin or symbol..." style="padding-left: 34px; width: 220px;" value="${this.searchQuery}">
                     </div>
+                    <button type="button" id="markets-refresh-rates-btn" class="btn btn-outline" style="font-size: 0.82rem; padding: 7px 14px; display: inline-flex; align-items: center; gap: 6px;" title="Fetch latest prices from CoinGecko & Forex API">
+                        <i class="fa-solid fa-arrows-rotate" id="markets-refresh-icon"></i> Refresh Live Rates
+                    </button>
                 </div>
             </div>
 
@@ -88,6 +100,35 @@ const MarketsView = {
             searchInput.oninput = (e) => {
                 this.searchQuery = e.target.value.toLowerCase();
                 this.renderTableRows(cryptos, watchlistIds);
+            };
+        }
+
+        // Refresh Rates Button
+        const refreshBtn = container.querySelector('#markets-refresh-rates-btn');
+        const refreshIcon = container.querySelector('#markets-refresh-icon');
+        const lastUpdatedTag = container.querySelector('#market-last-updated');
+
+        if (refreshBtn) {
+            refreshBtn.onclick = async () => {
+                if (refreshIcon) refreshIcon.classList.add('fa-spin');
+                try {
+                    const res = await API.cryptos.refreshRates();
+                    if (res && res.cryptos) {
+                        cryptos = res.cryptos;
+                        State.setCryptos(res.cryptos);
+                    }
+                    // Also trigger forex refresh for selected currency
+                    await API.currency.refreshRates();
+
+                    if (lastUpdatedTag) {
+                        lastUpdatedTag.innerHTML = `<i class="fa-regular fa-clock"></i> Updated ${new Date().toLocaleTimeString()}`;
+                    }
+                    this.renderTableRows(cryptos, watchlistIds);
+                } catch (err) {
+                    console.warn('Error refreshing live rates:', err);
+                } finally {
+                    if (refreshIcon) refreshIcon.classList.remove('fa-spin');
+                }
             };
         }
 

@@ -72,19 +72,30 @@ const Currency = {
         if (refreshBtn) refreshBtn.classList.add('fa-spin');
 
         try {
-            const data = await API.currency.refreshRates();
-            State.setRates(data);
+            // Simultaneously refresh live Forex rates and live CoinGecko cryptocurrency prices
+            const [forexData, cryptoData] = await Promise.allSettled([
+                API.currency.refreshRates(),
+                API.cryptos.refreshRates()
+            ]);
+
+            if (forexData.status === 'fulfilled' && forexData.value) {
+                State.setRates(forexData.value);
+            }
+
+            if (cryptoData.status === 'fulfilled' && cryptoData.value && cryptoData.value.cryptos) {
+                State.setCryptos(cryptoData.value.cryptos);
+            }
 
             const staleTag = document.getElementById('rate-stale-tag');
             if (staleTag) {
-                if (data.isStale) {
+                if (forexData.status === 'fulfilled' && forexData.value && forexData.value.isStale) {
                     staleTag.classList.remove('hidden');
                 } else {
                     staleTag.classList.add('hidden');
                 }
             }
 
-            return data;
+            return forexData.value || {};
         } catch (err) {
             console.warn('Failed to refresh live exchange rates:', err.message);
         } finally {
