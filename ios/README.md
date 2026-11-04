@@ -11,3 +11,4 @@ This directory contains iOS integration specifications for **CCPulse** using Cap
 4. **Human Interface Guidelines (HIG)**:
    - Safe Area Insets configured in CSS (`env(safe-area-inset-top)` & `env(safe-area-inset-bottom)`).
    - Bottom Tab Bar conforms to iOS TabBar layout standards.
+
