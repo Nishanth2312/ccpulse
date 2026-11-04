@@ -48,21 +48,30 @@
         <header class="app-header">
             <div class="header-container">
                 <div class="header-left">
-                    <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+                    <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle navigation menu" title="Open Menu">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <a href="#dashboard" class="brand-logo" id="brand-link">
+                    <a href="#dashboard" class="brand-logo" id="brand-link" title="CCPulse Home">
                         <div class="logo-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
                         <span class="logo-title">CC<span class="pulse-text">Pulse</span></span>
-                        <span class="sim-badge">VIRTUAL SIM</span>
+                        <span class="sim-badge"><i class="fa-solid fa-shield-halved"></i> SIMULATOR</span>
                     </a>
                 </div>
 
-                <nav class="desktop-nav" id="desktop-nav-links">
-                    <!-- Populated dynamically based on auth / guest / admin role -->
+                <nav class="desktop-nav" id="desktop-nav-links" aria-label="Primary Navigation">
+                    <!-- Populated dynamically with hover dropdowns -->
                 </nav>
 
                 <div class="header-right">
+                    <!-- Live Market Feed Status Pill + Refresh -->
+                    <div class="live-feed-pill" title="CoinGecko & Forex Feeds Connected">
+                        <span class="live-pulsing-dot"></span>
+                        <span class="live-feed-text">LIVE</span>
+                        <button id="refresh-rates-btn" class="feed-refresh-btn" aria-label="Refresh live rates" title="Refresh Live Rates">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+
                     <!-- Display Currency Selector -->
                     <div class="currency-picker-container" title="Select Display Currency">
                         <i class="fa-solid fa-globe currency-globe-icon"></i>
@@ -74,9 +83,7 @@
                             <option value="AED">AED (د.إ)</option>
                             <option value="JPY">JPY (¥)</option>
                         </select>
-                        <button id="refresh-rates-btn" class="icon-action-btn" title="Refresh Live Forex Rates">
-                            <i class="fa-solid fa-rotate"></i>
-                        </button>
+                        <i class="fa-solid fa-chevron-down currency-chevron"></i>
                     </div>
 
                     <!-- Theme Toggle -->
@@ -185,6 +192,32 @@
                 <p>&copy; 2026 CCPulse Financial Education Systems. All Rights Reserved. Pair Programming Antigravity Build.</p>
             </div>
         </footer>
+
+        <!-- Mobile Bottom Navigation Bar (Google Play Store & Apple iOS App Store Standard) -->
+        <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation">
+            <a href="#dashboard" class="bottom-nav-item active" data-nav="dashboard" aria-label="Home Dashboard">
+                <i class="fa-solid fa-house"></i>
+                <span>Home</span>
+            </a>
+            <a href="#markets" class="bottom-nav-item" data-nav="markets" aria-label="Cryptocurrency Markets">
+                <i class="fa-solid fa-chart-line"></i>
+                <span>Markets</span>
+            </a>
+            <a href="#simulator" class="bottom-nav-item bottom-nav-trade-tab" data-nav="simulator" aria-label="Virtual Simulator">
+                <div class="trade-pill-icon">
+                    <i class="fa-solid fa-bolt"></i>
+                </div>
+                <span>Trade</span>
+            </a>
+            <a href="#simulation-lab" class="bottom-nav-item" data-nav="simulation-lab" aria-label="Simulation Stress Lab">
+                <i class="fa-solid fa-flask-vial"></i>
+                <span>Lab</span>
+            </a>
+            <a href="#learning" class="bottom-nav-item" data-nav="learning" aria-label="Learning Academy">
+                <i class="fa-solid fa-graduation-cap"></i>
+                <span>Learn</span>
+            </a>
+        </nav>
 
         <!-- Modern Accessible Modals Container (<dialog> tags adhering to Modern Web Guidance) -->
         <div id="modals-host"></div>

@@ -61,57 +61,197 @@ const App = {
         const mobileNav = document.getElementById('mobile-nav-links');
         const isAuth = State.currentUser && !State.isGuest;
         const isAdmin = isAuth && State.currentUser.role === 'admin';
-        const currentHash = window.location.hash.slice(1).split('/')[0] || 'dashboard';
+        const currentHash = window.location.hash.slice(1).split('?')[0].split('/')[0] || 'dashboard';
 
-        let navItems = [];
+        const isTradeActive = ['simulator', 'portfolio', 'simulation-lab'].includes(currentHash);
+        const isLearnActive = ['learning', 'safety-center'].includes(currentHash);
 
-        if (isAdmin) {
-            // Administrator Navigation (Section 8)
-            navItems = [
-                { id: 'dashboard', label: 'Dashboard', icon: 'fa-house' },
-                { id: 'markets', label: 'Markets', icon: 'fa-chart-line' },
-                { id: 'simulator', label: 'Simulator', icon: 'fa-bolt' },
-                { id: 'portfolio', label: 'My Portfolio', icon: 'fa-wallet' },
-                { id: 'admin', label: 'Admin Control', icon: 'fa-shield-halved', isAdmin: true }
-            ];
-        } else if (isAuth) {
-            // Authenticated User Navigation (Section 8)
-            navItems = [
-                { id: 'dashboard', label: 'Dashboard', icon: 'fa-house' },
-                { id: 'markets', label: 'Markets', icon: 'fa-chart-line' },
-                { id: 'simulator', label: 'Trading Simulator', icon: 'fa-bolt' },
-                { id: 'portfolio', label: 'My Portfolio', icon: 'fa-wallet' },
-                { id: 'learning', label: 'Academy', icon: 'fa-graduation-cap' },
-                { id: 'simulation-lab', label: 'Simulation Lab', icon: 'fa-flask-vial' },
-                { id: 'safety-center', label: 'Safety Center', icon: 'fa-shield-halved' }
-            ];
-        } else {
-            // Public Navigation (Section 8)
-            navItems = [
-                { id: 'dashboard', label: 'Dashboard', icon: 'fa-house' },
-                { id: 'markets', label: 'Markets', icon: 'fa-chart-line' },
-                { id: 'simulator', label: 'Simulator (Guest)', icon: 'fa-bolt' },
-                { id: 'learning', label: 'Learning Academy', icon: 'fa-graduation-cap' },
-                { id: 'simulation-lab', label: 'Simulation Lab', icon: 'fa-flask-vial' },
-                { id: 'safety-center', label: 'Safety Center', icon: 'fa-shield-halved' }
-            ];
-        }
+        // Desktop Navigation: Clean, spacious with hover dropdown menus
+        const desktopHtml = `
+            <div class="nav-item">
+                <a href="#dashboard" class="nav-link ${currentHash === 'dashboard' ? 'active' : ''}">
+                    <i class="fa-solid fa-house"></i>
+                    <span>Dashboard</span>
+                </a>
+            </div>
 
-        const navHtml = navItems.map(item => `
-            <a href="#${item.id}" class="nav-link ${currentHash === item.id ? 'active' : ''} ${item.isAdmin ? 'admin-link' : ''}">
-                <i class="fa-solid ${item.icon}"></i> ${item.label}
-            </a>
-        `).join('');
+            <div class="nav-item">
+                <a href="#markets" class="nav-link ${currentHash === 'markets' ? 'active' : ''}">
+                    <i class="fa-solid fa-chart-line"></i>
+                    <span>Markets</span>
+                </a>
+            </div>
 
-        if (desktopNav) desktopNav.innerHTML = navHtml;
+            <!-- Trade & Simulation Hover Dropdown -->
+            <div class="nav-item nav-dropdown" id="nav-dropdown-trade">
+                <a href="#simulator" class="nav-link nav-dropdown-trigger ${isTradeActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-bolt"></i>
+                    <span>Trade</span>
+                    <i class="fa-solid fa-chevron-down nav-arrow"></i>
+                </a>
+                <div class="nav-dropdown-menu" role="menu">
+                    <a href="#simulator" class="dropdown-item ${currentHash === 'simulator' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon trade-icon"><i class="fa-solid fa-chart-candlestick"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Virtual Simulator</span>
+                            <span class="dropdown-sub">Real-time order books, buy/sell limit & market execution</span>
+                        </div>
+                    </a>
+                    <a href="#portfolio" class="dropdown-item ${currentHash === 'portfolio' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon portfolio-icon"><i class="fa-solid fa-wallet"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">My Portfolio</span>
+                            <span class="dropdown-sub">Asset allocation, virtual equity & live P&L</span>
+                        </div>
+                    </a>
+                    <a href="#simulation-lab" class="dropdown-item ${currentHash === 'simulation-lab' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon lab-icon"><i class="fa-solid fa-flask-vial"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Simulation Stress Lab</span>
+                            <span class="dropdown-sub">Test portfolios against market crashes & volatility</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
 
-        const mobileHtml = navItems.map(item => `
-            <a href="#${item.id}" class="mobile-nav-link ${currentHash === item.id ? 'active' : ''}">
-                <i class="fa-solid ${item.icon}"></i> ${item.label}
-            </a>
-        `).join('');
+            <!-- Learn & Safety Hover Dropdown -->
+            <div class="nav-item nav-dropdown" id="nav-dropdown-learn">
+                <a href="#learning" class="nav-link nav-dropdown-trigger ${isLearnActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-graduation-cap"></i>
+                    <span>Academy & Safety</span>
+                    <i class="fa-solid fa-chevron-down nav-arrow"></i>
+                </a>
+                <div class="nav-dropdown-menu" role="menu">
+                    <a href="#learning" class="dropdown-item ${currentHash === 'learning' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon academy-icon"><i class="fa-solid fa-book-open-reader"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Learning Academy</span>
+                            <span class="dropdown-sub">Step-by-step interactive cryptocurrency & blockchain modules</span>
+                        </div>
+                    </a>
+                    <a href="#safety-center" class="dropdown-item ${currentHash === 'safety-center' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon safety-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Safety & Risk Center</span>
+                            <span class="dropdown-sub">Scam prevention, private key safety, risk score analysis</span>
+                        </div>
+                    </a>
+                    <div class="dropdown-compliance-badge">
+                        <i class="fa-solid fa-shield-check text-success"></i>
+                        <span>Play Store & iOS App Store Compliant &bull; 100% Risk-Free Sim</span>
+                    </div>
+                </div>
+            </div>
+
+            ${isAdmin ? `
+            <div class="nav-item">
+                <a href="#admin" class="nav-link admin-link ${currentHash === 'admin' ? 'active' : ''}">
+                    <i class="fa-solid fa-shield-crown"></i>
+                    <span>Admin Control</span>
+                </a>
+            </div>
+            ` : ''}
+        `;
+
+        if (desktopNav) desktopNav.innerHTML = desktopHtml;
+
+        // Mobile Drawer: Categorized, touch-friendly, high contrast
+        const mobileHtml = `
+            <div class="drawer-nav-group">
+                <div class="drawer-section-label">Core Navigation</div>
+                <a href="#dashboard" class="mobile-nav-link ${currentHash === 'dashboard' ? 'active' : ''}">
+                    <div class="mobile-nav-icon"><i class="fa-solid fa-house"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Dashboard</span>
+                        <span class="mobile-nav-desc">Market summary & live showcase</span>
+                    </div>
+                </a>
+                <a href="#markets" class="mobile-nav-link ${currentHash === 'markets' ? 'active' : ''}">
+                    <div class="mobile-nav-icon"><i class="fa-solid fa-chart-line"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Cryptocurrency Markets</span>
+                        <span class="mobile-nav-desc">Live rates, market cap & filters</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="drawer-nav-group">
+                <div class="drawer-section-label">Simulated Trading</div>
+                <a href="#simulator" class="mobile-nav-link ${currentHash === 'simulator' ? 'active' : ''}">
+                    <div class="mobile-nav-icon trade-icon"><i class="fa-solid fa-bolt"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Virtual Simulator</span>
+                        <span class="mobile-nav-desc">Order books, buy/sell simulation</span>
+                    </div>
+                </a>
+                <a href="#portfolio" class="mobile-nav-link ${currentHash === 'portfolio' ? 'active' : ''}">
+                    <div class="mobile-nav-icon portfolio-icon"><i class="fa-solid fa-wallet"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Virtual Portfolio</span>
+                        <span class="mobile-nav-desc">Holdings, performance & P&L</span>
+                    </div>
+                </a>
+                <a href="#simulation-lab" class="mobile-nav-link ${currentHash === 'simulation-lab' ? 'active' : ''}">
+                    <div class="mobile-nav-icon lab-icon"><i class="fa-solid fa-flask-vial"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Simulation Stress Lab</span>
+                        <span class="mobile-nav-desc">Scenario generator & stress test</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="drawer-nav-group">
+                <div class="drawer-section-label">Education & Safety</div>
+                <a href="#learning" class="mobile-nav-link ${currentHash === 'learning' ? 'active' : ''}">
+                    <div class="mobile-nav-icon academy-icon"><i class="fa-solid fa-graduation-cap"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Learning Academy</span>
+                        <span class="mobile-nav-desc">Interactive blockchain courses</span>
+                    </div>
+                </a>
+                <a href="#safety-center" class="mobile-nav-link ${currentHash === 'safety-center' ? 'active' : ''}">
+                    <div class="mobile-nav-icon safety-icon"><i class="fa-solid fa-shield-halved"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Safety & Risk Center</span>
+                        <span class="mobile-nav-desc">Scam defense & security scores</span>
+                    </div>
+                </a>
+            </div>
+
+            ${isAdmin ? `
+            <div class="drawer-nav-group">
+                <div class="drawer-section-label">System Administration</div>
+                <a href="#admin" class="mobile-nav-link admin-link ${currentHash === 'admin' ? 'active' : ''}">
+                    <div class="mobile-nav-icon admin-icon"><i class="fa-solid fa-shield-crown"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Admin Control Panel</span>
+                        <span class="mobile-nav-desc">Coin manager, audit & metrics</span>
+                    </div>
+                </a>
+            </div>
+            ` : ''}
+
+            <!-- Store Compliance & Disclosures Card in Drawer -->
+            <div class="drawer-compliance-card">
+                <div class="compliance-header">
+                    <i class="fa-solid fa-shield-halved text-success"></i>
+                    <strong>Play Store & iOS App Store Compliant</strong>
+                </div>
+                <p>100% Risk-Free Simulated Education. No real currency or cryptocurrency transactions.</p>
+            </div>
+        `;
 
         if (mobileNav) mobileNav.innerHTML = mobileHtml;
+
+        // Update Mobile Bottom Tab Bar active state
+        document.querySelectorAll('.bottom-nav-item').forEach(item => {
+            const navId = item.getAttribute('data-nav');
+            if (navId === currentHash || (navId === 'simulator' && isTradeActive)) {
+                item.classList.add('active');
+            } else {
+                item.classList.remove('active');
+            }
+        });
     },
 
     renderAuthActions() {
@@ -131,9 +271,14 @@ const App = {
 
             container.innerHTML = `
                 <div class="user-profile-menu" id="user-header-menu">
-                    <div class="user-avatar-small">${user.username.charAt(0).toUpperCase()}</div>
-                    <span class="user-balance-pill">${balanceFormatted}</span>
-                    <button type="button" id="logout-btn" class="icon-action-btn" title="Logout" style="width:28px;height:28px;border:none;background:transparent;">
+                    <div class="user-avatar-small" title="${user.full_name} (${user.role})">
+                        ${user.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div class="user-meta-pill" title="Current Wallet Balance">
+                        <span class="user-name-label">${user.username}</span>
+                        <span class="user-balance-label font-mono">${balanceFormatted}</span>
+                    </div>
+                    <button type="button" id="logout-btn" class="icon-action-btn logout-btn" title="Logout" aria-label="Logout">
                         <i class="fa-solid fa-arrow-right-from-bracket"></i>
                     </button>
                 </div>
@@ -141,19 +286,25 @@ const App = {
 
             if (drawerUser) {
                 drawerUser.innerHTML = `
-                    <div style="display:flex;align-items:center;gap:12px;">
-                        <div class="user-avatar-small" style="width:40px;height:40px;font-size:1.1rem;">
+                    <div class="drawer-user-card">
+                        <div class="user-avatar-small" style="width:44px;height:44px;font-size:1.2rem;">
                             ${user.username.charAt(0).toUpperCase()}
                         </div>
-                        <div>
-                            <div style="font-weight:700;">${user.full_name}</div>
-                            <div style="font-size:0.8rem;color:var(--text-muted);">@${user.username} &bull; ${user.role.toUpperCase()}</div>
-                            <div class="font-mono text-success" style="font-weight:700;font-size:0.9rem;margin-top:2px;">
-                                ${balanceFormatted}
-                            </div>
+                        <div class="drawer-user-info-text">
+                            <div class="drawer-user-name">${user.full_name}</div>
+                            <div class="drawer-user-role">@${user.username} &bull; <span class="role-badge ${user.role}">${user.role.toUpperCase()}</span></div>
+                            <div class="drawer-user-balance font-mono text-success">${balanceFormatted}</div>
                         </div>
+                        <button type="button" class="btn btn-outline" id="drawer-logout-btn" title="Sign Out" style="padding:6px 12px;font-size:0.8rem;margin-left:auto;">
+                            <i class="fa-solid fa-arrow-right-from-bracket"></i>
+                        </button>
                     </div>
                 `;
+                document.getElementById('drawer-logout-btn')?.addEventListener('click', () => {
+                    State.logout();
+                    App.closeDrawer();
+                    window.location.hash = '#dashboard';
+                });
             }
 
             const logoutBtn = document.getElementById('logout-btn');
@@ -167,25 +318,29 @@ const App = {
             if (notifMenu) notifMenu.classList.add('hidden');
 
             container.innerHTML = `
-                <button type="button" class="btn btn-guest" id="header-guest-btn">
-                    <i class="fa-solid fa-user-secret"></i> Guest
+                <button type="button" class="btn-guest-pill" id="header-guest-btn" title="Quick Simulation Mode ($5,000 Balance)">
+                    <i class="fa-solid fa-user-secret"></i>
+                    <span>Guest</span>
                 </button>
-                <button type="button" class="btn btn-outline" onclick="AuthModals.showLogin()">
+                <button type="button" class="btn btn-outline btn-signin-nav" onclick="AuthModals.showLogin()">
                     Sign In
                 </button>
-                <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister()">
+                <button type="button" class="btn btn-primary btn-register-nav" onclick="AuthModals.showRegister()">
                     Register
                 </button>
             `;
 
             if (drawerUser) {
                 drawerUser.innerHTML = `
-                    <div style="display:flex;flex-direction:column;gap:8px;">
-                        <div style="font-weight:700;font-size:0.95rem;">Exploring as Guest</div>
-                        <div style="font-size:0.8rem;color:var(--text-muted);">$5,000 temporary trading simulation</div>
-                        <div style="display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-top:4px;">
-                            <button type="button" class="btn btn-outline" onclick="AuthModals.showLogin(); App.closeDrawer();" style="font-size:0.8rem;padding:6px;">Sign In</button>
-                            <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister(); App.closeDrawer();" style="font-size:0.8rem;padding:6px;">Register</button>
+                    <div class="drawer-guest-card">
+                        <div class="guest-card-top">
+                            <span class="guest-badge"><i class="fa-solid fa-user-secret"></i> Guest Simulation</span>
+                            <span class="guest-balance-hint font-mono">$5,000.00 Balance</span>
+                        </div>
+                        <p class="guest-card-desc">Practice real-time trading risk-free. Create an account to save your portfolio and trade history across devices.</p>
+                        <div class="guest-card-actions">
+                            <button type="button" class="btn btn-outline" onclick="AuthModals.showLogin(); App.closeDrawer();">Sign In</button>
+                            <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister(); App.closeDrawer();">Register & Claim $5,000</button>
                         </div>
                     </div>
                 `;

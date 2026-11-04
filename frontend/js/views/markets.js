@@ -208,7 +208,7 @@ const MarketsView = {
                             <button type="button" class="watchlist-star-btn" data-id="${c.id}" title="${isWatchlisted ? 'Remove from Watchlist' : 'Add to Watchlist'}" style="color: ${isWatchlisted ? '#F59E0B' : 'var(--text-muted)'}; font-size: 1rem;">
                                 <i class="${isWatchlisted ? 'fa-solid' : 'fa-regular'} fa-star"></i>
                             </button>
-                            <img src="${logo}" alt="${c.name}" class="crypto-logo" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                            <img src="${logo}" alt="${c.name}" class="crypto-logo" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                             <div>
                                 <a href="#crypto/${c.symbol}" class="crypto-name">${c.name}</a>
                                 <div class="crypto-symbol">${c.symbol} &bull; <span style="font-size: 0.72rem; color: var(--color-primary);">${c.blockchain.split(' ')[0]}</span></div>

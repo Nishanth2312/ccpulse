@@ -188,7 +188,7 @@ const PortfolioView = {
                                     <tr>
                                         <td>
                                             <div class="crypto-cell">
-                                                <img src="${State.getCoinLogo(h)}" alt="${h.symbol}" class="crypto-logo" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                                                <img src="${State.getCoinLogo(h)}" alt="${h.symbol}" class="crypto-logo" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                                                 <div>
                                                     <div class="crypto-name">${h.crypto_name || h.name || h.symbol}</div>
                                                     <div class="crypto-symbol">${h.symbol}</div>

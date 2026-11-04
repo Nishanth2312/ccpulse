@@ -188,7 +188,7 @@ const State = {
             btc: './assets/coins/btc.svg',
             eth: './assets/coins/eth.svg',
             xmr: './assets/coins/xmr.svg',
-            bdx: './assets/coins/bdx.svg',
+            bdx: './assets/coins/bdx.png',
             sol: './assets/coins/sol.svg'
         };
         if (localSvgs[sym]) return localSvgs[sym];

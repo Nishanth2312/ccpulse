@@ -116,7 +116,7 @@ function seedInitialData() {
 
         insertCrypto.run(
             'Beldex', 'BDX', 'beldex',
-            '/assets/coins/bdx.svg',
+            '/assets/coins/bdx.png',
             'Proof of Stake Private Ecosystem (Masternodes & POS)',
             'coingecko', 'CoinGecko / Simulated Real-Time Engine',
             'Beldex is a privacy-first web3 ecosystem providing untraceable transactions and confidential messaging, private browser (BChat, BelNet), and Masternode validation.',
