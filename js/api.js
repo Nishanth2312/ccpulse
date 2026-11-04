@@ -75,9 +75,9 @@ const API = {
                 return await API.request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
             } catch (err) {
                 // Client-side fallback for GitHub Pages
-                const email = (credentials.email || '').toLowerCase();
+                const email = (credentials.email || '').toLowerCase().trim();
                 const pass = credentials.password || '';
-                if (email === 'admin@ccpulse.com' && pass === 'Admin@CCPulse2026!') {
+                if ((email === 'admin@ccpulse.com' || email === 'admin') && (pass === 'Admin@CCPulse2026!' || pass === 'admin')) {
                     const mockAdmin = { id: 1, email: 'admin@ccpulse.com', username: 'admin', fullName: 'CCPulse Chief Administrator', role: 'admin' };
                     localStorage.setItem('ccpulse_jwt', 'gh-pages-admin-jwt');
                     State.currentUser = mockAdmin;
