@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CCPulse - Cryptocurrency Educational & Simulation Platform</title>
+
+    <!-- MANDATORY Modern Web Guidance for Color Scheme & FOUC Prevention -->
+    <meta name="color-scheme" content="light dark">
+    <script>
+        // Inline immediate script to prevent Flash of Un-themed Content (FOUC)
+        (function() {
+            try {
+                const savedTheme = localStorage.getItem('ccpulse_theme') || 'system';
+                const meta = document.querySelector('meta[name="color-scheme"]');
+                const html = document.documentElement;
+                if (savedTheme === 'dark') {
+                    if (meta) meta.content = 'dark';
+                    html.setAttribute('data-theme', 'dark');
+                } else if (savedTheme === 'light') {
+                    if (meta) meta.content = 'light';
+                    html.setAttribute('data-theme', 'light');
+                } else {
+                    if (meta) meta.content = 'light dark';
+                    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+                    html.setAttribute('data-theme', prefersDark ? 'dark' : 'light');
+                }
+            } catch (e) {}
+        })();
+    </script>
+
+    <link rel="stylesheet" href="/css/styles.css">
+    <!-- FontAwesome icons via lightweight CDN -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <div id="app" class="app-layout">
+        <!-- Top Announcement / Currency & Rate Health Banner -->
+        <div id="global-status-banner" class="status-banner hidden">
+            <div class="banner-content">
+                <span id="banner-text"><i class="fa-solid fa-circle-info"></i> Welcome to CCPulse Simulation Lab</span>
+                <span id="rate-stale-tag" class="stale-badge hidden"><i class="fa-solid fa-triangle-exclamation"></i> Exchange Rates Stale</span>
+            </div>
+            <button id="banner-close" class="banner-close-btn" aria-label="Close notification"><i class="fa-solid fa-xmark"></i></button>
+        </div>
+
+        <!-- Navigation Header -->
+        <header class="app-header">
+            <div class="header-container">
+                <div class="header-left">
+                    <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle navigation menu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                    <a href="#dashboard" class="brand-logo" id="brand-link">
+                        <div class="logo-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                        <span class="logo-title">CC<span class="pulse-text">Pulse</span></span>
+                        <span class="sim-badge">VIRTUAL SIM</span>
+                    </a>
+                </div>
+
+                <nav class="desktop-nav" id="desktop-nav-links">
+                    <!-- Populated dynamically based on auth / guest / admin role -->
+                </nav>
+
+                <div class="header-right">
+                    <!-- Display Currency Selector -->
+                    <div class="currency-picker-container" title="Select Display Currency">
+                        <i class="fa-solid fa-globe currency-globe-icon"></i>
+                        <select id="currency-select" class="currency-dropdown" aria-label="Select display currency">
+                            <option value="USD">USD ($)</option>
+                            <option value="INR">INR (₹)</option>
+                            <option value="EUR">EUR (€)</option>
+                            <option value="GBP">GBP (£)</option>
+                            <option value="AED">AED (د.إ)</option>
+                            <option value="JPY">JPY (¥)</option>
+                        </select>
+                        <button id="refresh-rates-btn" class="icon-action-btn" title="Refresh Live Forex Rates">
+                            <i class="fa-solid fa-rotate"></i>
+                        </button>
+                    </div>
+
+                    <!-- Theme Toggle -->
+                    <button id="theme-toggle-btn" class="theme-toggle-btn" title="Toggle Theme (Dark / Light / System)" aria-label="Toggle theme">
+                        <i class="fa-solid fa-moon" id="theme-icon"></i>
+                    </button>
+
+                    <!-- Notifications (for auth user) -->
+                    <div id="notifications-menu-container" class="notifications-container hidden">
+                        <button id="notifications-btn" class="icon-action-btn" title="Notifications" aria-label="Notifications">
+                            <i class="fa-solid fa-bell"></i>
+                            <span id="notif-badge" class="notif-count-badge hidden">0</span>
+                        </button>
+                    </div>
+
+                    <!-- User Actions / Profile / Guest Switch -->
+                    <div id="auth-actions-container" class="auth-actions">
+                        <!-- Populated dynamically -->
+                    </div>
+                </div>
+            </div>
+        </header>
+
+        <!-- Mobile Drawer Navigation -->
+        <div id="mobile-drawer-overlay" class="drawer-overlay hidden"></div>
+        <aside id="mobile-drawer" class="mobile-drawer" aria-label="Mobile Navigation">
+            <div class="drawer-header">
+                <div class="brand-logo">
+                    <div class="logo-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                    <span class="logo-title">CC<span class="pulse-text">Pulse</span></span>
+                </div>
+                <button id="close-drawer-btn" class="drawer-close-btn" aria-label="Close menu">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+            <div class="drawer-user-info" id="drawer-user-section">
+                <!-- User card in drawer -->
+            </div>
+            <nav class="mobile-nav-links" id="mobile-nav-links">
+                <!-- Injected links -->
+            </nav>
+            <div class="drawer-footer">
+                <div class="drawer-disclaimer">
+                    <i class="fa-solid fa-shield-halved"></i> 100% Risk-Free Simulation
+                </div>
+            </div>
+        </aside>
+
+        <!-- Main Content Area -->
+        <main id="main-content" class="main-content" role="main">
+            <!-- Dynamic view containers rendered here -->
+            <div id="view-container" class="view-container"></div>
+        </main>
+
+        <!-- Footer -->
+        <footer class="app-footer">
+            <div class="footer-container">
+                <div class="footer-col">
+                    <div class="brand-logo">
+                        <div class="logo-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
+                        <span class="logo-title">CC<span class="pulse-text">Pulse</span></span>
+                    </div>
+                    <p class="footer-desc">
+                        A next-generation cryptocurrency market simulation and educational platform.
+                        Practice trading real-time crypto markets with virtual credits without risking real capital.
+                    </p>
+                    <div class="footer-tags">
+                        <span class="tag"><i class="fa-solid fa-lock"></i> No Real Money</span>
+                        <span class="tag"><i class="fa-solid fa-graduation-cap"></i> Educational</span>
+                        <span class="tag"><i class="fa-solid fa-gift"></i> $5,000 Welcome Bonus</span>
+                    </div>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Navigation</h4>
+                    <ul class="footer-links">
+                        <li><a href="#dashboard">Public Dashboard</a></li>
+                        <li><a href="#markets">Cryptocurrency Markets</a></li>
+                        <li><a href="#simulator">Trading Simulator</a></li>
+                        <li><a href="#portfolio">Virtual Portfolio</a></li>
+                        <li><a href="#learning">Learning Academy</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Simulation Tools</h4>
+                    <ul class="footer-links">
+                        <li><a href="#simulation-lab">Market Simulation Lab</a></li>
+                        <li><a href="#safety-center">Safety & Security Center</a></li>
+                        <li><a href="#watchlist">Monitored Watchlist</a></li>
+                        <li><a href="#admin">Administrator Panel</a></li>
+                    </ul>
+                </div>
+
+                <div class="footer-col">
+                    <h4>Forex & Financial Disclaimer</h4>
+                    <p class="footer-disclaimer-text">
+                        CCPulse is strictly an educational tool. Currency conversions (USD, INR, EUR, GBP, AED, JPY) are computed for display and learning purposes using live forex reference rates. No actual foreign exchange or banking transactions are performed.
+                    </p>
+                    <div class="rate-status-display">
+                        <span id="footer-rate-status"><i class="fa-solid fa-circle-check text-success"></i> Forex Live Engine</span>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 CCPulse Financial Education Systems. All Rights Reserved. Pair Programming Antigravity Build.</p>
+            </div>
+        </footer>
+
+        <!-- Modern Accessible Modals Container (<dialog> tags adhering to Modern Web Guidance) -->
+        <div id="modals-host"></div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="/js/state.js"></script>
+    <script src="/js/api.js"></script>
+    <script src="/js/currency.js"></script>
+    <script src="/js/theme.js"></script>
+    <script src="/js/views/authModals.js"></script>
+    <script src="/js/views/dashboard.js"></script>
+    <script src="/js/views/markets.js"></script>
+    <script src="/js/views/cryptoDetail.js"></script>
+    <script src="/js/views/simulator.js"></script>
+    <script src="/js/views/portfolio.js"></script>
+    <script src="/js/views/learning.js"></script>
+    <script src="/js/views/simulationLab.js"></script>
+    <script src="/js/views/safetyCenter.js"></script>
+    <script src="/js/views/admin.js"></script>
+    <script src="/js/views/notifications.js"></script>
+    <script src="/js/app.js"></script>
+</body>
+</html>
+
