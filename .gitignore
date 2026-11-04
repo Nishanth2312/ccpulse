@@ -1,0 +1,23 @@
+# Node modules
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Environment & secrets
+.env
+.env.local
+.env.*.local
+
+# Operating System files
+.DS_Store
+Thumbs.db
+
+# SQLite WAL and locks (transient files)
+*.db-shm
+*.db-wal
+
+# Build & test outputs
+coverage/
+.nyc_output/
+*.log

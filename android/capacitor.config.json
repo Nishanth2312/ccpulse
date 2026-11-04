@@ -1,0 +1,24 @@
+{
+  "appId": "com.ccpulse.app",
+  "appName": "CCPulse",
+  "webDir": "../frontend",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "http://10.0.2.2:4000",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1500,
+      "backgroundColor": "#070A12",
+      "showSpinner": true,
+      "spinnerColor": "#00F0FF"
+    }
+  }
+}
+
