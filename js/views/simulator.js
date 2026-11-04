@@ -180,7 +180,7 @@ const SimulatorView = {
                     <!-- Asset Profile Card -->
                     <div class="glass-card" style="padding: 24px;">
                         <div style="display: flex; align-items: center; gap: 12px; margin-bottom: 16px;">
-                            <img src="${State.getCoinLogo(this.selectedCrypto)}" alt="${this.selectedCrypto?.name}" class="crypto-logo" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                            <img src="${State.getCoinLogo(this.selectedCrypto)}" alt="${this.selectedCrypto?.name}" class="crypto-logo" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                             <div>
                                 <h3 style="font-size: 1.15rem; font-weight: 700;">${this.selectedCrypto?.name}</h3>
                                 <span style="font-size: 0.8rem; color: var(--text-muted);">${this.selectedCrypto?.blockchain}</span>

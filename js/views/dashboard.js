@@ -22,7 +22,7 @@ const DashboardView = {
             const logo = State.getCoinLogo(c);
             return `
                 <div class="ticker-item" style="display: flex; align-items: center; gap: 8px; padding: 6px 14px; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: var(--border-radius-full); font-size: 0.85rem; flex-shrink: 0;">
-                    <img src="${logo}" alt="${c.name}" class="crypto-logo" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                    <img src="${logo}" alt="${c.name}" class="crypto-logo" style="width: 20px; height: 20px; min-width: 20px; min-height: 20px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                     <span style="font-weight: 700;">${c.symbol}</span>
                     <span class="font-mono">${price}</span>
                     <span class="${changeClass}" style="font-size: 0.78rem; font-weight: 600;">
@@ -43,7 +43,7 @@ const DashboardView = {
                     <div>
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 12px;">
                             <div style="display: flex; align-items: center; gap: 10px;">
-                                <img src="${logo}" alt="${c.name}" class="crypto-logo" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                                <img src="${logo}" alt="${c.name}" class="crypto-logo" style="width: 40px; height: 40px; min-width: 40px; min-height: 40px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                                 <div>
                                     <div style="font-weight: 700; font-size: 1.05rem;">${c.name}</div>
                                     <div style="font-size: 0.8rem; color: var(--text-muted);">${c.symbol} &bull; ${c.blockchain.split(' ')[0]}</div>

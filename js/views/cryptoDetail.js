@@ -51,7 +51,7 @@ const CryptoDetailView = {
             <div class="glass-card" style="padding: 24px; margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 20px;">
                     <div style="display: flex; align-items: center; gap: 16px;">
-                        <img src="${State.getCoinLogo(crypto)}" alt="${crypto.name}" class="crypto-logo" style="width: 52px; height: 52px; min-width: 52px; min-height: 52px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                        <img src="${State.getCoinLogo(crypto)}" alt="${crypto.name}" class="crypto-logo" style="width: 52px; height: 52px; min-width: 52px; min-height: 52px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                         <div>
                             <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
                                 <h1 style="font-size: 1.8rem; font-weight: 800;">${crypto.name}</h1>

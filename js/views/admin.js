@@ -214,7 +214,7 @@ const AdminView = {
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-surface-elevated); border-radius: 8px;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span style="font-weight: 700; color: var(--text-muted); font-size: 0.85rem;">#${i + 1}</span>
-                                        <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                                        <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                                         <span style="font-weight: 600;">${c.name} (${c.symbol})</span>
                                     </div>
                                     <div style="text-align: right;">
@@ -235,7 +235,7 @@ const AdminView = {
                                 <div style="display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: var(--bg-surface-elevated); border-radius: 8px;">
                                     <div style="display: flex; align-items: center; gap: 10px;">
                                         <span style="font-weight: 700; color: var(--text-muted); font-size: 0.85rem;">#${i + 1}</span>
-                                        <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                                        <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" style="width: 24px; height: 24px; min-width: 24px; min-height: 24px;" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                                         <span style="font-weight: 600;">${c.name} (${c.symbol})</span>
                                     </div>
                                     <div style="text-align: right;">
@@ -292,7 +292,7 @@ const AdminView = {
                                 <tr>
                                     <td>
                                         <div class="crypto-cell">
-                                            <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" onerror="this.onerror=null; this.src='/assets/coins/generic.svg'">
+                                            <img src="${State.getCoinLogo(c)}" alt="${c.name}" class="crypto-logo" onerror="this.onerror=null; this.src='./assets/coins/generic.svg'">
                                             <div>
                                                 <div class="crypto-name">${c.name}</div>
                                                 <div class="crypto-symbol">${c.symbol}</div>
