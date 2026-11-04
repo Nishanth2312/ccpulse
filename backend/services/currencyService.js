@@ -211,6 +211,17 @@ function getCurrencyStatus() {
     };
 }
 
+// Background Forex rate auto-refresh every 30 minutes
+let forexInterval = setInterval(() => {
+    fetchLiveExchangeRates().catch(() => {});
+}, 30 * 60 * 1000);
+if (forexInterval.unref) {
+    forexInterval.unref();
+}
+
+// Initial async fetch on load
+fetchLiveExchangeRates().catch(() => {});
+
 module.exports = {
     fetchLiveExchangeRates,
     convertFromUsd,

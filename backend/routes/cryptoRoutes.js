@@ -5,7 +5,9 @@ const {
     getActiveCryptos,
     getCryptoBySymbolOrSlug,
     getHistoricalChartData,
-    getOrderBook
+    getOrderBook,
+    fetchLiveCryptoRatesFromCoinGecko,
+    getCryptoFeedStatus
 } = require('../services/cryptoMarketService');
 const { authenticateToken } = require('../middleware/auth');
 
@@ -16,7 +18,35 @@ const { authenticateToken } = require('../middleware/auth');
 router.get('/', (req, res) => {
     try {
         const cryptos = getActiveCryptos();
-        return res.json({ success: true, count: cryptos.length, cryptos });
+        const feed = getCryptoFeedStatus();
+        return res.json({ success: true, count: cryptos.length, cryptos, feed });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * POST /api/cryptos/refresh
+ * Explicitly refresh live cryptocurrency rates from CoinGecko
+ */
+router.post('/refresh', async (req, res) => {
+    try {
+        const result = await fetchLiveCryptoRatesFromCoinGecko(true);
+        const cryptos = getActiveCryptos();
+        return res.json({ success: true, ...result, count: cryptos.length, cryptos });
+    } catch (err) {
+        return res.status(500).json({ success: false, error: err.message });
+    }
+});
+
+/**
+ * GET /api/cryptos/feed-status
+ * Check live feed health and metadata
+ */
+router.get('/feed-status', (req, res) => {
+    try {
+        const status = getCryptoFeedStatus();
+        return res.json({ success: true, ...status });
     } catch (err) {
         return res.status(500).json({ success: false, error: err.message });
     }

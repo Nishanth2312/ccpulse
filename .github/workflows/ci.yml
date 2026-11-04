@@ -25,3 +25,4 @@ jobs:
 
     - name: Run 20-Scenario Acceptance Tests
       run: npm test
+
