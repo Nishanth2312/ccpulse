@@ -67,9 +67,9 @@ function seedInitialData() {
     const themeCount = db.prepare('SELECT COUNT(*) as count FROM themes').get().count;
     if (themeCount === 0) {
         const insertTheme = db.prepare('INSERT INTO themes (name, code, primary_color, background_color, is_default, is_active) VALUES (?, ?, ?, ?, ?, ?)');
-        insertTheme.run('Dark Navy High-Tech', 'dark', '#00F0FF', '#0B0E17', 1, 1);
-        insertTheme.run('Clean Light Financial', 'light', '#2563EB', '#F8FAFC', 0, 1);
-        insertTheme.run('System Adaptive', 'system', '#3B82F6', '#0B0E17', 0, 1);
+        insertTheme.run('Midnight Navy Gold Showcase', 'dark', '#FFB703', '#0E1438', 1, 1);
+        insertTheme.run('Clean Light Financial Blue', 'light', '#3A86FF', '#F8FAFC', 0, 1);
+        insertTheme.run('System Adaptive', 'system', '#3A86FF', '#0E1438', 0, 1);
     }
 
     // 5. Initial Cryptocurrencies: BTC, ETH, XMR, BDX, SOL

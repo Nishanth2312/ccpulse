@@ -38,8 +38,11 @@ const CryptoDetailView = {
                     <span style="color: var(--text-primary); font-weight: 600;">${crypto.name} (${crypto.symbol})</span>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <a href="#simulator?coin=${crypto.symbol}" class="btn btn-primary">
-                        <i class="fa-solid fa-bolt"></i> Sim Trade ${crypto.symbol}
+                    <a href="#simulator?coin=${crypto.symbol}&type=BUY" class="btn btn-buy" style="padding: 8px 20px; font-size: 0.9rem;">
+                        <i class="fa-solid fa-arrow-trend-up"></i> BUY
+                    </a>
+                    <a href="#simulator?coin=${crypto.symbol}&type=SELL" class="btn btn-sell" style="padding: 8px 20px; font-size: 0.9rem;">
+                        <i class="fa-solid fa-arrow-trend-down"></i> SELL
                     </a>
                 </div>
             </div>
@@ -217,7 +220,7 @@ const CryptoDetailView = {
             const areaD = `${pathD} L ${getX(prices.length - 1)} ${height - padding.bottom} L ${getX(0)} ${height - padding.bottom} Z`;
 
             const isUp = prices[prices.length - 1] >= prices[0];
-            const strokeColor = isUp ? '#10B981' : '#EF4444';
+            const strokeColor = (document.documentElement.getAttribute('data-theme') === 'light' || State.theme === 'light') ? '#3A86FF' : '#FFB703';
             const gradientId = `chart-grad-${cryptoId}-${timeframe}`;
 
             svgContainer.innerHTML = `

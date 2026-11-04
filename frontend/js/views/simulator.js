@@ -81,14 +81,23 @@ const SimulatorView = {
                         <i class="fa-solid fa-bolt text-cyan"></i> Execute Simulated Trade
                     </h2>
 
-                    <!-- Buy / Sell Mode Tabs -->
-                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 24px; background: var(--bg-surface-elevated); padding: 4px; border-radius: var(--border-radius-sm);">
-                        <button type="button" id="btn-mode-buy" class="btn ${this.orderType === 'BUY' ? 'btn-primary' : 'btn-outline'}" style="width: 100%; border: none;">
-                            <i class="fa-solid fa-arrow-down"></i> BUY
+                    <!-- Buy / Sell Mode Tabs (Matching Vibrant Image Design) -->
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; padding: 4px; border-radius: var(--border-radius-full);">
+                        <button type="button" id="btn-mode-buy" class="btn ${this.orderType === 'BUY' ? 'btn-buy' : 'btn-outline'}" style="width: 100%; padding: 12px; font-size: 1.05rem;">
+                            <i class="fa-solid fa-arrow-trend-up"></i> BUY
                         </button>
-                        <button type="button" id="btn-mode-sell" class="btn ${this.orderType === 'SELL' ? 'btn-primary' : 'btn-outline'}" style="width: 100%; border: none; ${this.orderType === 'SELL' ? 'background: var(--color-danger); color: white;' : ''}">
-                            <i class="fa-solid fa-arrow-up"></i> SELL
+                        <button type="button" id="btn-mode-sell" class="btn ${this.orderType === 'SELL' ? 'btn-sell' : 'btn-outline'}" style="width: 100%; padding: 12px; font-size: 1.05rem;">
+                            <i class="fa-solid fa-arrow-trend-down"></i> SELL
                         </button>
+                    </div>
+
+                    <!-- Quick Coin Switcher Pills -->
+                    <div class="phone-coin-pills" id="sim-coin-pills" style="margin-bottom: 18px;">
+                        ${cryptos.map(c => `
+                            <button type="button" class="phone-coin-pill ${this.selectedCrypto?.symbol === c.symbol ? 'active' : ''}" data-sim-coin="${c.symbol}">
+                                ${c.symbol}
+                            </button>
+                        `).join('')}
                     </div>
 
                     <!-- Asset Selector -->
@@ -161,8 +170,8 @@ const SimulatorView = {
 
                     <div id="sim-feedback-msg" class="hidden" style="padding: 12px; border-radius: 6px; font-size: 0.88rem; margin-bottom: 16px;"></div>
 
-                    <button type="button" id="execute-trade-btn" class="btn btn-primary" style="width: 100%; padding: 14px; font-size: 1.05rem;">
-                        <i class="fa-solid fa-bolt"></i> Execute ${this.orderType} Order
+                    <button type="button" id="execute-trade-btn" class="btn ${this.orderType === 'BUY' ? 'btn-buy' : 'btn-sell'}" style="width: 100%; padding: 15px; font-size: 1.12rem; font-weight: 900; letter-spacing: 0.5px;">
+                        <i class="fa-solid ${this.orderType === 'BUY' ? 'fa-arrow-trend-up' : 'fa-arrow-trend-down'}"></i> Execute ${this.orderType} Order
                     </button>
                 </div>
 
@@ -252,6 +261,18 @@ const SimulatorView = {
                 this.render(container, coin.symbol);
             }
         };
+
+        // Quick Coin Switcher Pills
+        container.querySelectorAll('[data-sim-coin]').forEach(pill => {
+            pill.onclick = () => {
+                const sym = pill.getAttribute('data-sim-coin');
+                const coin = cryptos.find(c => c.symbol === sym);
+                if (coin) {
+                    this.selectedCrypto = coin;
+                    this.render(container, coin.symbol);
+                }
+            };
+        });
 
         // Quick Percent buttons
         container.querySelectorAll('.quick-pct-btn').forEach(btn => {
