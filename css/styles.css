@@ -1,93 +1,112 @@
 /* ===================================================================
    CCPulse - Stylesheet
-   Modern Web Guidance Compliant, Light/Dark Modes & Glassmorphism
+   Modern Web Guidance Compliant, Light/Dark Modes & Custom Showcase Design
    =================================================================== */
 
 :root {
     /* Color Scheme progressiveness */
     color-scheme: light dark;
 
-    /* Base Font & Layout */
-    --font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    --border-radius-sm: 6px;
-    --border-radius-md: 10px;
-    --border-radius-lg: 16px;
+    /* Base Font & Typography - Times New Roman Primary */
+    --font-family: 'Times New Roman', Times, Baskerville, Georgia, serif;
+    --font-heading: 'Times New Roman', Times, Baskerville, Georgia, serif;
+    --font-mono: 'Courier New', Courier, monospace, var(--font-family);
+    --border-radius-sm: 8px;
+    --border-radius-md: 14px;
+    --border-radius-lg: 20px;
     --border-radius-full: 9999px;
     --transition-fast: 0.15s ease;
     --transition-normal: 0.25s ease;
     --header-height: 72px;
 
-    /* Primary Accent Brands */
-    --color-primary: #00F0FF;
-    --color-primary-hover: #38bdf8;
-    --color-secondary: #3B82F6;
-    --color-purple: #8B5CF6;
-    --color-purple-gradient: linear-gradient(135deg, #8B5CF6 0%, #3B82F6 100%);
-    --color-cyan-gradient: linear-gradient(135deg, #00F0FF 0%, #3B82F6 100%);
-    --color-success: #10B981;
-    --color-danger: #EF4444;
-    --color-warning: #F59E0B;
+    /* Universal Functional Colors */
+    --color-success: #00E676;
+    --color-danger: #FF3B30;
+    --color-warning: #FFB703;
+    --color-buy-green: linear-gradient(135deg, #00E676 0%, #00C853 100%);
+    --color-sell-red: linear-gradient(135deg, #FF5252 0%, #FF1744 100%);
+    --color-gold-gradient: linear-gradient(135deg, #FFB703 0%, #FB8500 100%);
+    --color-blue-gradient: linear-gradient(135deg, #3A86FF 0%, #4361EE 100%);
 }
 
 /* ===================================================================
    THEME TOKENS: DARK MODE (Default & [data-theme="dark"])
-   Deep navy background, black trading panels, cyan & blue accents, glass cards
+   Rich Midnight Indigo Navy background (#0E1438), Elevated Navy cards (#161F4E),
+   Golden Amber accents (#FFB703), Neon Green Buy & Crimson Red Sell
    =================================================================== */
 :root[data-theme="dark"],
 :root:not([data-theme="light"]) {
-    --bg-page: #070A12;
-    --bg-surface: #0E1626;
-    --bg-surface-elevated: #131E33;
-    --bg-surface-glass: rgba(14, 22, 38, 0.75);
-    --bg-trading-panel: #0A0F1D;
-    --bg-input: #111B2E;
-    --border-color: rgba(255, 255, 255, 0.08);
-    --border-color-glow: rgba(0, 240, 255, 0.25);
+    --bg-page: #0E1438;
+    --bg-surface: #161F4E;
+    --bg-surface-elevated: #1E2863;
+    --bg-surface-glass: rgba(22, 31, 78, 0.88);
+    --bg-trading-panel: #121942;
+    --bg-input: #1A2356;
+    --border-color: rgba(255, 255, 255, 0.12);
+    --border-color-glow: rgba(255, 183, 3, 0.4);
 
-    --text-primary: #F8FAFC;
-    --text-secondary: #94A3B8;
-    --text-muted: #64748B;
-    --text-link: #38BDF8;
+    --color-primary: #FFB703;
+    --color-primary-hover: #FFA200;
+    --color-secondary: #FB8500;
+    --color-cyan-gradient: var(--color-gold-gradient);
 
-    --badge-bg: rgba(0, 240, 255, 0.12);
-    --badge-text: #00F0FF;
+    --chart-line-color: #FFB703;
+    --chart-tooltip-bg: #FFB703;
+    --chart-tooltip-text: #0E1438;
 
-    --shadow-sm: 0 2px 4px rgba(0, 0, 0, 0.3);
-    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
-    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
-    --shadow-glow: 0 0 20px rgba(0, 240, 255, 0.2);
+    --text-primary: #FFFFFF;
+    --text-secondary: #94A3C8;
+    --text-muted: #6B7A99;
+    --text-link: #FFB703;
+
+    --badge-bg: rgba(255, 183, 3, 0.15);
+    --badge-text: #FFB703;
+
+    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
+    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
+    --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.45);
+    --shadow-glow: 0 0 25px rgba(255, 183, 3, 0.25);
 
     --scrollbar-track: #0B0E17;
-    --scrollbar-thumb: #1E293B;
+    --scrollbar-thumb: #1E2863;
 }
 
 /* ===================================================================
    THEME TOKENS: LIGHT MODE ([data-theme="light"])
-   Clean white background, light grey panels, professional blue accents
+   Clean crisp white background (#F8FAFC), Card surfaces (#FFFFFF),
+   Electric Blue accents (#3A86FF), Neon Green Buy & Vibrant Red Sell
    =================================================================== */
 :root[data-theme="light"] {
     --bg-page: #F8FAFC;
     --bg-surface: #FFFFFF;
     --bg-surface-elevated: #F1F5F9;
-    --bg-surface-glass: rgba(255, 255, 255, 0.85);
-    --bg-trading-panel: #F8FAFC;
+    --bg-surface-glass: rgba(255, 255, 255, 0.95);
+    --bg-trading-panel: #FFFFFF;
     --bg-input: #FFFFFF;
     --border-color: #E2E8F0;
-    --border-color-glow: rgba(37, 99, 235, 0.25);
+    --border-color-glow: rgba(58, 134, 255, 0.3);
+
+    --color-primary: #3A86FF;
+    --color-primary-hover: #2563EB;
+    --color-secondary: #4361EE;
+    --color-cyan-gradient: var(--color-blue-gradient);
+
+    --chart-line-color: #3A86FF;
+    --chart-tooltip-bg: #3A86FF;
+    --chart-tooltip-text: #FFFFFF;
 
     --text-primary: #0F172A;
     --text-secondary: #475569;
     --text-muted: #64748B;
-    --text-link: #2563EB;
+    --text-link: #3A86FF;
 
-    --badge-bg: rgba(37, 99, 235, 0.1);
-    --badge-text: #2563EB;
+    --badge-bg: rgba(58, 134, 255, 0.12);
+    --badge-text: #3A86FF;
 
-    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
-    --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.08);
-    --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1);
-    --shadow-glow: 0 0 15px rgba(37, 99, 235, 0.15);
+    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.04);
+    --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.06);
+    --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.09);
+    --shadow-glow: 0 0 20px rgba(58, 134, 255, 0.2);
 
     --scrollbar-track: #F1F5F9;
     --scrollbar-thumb: #CBD5E1;
@@ -411,22 +430,30 @@ input:focus, select:focus, textarea:focus {
     align-items: center;
     justify-content: center;
     gap: 8px;
-    padding: 8px 16px;
-    font-size: 0.9rem;
-    font-weight: 600;
-    border-radius: var(--border-radius-sm);
+    padding: 10px 20px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    font-family: var(--font-heading);
+    border-radius: var(--border-radius-full);
     transition: all var(--transition-fast);
     cursor: pointer;
+    letter-spacing: 0.3px;
 }
 
 .btn-primary {
     background: var(--color-cyan-gradient);
-    color: #070A12;
-    box-shadow: 0 2px 8px rgba(0, 240, 255, 0.25);
+    color: #FFFFFF;
+    box-shadow: 0 4px 14px rgba(58, 134, 255, 0.35);
+}
+
+:root[data-theme="dark"] .btn-primary,
+:root:not([data-theme="light"]) .btn-primary {
+    color: #0E1438;
+    box-shadow: 0 4px 14px rgba(251, 133, 0, 0.35);
 }
 
 .btn-primary:hover {
-    box-shadow: 0 4px 14px rgba(0, 240, 255, 0.45);
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.25);
     transform: translateY(-1px);
 }
 
@@ -439,6 +466,31 @@ input:focus, select:focus, textarea:focus {
 .btn-outline:hover {
     border-color: var(--color-primary);
     background-color: var(--bg-surface-elevated);
+    color: var(--color-primary);
+}
+
+.btn-buy {
+    background: var(--color-buy-green);
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 16px rgba(0, 230, 118, 0.35);
+    border: none;
+}
+
+.btn-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(0, 230, 118, 0.5);
+}
+
+.btn-sell {
+    background: var(--color-sell-red);
+    color: #FFFFFF !important;
+    box-shadow: 0 4px 16px rgba(255, 59, 48, 0.35);
+    border: none;
+}
+
+.btn-sell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 22px rgba(255, 59, 48, 0.5);
 }
 
 .btn-guest {
@@ -805,6 +857,313 @@ dialog::backdrop {
     text-align: center;
     font-size: 0.82rem;
     color: var(--text-muted);
+}
+
+/* ===================================================================
+   IMAGE DESIGN REFERENCE: MOBILE TRADING SHOWCASE CARD
+   (Side-by-side Light Blue & Dark Gold Theme with Times New Roman & USD)
+   =================================================================== */
+.phone-showcase-container {
+    max-width: 480px;
+    margin: 0 auto 36px;
+    width: 100%;
+}
+
+.phone-trading-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: 28px;
+    padding: 26px 24px;
+    box-shadow: var(--shadow-lg);
+    position: relative;
+    overflow: hidden;
+    transition: all var(--transition-normal);
+}
+
+.phone-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+}
+
+.phone-welcome-text {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    letter-spacing: 0.3px;
+    margin-bottom: 2px;
+}
+
+.phone-dashboard-title {
+    font-size: 1.8rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-heading);
+    letter-spacing: -0.5px;
+}
+
+.phone-bell-btn {
+    width: 38px;
+    height: 38px;
+    border-radius: 50%;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.95rem;
+    transition: all var(--transition-fast);
+}
+
+.phone-bell-btn:hover {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+/* Coin Switcher Pills */
+.phone-coin-pills {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+    scrollbar-width: none;
+}
+
+.phone-coin-pills::-webkit-scrollbar {
+    display: none;
+}
+
+.phone-coin-pill {
+    padding: 8px 24px;
+    border-radius: var(--border-radius-full);
+    font-size: 0.9rem;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    border: 1px solid var(--border-color);
+    background: transparent;
+    color: var(--text-secondary);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    flex-shrink: 0;
+    font-family: var(--font-heading);
+}
+
+/* Light Mode Active Coin Pill (Vibrant Electric Blue with soft shadow) */
+:root[data-theme="light"] .phone-coin-pill.active {
+    background: var(--color-blue-gradient);
+    color: #FFFFFF;
+    border-color: transparent;
+    box-shadow: 0 4px 14px rgba(58, 134, 255, 0.4);
+}
+
+/* Dark Mode Active Coin Pill (Golden Amber with warm shadow) */
+:root[data-theme="dark"] .phone-coin-pill.active,
+:root:not([data-theme="light"]) .phone-coin-pill.active {
+    background: var(--color-gold-gradient);
+    color: #0E1438;
+    border-color: transparent;
+    box-shadow: 0 4px 16px rgba(251, 133, 0, 0.45);
+}
+
+/* Dual Metric Cards */
+.phone-metrics-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+}
+
+.phone-metric-box {
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.phone-metric-price {
+    font-size: 1rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    margin-bottom: 4px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.phone-metric-label {
+    font-size: 0.78rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: var(--font-family);
+}
+
+/* Timeframe Pills */
+.phone-timeframe-pills {
+    display: flex;
+    justify-content: space-between;
+    gap: 6px;
+    margin-bottom: 18px;
+    background: var(--bg-surface-elevated);
+    padding: 4px;
+    border-radius: var(--border-radius-full);
+    border: 1px solid var(--border-color);
+}
+
+.phone-tf-pill {
+    flex: 1;
+    padding: 6px 0;
+    text-align: center;
+    border-radius: var(--border-radius-full);
+    font-size: 0.78rem;
+    font-weight: 700;
+    color: var(--text-muted);
+    border: none;
+    background: transparent;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    font-family: var(--font-heading);
+}
+
+:root[data-theme="light"] .phone-tf-pill.active {
+    background: #3A86FF;
+    color: #FFFFFF;
+    box-shadow: 0 2px 8px rgba(58, 134, 255, 0.3);
+}
+
+:root[data-theme="dark"] .phone-tf-pill.active,
+:root:not([data-theme="light"]) .phone-tf-pill.active {
+    background: #FFB703;
+    color: #0E1438;
+    box-shadow: 0 2px 8px rgba(255, 183, 3, 0.35);
+}
+
+/* Wave Chart Area */
+.phone-chart-wrapper {
+    width: 100%;
+    height: 160px;
+    position: relative;
+    margin-bottom: 22px;
+}
+
+.phone-chart-wrapper svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+}
+
+/* Balance Section */
+.phone-balance-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 20px;
+    background: var(--bg-surface-elevated);
+    border: 1px solid var(--border-color);
+    border-radius: 20px;
+    margin-bottom: 22px;
+}
+
+.phone-balance-label {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    font-family: var(--font-family);
+    margin-bottom: 2px;
+}
+
+.phone-balance-amount {
+    font-size: 1.7rem;
+    font-weight: 900;
+    color: var(--text-primary);
+    font-family: var(--font-family);
+    letter-spacing: -0.5px;
+}
+
+.phone-holding-badge {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 14px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-full);
+    font-size: 0.85rem;
+    font-weight: 700;
+    color: var(--text-secondary);
+    font-family: var(--font-family);
+}
+
+.phone-coin-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+}
+
+/* Vibrant Action Buttons: BUY (Green) & SELL (Red) */
+.phone-actions-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 14px;
+}
+
+.phone-action-btn {
+    border-radius: var(--border-radius-full);
+    padding: 12px 18px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    color: #FFFFFF;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+    font-family: var(--font-family);
+}
+
+.phone-btn-buy {
+    background: var(--color-buy-green);
+    box-shadow: 0 4px 18px rgba(0, 200, 83, 0.35);
+}
+
+.phone-btn-buy:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(0, 200, 83, 0.5);
+}
+
+.phone-btn-sell {
+    background: var(--color-sell-red);
+    box-shadow: 0 4px 18px rgba(255, 59, 48, 0.35);
+}
+
+.phone-btn-sell:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(255, 59, 48, 0.5);
+}
+
+.phone-action-btn .btn-main-label {
+    font-size: 1.1rem;
+    font-weight: 900;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    letter-spacing: 0.5px;
+    font-family: var(--font-heading);
+}
+
+.phone-action-btn .btn-sub-label {
+    font-size: 0.74rem;
+    opacity: 0.95;
+    margin-top: 3px;
+    font-weight: 600;
+    font-family: var(--font-family);
 }
 
 /* ===================================================================
