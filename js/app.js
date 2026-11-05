@@ -136,6 +136,13 @@ const App = {
                             <span class="dropdown-sub">Scam prevention, private key safety, risk score analysis</span>
                         </div>
                     </a>
+                    <a href="#support" class="dropdown-item ${currentHash === 'support' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(58, 134, 255, 0.12); color: var(--color-primary);"><i class="fa-solid fa-headset"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Help & Support Desk</span>
+                            <span class="dropdown-sub">Raise tickets, report bugs, ask simulator questions</span>
+                        </div>
+                    </a>
                     <div class="dropdown-compliance-badge">
                         <i class="fa-solid fa-shield-check text-success"></i>
                         <span>Play Store & iOS App Store Compliant &bull; 100% Risk-Free Sim</span>
@@ -214,6 +221,13 @@ const App = {
                     <div class="mobile-nav-meta">
                         <span class="mobile-nav-title">Safety & Risk Center</span>
                         <span class="mobile-nav-desc">Scam defense & security scores</span>
+                    </div>
+                </a>
+                <a href="#support" class="mobile-nav-link ${currentHash === 'support' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="color: var(--color-primary);"><i class="fa-solid fa-headset"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Help & Support Desk</span>
+                        <span class="mobile-nav-desc">Raise tickets & browse FAQs</span>
                     </div>
                 </a>
             </div>
@@ -426,6 +440,8 @@ const App = {
             await SimulationLabView.render(container);
         } else if (routePath === 'safety-center') {
             await SafetyCenterView.render(container);
+        } else if (routePath === 'support' || routePath === 'help') {
+            await SupportView.render(container, queryParams.get('tab') || 'raise');
         } else if (routePath === 'admin') {
             await AdminView.render(container, queryParams.get('tab') || 'overview');
         } else {
