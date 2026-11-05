@@ -357,6 +357,48 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(java.includes('WebView'), 'Android WebView host activity configured');
     });
 
+    // SCENARIO 21: Admin Daily Analytics & User Registration Activity Breakdown
+    test('Scenario 21: Admin Daily Analytics & User Registration Activity Breakdown', () => {
+        const regRows = db.prepare(`
+            SELECT DATE(created_at) as date, COUNT(*) as count
+            FROM users
+            GROUP BY DATE(created_at)
+            ORDER BY date DESC
+        `).all();
+
+        assert.ok(Array.isArray(regRows), 'Daily registration rows must be an array');
+        assert.ok(regRows.length > 0, 'At least one date with registrations must exist');
+        assert.ok(regRows[0].count >= 1, 'Registrations count must be >= 1');
+    });
+
+    // SCENARIO 22: Help Support Ticket Raising & Staff Resolution Workflow
+    test('Scenario 22: Help Support Ticket Raising & Staff Resolution Workflow', () => {
+        const ticketCode = 'TKT-TEST-' + Date.now();
+        const insertTicket = db.prepare(`
+            INSERT INTO support_tickets (ticket_code, user_id, user_email, user_name, subject, category, priority, status, description)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+        `);
+        const res = insertTicket.run(ticketCode, 2, 'trader@ccpulse.com', 'Test Trader', 'Test simulation question', 'Simulator & Trading', 'high', 'open', 'Need help with order books');
+        const ticketId = res.lastInsertRowid;
+
+        assert.ok(ticketId > 0, 'Support ticket must be created with valid ID');
+
+        // Add reply
+        db.prepare('INSERT INTO ticket_replies (ticket_id, sender_id, sender_name, sender_role, message) VALUES (?, ?, ?, ?, ?)').run(
+            ticketId, 1, 'CCPulse Administrator', 'admin', 'Here is the guidance'
+        );
+
+        // Update status to resolved
+        db.prepare("UPDATE support_tickets SET status = 'resolved', resolved_at = CURRENT_TIMESTAMP WHERE id = ?").run(ticketId);
+
+        const updated = db.prepare('SELECT * FROM support_tickets WHERE id = ?').get(ticketId);
+        assert.equal(updated.status, 'resolved', 'Ticket status must be updated to resolved');
+
+        // Clean up test ticket
+        db.prepare('DELETE FROM ticket_replies WHERE ticket_id = ?').run(ticketId);
+        db.prepare('DELETE FROM support_tickets WHERE id = ?').run(ticketId);
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

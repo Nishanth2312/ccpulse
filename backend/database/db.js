@@ -239,6 +239,32 @@ function seedInitialData() {
             ])
         );
     }
+
+    // 6. Seed Support Tickets
+    try {
+        const ticketCount = db.prepare('SELECT COUNT(*) as count FROM support_tickets').get().count;
+        if (ticketCount === 0) {
+            const insertTicket = db.prepare(`
+                INSERT INTO support_tickets (ticket_code, user_id, user_email, user_name, subject, category, priority, status, description, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
+            `);
+            const insertReply = db.prepare(`
+                INSERT INTO ticket_replies (ticket_id, sender_id, sender_name, sender_role, message, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, datetime('now', ?))
+            `);
+
+            const t1 = insertTicket.run('TKT-100291', 2, 'trader@ccpulse.com', 'Simulated Trader', 'How do Beldex Masternode rewards work in simulation?', 'Crypto Pricing & Live Feeds', 'medium', 'open', 'I am testing the Beldex ecosystem in the simulator. Does the paper trading calculate staking yield or Masternode block validation rewards?', '-1 days');
+            insertReply.run(t1.lastInsertRowid, 2, 'Simulated Trader', 'user', 'Looking forward to guidance on POS privacy block yields.', '-1 days');
+
+            const t2 = insertTicket.run('TKT-100292', 2, 'trader@ccpulse.com', 'Simulated Trader', 'Request to add Avalanche (AVAX) to the simulator registry', 'Feature Suggestion', 'low', 'in_progress', 'Could the admin team add AVAX so we can test Layer 1 subnets in the simulation lab?', '-2 days');
+            insertReply.run(t2.lastInsertRowid, 1, 'CCPulse Administrator', 'admin', 'Thank you for the suggestion! The coin request is under review and will be added via the Dynamic Crypto Registry.', '-1 days');
+
+            const t3 = insertTicket.run('TKT-100293', 1, 'admin@ccpulse.com', 'Admin User', 'App Store Compliance & Simulated Disclosures verification', 'Simulator & Trading', 'high', 'resolved', 'Audit verification of all paper trading risk disclaimers across mobile and desktop views.', '-3 days');
+            insertReply.run(t3.lastInsertRowid, 1, 'CCPulse Administrator', 'admin', 'Verified 100% compliant with Apple Guideline 3.1.5 and Google Play Financial Services Policy.', '-2 days');
+        }
+    } catch (e) {
+        // Ignored if table will be populated upon schema reload
+    }
 }
 
 // Call initialization

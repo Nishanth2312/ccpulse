@@ -52,6 +52,12 @@ const AdminView = {
                 <button type="button" class="btn ${this.currentTab === 'overview' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="overview">
                     <i class="fa-solid fa-gauge"></i> Overview
                 </button>
+                <button type="button" class="btn ${this.currentTab === 'analytics' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="analytics">
+                    <i class="fa-solid fa-chart-column"></i> Daily Analytics
+                </button>
+                <button type="button" class="btn ${this.currentTab === 'tickets' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="tickets">
+                    <i class="fa-solid fa-headset"></i> Support Tickets
+                </button>
                 <button type="button" class="btn ${this.currentTab === 'cryptos' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="cryptos">
                     <i class="fa-solid fa-coins"></i> Crypto Registry
                 </button>
@@ -104,6 +110,12 @@ const AdminView = {
         switch (tab) {
             case 'overview':
                 await this.renderOverviewTab(contentContainer);
+                break;
+            case 'analytics':
+                await this.renderAnalyticsTab(contentContainer);
+                break;
+            case 'tickets':
+                await this.renderTicketsTab(contentContainer);
                 break;
             case 'cryptos':
                 await this.renderCryptosTab(contentContainer);
@@ -1029,6 +1041,522 @@ const AdminView = {
             `;
         } catch (e) {
             container.innerHTML = `<div style="color:var(--color-danger);">${e.message}</div>`;
+        }
+    },
+
+    // ===================================================================
+    // SECTION H: DAILY ANALYTICS & WEBSITE ACTIVITY (NEW)
+    // ===================================================================
+    async renderAnalyticsTab(container, currentRange = '7d') {
+        try {
+            const res = await API.admin.getDailyAnalytics(currentRange);
+            const { aggregates, dailyTimeline } = res;
+
+            const maxRegs = Math.max(...dailyTimeline.map(d => d.registrations), 5);
+            const maxVol = Math.max(...dailyTimeline.map(d => d.tradingVolumeUsd), 1000);
+
+            // Generate SVG Bar & Line Chart
+            const chartPoints = dailyTimeline.slice().reverse();
+            const barWidth = 24;
+            const chartHeight = 160;
+            const chartWidth = Math.max(chartPoints.length * 52, 420);
+
+            const barsSvg = chartPoints.map((pt, idx) => {
+                const x = idx * 52 + 18;
+                const regHeight = Math.max((pt.registrations / maxRegs) * 110, 4);
+                const y = chartHeight - regHeight - 24;
+                return `
+                    <g class="chart-bar-group">
+                        <rect x="${x}" y="${y}" width="${barWidth}" height="${regHeight}" rx="4" fill="var(--color-primary)" opacity="0.88">
+                            <title>${pt.date} (${pt.dayName}): ${pt.registrations} Registrations, ${pt.tradesCount} Trades</title>
+                        </rect>
+                        <text x="${x + barWidth / 2}" y="${y - 6}" text-anchor="middle" font-size="10" font-weight="700" fill="var(--text-primary)" font-family="var(--font-mono)">
+                            ${pt.registrations > 0 ? pt.registrations : ''}
+                        </text>
+                        <text x="${x + barWidth / 2}" y="${chartHeight - 6}" text-anchor="middle" font-size="10" font-weight="600" fill="var(--text-muted)">
+                            ${pt.dayName}
+                        </text>
+                    </g>
+                `;
+            }).join('');
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-heading); margin-bottom: 4px;">
+                            Daily User Registration & Website Activity Analytics
+                        </h2>
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+                            Inspect day-by-day user onboarding velocity, daily active users, trade executions, and welcome bonus allocations.
+                        </p>
+                    </div>
+
+                    <!-- Range Selector & Export -->
+                    <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                        <div style="display: inline-flex; background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: var(--border-radius-full); padding: 3px;">
+                            <button type="button" class="analytics-range-btn ${currentRange === 'today' ? 'active-range' : ''}" data-range="today" style="border:none;background:transparent;padding:6px 14px;border-radius:var(--border-radius-full);font-size:0.8rem;font-weight:700;color:var(--text-secondary);cursor:pointer;">Today</button>
+                            <button type="button" class="analytics-range-btn ${currentRange === '7d' ? 'active-range' : ''}" data-range="7d" style="border:none;background:transparent;padding:6px 14px;border-radius:var(--border-radius-full);font-size:0.8rem;font-weight:700;color:var(--text-secondary);cursor:pointer;">7 Days</button>
+                            <button type="button" class="analytics-range-btn ${currentRange === '14d' ? 'active-range' : ''}" data-range="14d" style="border:none;background:transparent;padding:6px 14px;border-radius:var(--border-radius-full);font-size:0.8rem;font-weight:700;color:var(--text-secondary);cursor:pointer;">14 Days</button>
+                            <button type="button" class="analytics-range-btn ${currentRange === '30d' ? 'active-range' : ''}" data-range="30d" style="border:none;background:transparent;padding:6px 14px;border-radius:var(--border-radius-full);font-size:0.8rem;font-weight:700;color:var(--text-secondary);cursor:pointer;">30 Days</button>
+                            <button type="button" class="analytics-range-btn ${currentRange === 'all' ? 'active-range' : ''}" data-range="all" style="border:none;background:transparent;padding:6px 14px;border-radius:var(--border-radius-full);font-size:0.8rem;font-weight:700;color:var(--text-secondary);cursor:pointer;">All Time</button>
+                        </div>
+                        <button type="button" class="btn btn-outline" id="export-analytics-csv-btn" style="font-size: 0.85rem; padding: 7px 16px;">
+                            <i class="fa-solid fa-file-csv"></i> Export CSV
+                        </button>
+                    </div>
+                </div>
+
+                <!-- 4 Key Aggregate Analytics Cards -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 16px; margin-bottom: 24px;">
+                    <div class="glass-card" style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">NEW REGISTRATIONS</span>
+                            <span style="color: var(--color-success); font-size: 0.8rem; font-weight: 800;"><i class="fa-solid fa-user-plus"></i> In Period</span>
+                        </div>
+                        <div class="font-mono" style="font-size: 1.9rem; font-weight: 800; color: var(--color-primary);">
+                            ${aggregates.totalRegistrationsInPeriod}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                            Total accounts registered in selected timeframe
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">DAILY ACTIVE TRADERS</span>
+                            <span style="color: #3A86FF; font-size: 0.8rem; font-weight: 800;"><i class="fa-solid fa-users-viewfinder"></i> DAU Average</span>
+                        </div>
+                        <div class="font-mono" style="font-size: 1.9rem; font-weight: 800; color: var(--text-primary);">
+                            ${aggregates.avgDailyActiveUsers}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                            Daily active users interacting with simulator
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">SIMULATED TRADES EXECUTED</span>
+                            <span style="color: var(--color-success); font-size: 0.8rem; font-weight: 800;"><i class="fa-solid fa-bolt"></i> Activity</span>
+                        </div>
+                        <div class="font-mono" style="font-size: 1.9rem; font-weight: 800; color: var(--text-primary);">
+                            ${aggregates.totalTradesInPeriod}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                            Executed buy and sell orders in period
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 20px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
+                            <span style="font-size: 0.82rem; color: var(--text-muted); font-weight: 700;">TOTAL SIMULATION VOLUME</span>
+                            <span style="color: #F59E0B; font-size: 0.8rem; font-weight: 800;"><i class="fa-solid fa-chart-line"></i> Turn-over</span>
+                        </div>
+                        <div class="font-mono" style="font-size: 1.7rem; font-weight: 800; color: var(--color-success);">
+                            ${Currency.format(aggregates.totalVolumeInPeriod)}
+                        </div>
+                        <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                            Calculated across all cryptocurrency orders
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Daily Registration Growth Visual Timeline -->
+                <div class="glass-card" style="padding: 24px; margin-bottom: 28px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 16px;">
+                        <div>
+                            <div style="font-weight: 800; font-size: 1.05rem; font-family: var(--font-heading);">
+                                Daily User Registration Velocity Chart
+                            </div>
+                            <div style="font-size: 0.8rem; color: var(--text-muted);">
+                                Bars indicate new user accounts registered per calendar day
+                            </div>
+                        </div>
+                        <div style="display: flex; align-items: center; gap: 16px; font-size: 0.8rem;">
+                            <span style="display: inline-flex; align-items: center; gap: 6px;">
+                                <span style="width: 12px; height: 12px; background: var(--color-primary); border-radius: 3px;"></span>
+                                New Registrations
+                            </span>
+                        </div>
+                    </div>
+                    <div style="overflow-x: auto; padding-bottom: 8px;">
+                        <svg viewBox="0 0 ${chartWidth} ${chartHeight}" style="min-width: 100%; height: ${chartHeight}px;">
+                            <line x1="0" y1="${chartHeight - 20}" x2="${chartWidth}" y2="${chartHeight - 20}" stroke="var(--border-color)" stroke-width="1"/>
+                            ${barsSvg}
+                        </svg>
+                    </div>
+                </div>
+
+                <!-- Day-by-Day Comprehensive Activity Table -->
+                <div style="margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center;">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; font-family: var(--font-heading); margin: 0;">
+                        Daily Activity Breakdown Table (${dailyTimeline.length} Days)
+                    </h3>
+                    <span style="font-size: 0.8rem; color: var(--text-muted);">
+                        Sorted chronologically (Newest first)
+                    </span>
+                </div>
+
+                <div class="glass-card table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Date & Day</th>
+                                <th>New Registrations</th>
+                                <th>Est. Active Traders</th>
+                                <th>Trades Executed</th>
+                                <th>Buy / Sell Split</th>
+                                <th>Trading Volume</th>
+                                <th>Welcome Bonus Granted</th>
+                                <th>Support Inquiries</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${dailyTimeline.map(row => `
+                                <tr>
+                                    <td style="font-weight: 700; white-space: nowrap;">
+                                        ${row.date} <span style="color: var(--text-muted); font-size: 0.8rem;">(${row.dayName})</span>
+                                    </td>
+                                    <td>
+                                        <span class="font-mono" style="display: inline-flex; align-items: center; gap: 6px; font-weight: 800; padding: 2px 8px; border-radius: 6px; background: ${row.registrations > 0 ? 'rgba(0, 230, 118, 0.12)' : 'transparent'}; color: ${row.registrations > 0 ? 'var(--color-success)' : 'var(--text-muted)'};">
+                                            ${row.registrations > 0 ? `+${row.registrations}` : '0'}
+                                        </span>
+                                    </td>
+                                    <td class="font-mono">${row.activeUsers}</td>
+                                    <td class="font-mono" style="font-weight: 700;">${row.tradesCount}</td>
+                                    <td style="font-size: 0.8rem; color: var(--text-secondary); white-space: nowrap;">
+                                        <span class="text-success">${row.buyTrades}B</span> / <span class="text-danger">${row.sellTrades}S</span>
+                                    </td>
+                                    <td class="font-mono text-success" style="font-weight: 700;">
+                                        ${Currency.format(row.tradingVolumeUsd)}
+                                    </td>
+                                    <td class="font-mono" style="color: var(--text-secondary); font-size: 0.85rem;">
+                                        ${Currency.format(row.welcomeBonusesDistributedUsd)}
+                                    </td>
+                                    <td>
+                                        ${row.supportTickets > 0 ? `
+                                            <span style="background: rgba(58, 134, 255, 0.15); color: #3A86FF; padding: 2px 8px; border-radius: 6px; font-weight: 700; font-size: 0.8rem;">
+                                                ${row.supportTickets} ticket(s)
+                                            </span>
+                                        ` : '<span style="color: var(--text-muted); font-size: 0.8rem;">—</span>'}
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+            `;
+
+            // Active range style helper
+            container.querySelectorAll('.analytics-range-btn').forEach(btn => {
+                const range = btn.getAttribute('data-range');
+                if (range === currentRange) {
+                    btn.style.background = 'var(--color-primary)';
+                    btn.style.color = '#0E1438';
+                }
+                btn.onclick = () => {
+                    this.renderAnalyticsTab(container, range);
+                };
+            });
+
+            // CSV Export Handler
+            const exportBtn = container.querySelector('#export-analytics-csv-btn');
+            if (exportBtn) {
+                exportBtn.onclick = () => {
+                    const headers = ['Date', 'Day', 'New_Registrations', 'Active_Users', 'Trades_Executed', 'Buy_Trades', 'Sell_Trades', 'Volume_USD', 'Welcome_Bonuses_USD', 'Support_Tickets'];
+                    const csvRows = [headers.join(',')];
+                    dailyTimeline.forEach(r => {
+                        csvRows.push([r.date, r.dayName, r.registrations, r.activeUsers, r.tradesCount, r.buyTrades, r.sellTrades, r.tradingVolumeUsd, r.welcomeBonusesDistributedUsd, r.supportTickets].join(','));
+                    });
+                    const blob = new Blob([csvRows.join('\n')], { type: 'text/csv' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `CCPulse_Daily_Analytics_${currentRange}.csv`;
+                    a.click();
+                    URL.revokeObjectURL(url);
+                };
+            }
+        } catch (e) {
+            container.innerHTML = `<div class="text-danger" style="padding: 30px; text-align: center;">Failed to load daily analytics: ${e.message}</div>`;
+        }
+    },
+
+    // ===================================================================
+    // SECTION I: SUPPORT TICKETS ADMIN CONSOLE (NEW)
+    // ===================================================================
+    async renderTicketsTab(container, currentFilter = 'all') {
+        try {
+            const res = await API.admin.getTickets({ status: currentFilter });
+            const { stats, tickets } = res;
+
+            container.innerHTML = `
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 24px;">
+                    <div>
+                        <h2 style="font-size: 1.35rem; font-weight: 800; font-family: var(--font-heading); margin-bottom: 4px;">
+                            Help Desk & Support Ticket Management
+                        </h2>
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+                            Review user inquiries, respond to trading questions, and manage resolution statuses.
+                        </p>
+                    </div>
+
+                    <!-- Filter Buttons -->
+                    <div style="display: flex; gap: 6px; flex-wrap: wrap;">
+                        <button type="button" class="btn ${currentFilter === 'all' ? 'btn-primary' : 'btn-outline'} ticket-filter-btn" data-status="all" style="font-size:0.8rem;padding:6px 14px;">All (${stats.total})</button>
+                        <button type="button" class="btn ${currentFilter === 'open' ? 'btn-primary' : 'btn-outline'} ticket-filter-btn" data-status="open" style="font-size:0.8rem;padding:6px 14px;">Open (${stats.open})</button>
+                        <button type="button" class="btn ${currentFilter === 'in_progress' ? 'btn-primary' : 'btn-outline'} ticket-filter-btn" data-status="in_progress" style="font-size:0.8rem;padding:6px 14px;">In Progress (${stats.in_progress})</button>
+                        <button type="button" class="btn ${currentFilter === 'resolved' ? 'btn-primary' : 'btn-outline'} ticket-filter-btn" data-status="resolved" style="font-size:0.8rem;padding:6px 14px;">Resolved (${stats.resolved})</button>
+                    </div>
+                </div>
+
+                <!-- Stats Strip -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                    <div class="glass-card" style="padding: 16px 20px;">
+                        <div style="font-size: 0.78rem; color: var(--text-muted); font-weight: 700;">TOTAL TICKETS</div>
+                        <div class="font-mono" style="font-size: 1.6rem; font-weight: 800; margin-top: 4px;">${stats.total}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 16px 20px;">
+                        <div style="font-size: 0.78rem; color: #3A86FF; font-weight: 700;">ACTIVE / OPEN TICKETS</div>
+                        <div class="font-mono" style="font-size: 1.6rem; font-weight: 800; color: #3A86FF; margin-top: 4px;">${stats.open}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 16px 20px;">
+                        <div style="font-size: 0.78rem; color: #FFB703; font-weight: 700;">IN PROGRESS</div>
+                        <div class="font-mono" style="font-size: 1.6rem; font-weight: 800; color: #FFB703; margin-top: 4px;">${stats.in_progress}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 16px 20px;">
+                        <div style="font-size: 0.78rem; color: var(--color-success); font-weight: 700;">RESOLUTION RATE</div>
+                        <div class="font-mono" style="font-size: 1.6rem; font-weight: 800; color: var(--color-success); margin-top: 4px;">${stats.resolution_rate}%</div>
+                    </div>
+                </div>
+
+                <!-- Tickets List / Table -->
+                <div class="glass-card table-wrapper">
+                    <table class="data-table">
+                        <thead>
+                            <tr>
+                                <th>Ticket ID</th>
+                                <th>User / Contact</th>
+                                <th>Category & Subject</th>
+                                <th>Priority</th>
+                                <th>Status</th>
+                                <th>Raised On</th>
+                                <th style="text-align: right;">Administrative Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            ${tickets.length === 0 ? `
+                                <tr><td colspan="7" style="text-align:center;padding:36px;color:var(--text-muted);">No support tickets found matching this filter.</td></tr>
+                            ` : tickets.map(t => `
+                                <tr>
+                                    <td>
+                                        <span class="font-mono" style="font-weight: 800; color: var(--color-primary); font-size: 0.9rem;">
+                                            #${t.ticket_code}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div style="font-weight: 700;">${t.user_name}</div>
+                                        <div style="font-size: 0.78rem; color: var(--text-muted);">${t.user_email}</div>
+                                    </td>
+                                    <td>
+                                        <div style="font-size: 0.76rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">${t.category}</div>
+                                        <div style="font-weight: 600; font-size: 0.92rem; font-family: var(--font-heading);">${t.subject}</div>
+                                    </td>
+                                    <td>
+                                        ${this.getTicketPriorityBadge(t.priority)}
+                                    </td>
+                                    <td>
+                                        ${this.getTicketStatusBadge(t.status)}
+                                    </td>
+                                    <td style="font-size: 0.8rem; color: var(--text-muted); white-space: nowrap;">
+                                        ${new Date(t.created_at).toLocaleDateString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                                    </td>
+                                    <td style="text-align: right; white-space: nowrap;">
+                                        <button type="button" class="btn btn-outline admin-view-ticket-btn" data-id="${t.id}" style="padding: 4px 10px; font-size: 0.78rem;">
+                                            <i class="fa-solid fa-comments"></i> Thread (${t.reply_count || 1})
+                                        </button>
+                                        <select class="admin-quick-status-select" data-id="${t.id}" style="padding: 4px 8px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: var(--bg-surface-elevated); color: var(--text-primary); font-size: 0.78rem; margin-left: 6px;">
+                                            <option value="open" ${t.status === 'open' ? 'selected' : ''}>Open</option>
+                                            <option value="in_progress" ${t.status === 'in_progress' ? 'selected' : ''}>In Progress</option>
+                                            <option value="resolved" ${t.status === 'resolved' ? 'selected' : ''}>Resolved</option>
+                                            <option value="closed" ${t.status === 'closed' ? 'selected' : ''}>Closed</option>
+                                        </select>
+                                    </td>
+                                </tr>
+                            `).join('')}
+                        </tbody>
+                    </table>
+                </div>
+
+                <div id="admin-ticket-modal-host"></div>
+            `;
+
+            // Filter button listeners
+            container.querySelectorAll('.ticket-filter-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const st = btn.getAttribute('data-status');
+                    this.renderTicketsTab(container, st);
+                };
+            });
+
+            // Quick status dropdown changer
+            container.querySelectorAll('.admin-quick-status-select').forEach(sel => {
+                sel.onchange = async (e) => {
+                    const id = sel.getAttribute('data-id');
+                    const newStatus = sel.value;
+                    try {
+                        await API.admin.updateTicket(id, { status: newStatus });
+                        this.renderTicketsTab(container, currentFilter);
+                    } catch (err) {
+                        alert('Failed to update ticket: ' + err.message);
+                    }
+                };
+            });
+
+            // Thread view modal listener
+            container.querySelectorAll('.admin-view-ticket-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const id = btn.getAttribute('data-id');
+                    this.showAdminTicketModal(id, currentFilter);
+                };
+            });
+        } catch (e) {
+            container.innerHTML = `<div class="text-danger" style="padding: 30px; text-align: center;">Failed to load support tickets: ${e.message}</div>`;
+        }
+    },
+
+    async showAdminTicketModal(ticketId, currentFilter) {
+        const host = document.getElementById('admin-ticket-modal-host');
+        if (!host) return;
+
+        host.innerHTML = `
+            <dialog id="admin-ticket-modal" style="width: min(92vw, 720px); padding: 0; border-radius: var(--border-radius-lg); background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary); box-shadow: var(--shadow-lg);">
+                <div style="padding: 20px 24px; border-bottom: 1px solid var(--border-color); display: flex; justify-content: space-between; align-items: center;">
+                    <div style="font-weight: 800; font-size: 1.15rem; font-family: var(--font-heading);" id="admin-ticket-modal-title">
+                        Loading Support Ticket...
+                    </div>
+                    <button type="button" onclick="document.getElementById('admin-ticket-modal').close()" style="border: none; background: transparent; font-size: 1.2rem; color: var(--text-muted); cursor: pointer;">
+                        <i class="fa-solid fa-xmark"></i>
+                    </button>
+                </div>
+                <div style="padding: 20px 24px; max-height: 480px; overflow-y: auto;" id="admin-ticket-modal-body">
+                    <div style="text-align: center; padding: 30px;"><i class="fa-solid fa-spinner fa-spin"></i> Loading...</div>
+                </div>
+                <div style="padding: 16px 24px; border-top: 1px solid var(--border-color); background: var(--bg-surface-elevated);" id="admin-ticket-modal-footer">
+                </div>
+            </dialog>
+        `;
+
+        const modal = document.getElementById('admin-ticket-modal');
+        modal.showModal();
+
+        try {
+            const res = await API.support.getTicket(ticketId);
+            const ticket = res.ticket;
+            const replies = res.replies || [];
+
+            document.getElementById('admin-ticket-modal-title').innerHTML = `
+                <span class="font-mono text-primary">#${ticket.ticket_code}</span>: ${ticket.subject}
+            `;
+
+            const repliesHtml = replies.map(r => {
+                const isAdmin = r.sender_role === 'admin' || r.sender_role === 'staff';
+                const timeStr = new Date(r.created_at).toLocaleString('en-US', { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' });
+                return `
+                    <div style="margin-bottom: 16px; display: flex; flex-direction: column; align-items: ${isAdmin ? 'flex-end' : 'flex-start'};">
+                        <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 4px; font-size: 0.78rem;">
+                            <span style="font-weight: 700; color: ${isAdmin ? '#FFB703' : 'var(--text-primary)'};">
+                                ${isAdmin ? '<i class="fa-solid fa-shield-halved"></i> Staff: ' : '<i class="fa-solid fa-user"></i> User: '}${r.sender_name}
+                            </span>
+                            <span style="color: var(--text-muted);">${timeStr}</span>
+                        </div>
+                        <div style="max-width: 85%; padding: 12px 16px; border-radius: 14px; background: ${isAdmin ? 'rgba(255, 183, 3, 0.12)' : 'var(--bg-surface-elevated)'}; border: 1px solid ${isAdmin ? 'rgba(255, 183, 3, 0.3)' : 'var(--border-color)'}; font-size: 0.92rem; line-height: 1.45; font-family: var(--font-family);">
+                            ${r.message}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            document.getElementById('admin-ticket-modal-body').innerHTML = `
+                <div style="background: var(--bg-surface-elevated); border: 1px solid var(--border-color); border-radius: 12px; padding: 14px 16px; margin-bottom: 20px;">
+                    <div style="display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 8px;">
+                        ${this.getTicketStatusBadge(ticket.status)}
+                        ${this.getTicketPriorityBadge(ticket.priority)}
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">&bull; User: <strong>${ticket.user_name}</strong> (${ticket.user_email})</span>
+                        <span style="font-size: 0.8rem; color: var(--text-muted);">&bull; Category: <strong>${ticket.category}</strong></span>
+                    </div>
+                    <div style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.5;">
+                        ${ticket.description}
+                    </div>
+                </div>
+                <div style="font-size: 0.82rem; font-weight: 700; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; letter-spacing: 0.5px;">
+                    Staff & User Conversation Thread
+                </div>
+                ${repliesHtml}
+            `;
+
+            document.getElementById('admin-ticket-modal-footer').innerHTML = `
+                <form id="admin-ticket-reply-form" style="display: flex; flex-direction: column; gap: 10px;">
+                    <textarea id="admin-reply-text" rows="3" placeholder="Type official administrative response to this user..." style="width: 100%; padding: 10px 14px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); font-family: var(--font-family); resize: vertical;" required></textarea>
+                    <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px;">
+                        <div style="display: flex; align-items: center; gap: 8px;">
+                            <label style="font-size: 0.82rem; color: var(--text-muted);">Set Status After Reply:</label>
+                            <select id="admin-reply-set-status" style="padding: 6px 10px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); font-size: 0.82rem;">
+                                <option value="in_progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                                <option value="closed">Closed</option>
+                            </select>
+                        </div>
+                        <button type="submit" class="btn btn-primary" style="padding: 8px 22px; font-size: 0.88rem;">
+                            <i class="fa-solid fa-paper-plane"></i> Send Official Reply
+                        </button>
+                    </div>
+                </form>
+            `;
+
+            document.getElementById('admin-ticket-reply-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const msg = document.getElementById('admin-reply-text').value.trim();
+                const setStatus = document.getElementById('admin-reply-set-status').value;
+                if (!msg) return;
+
+                try {
+                    await API.admin.replyTicket(ticketId, { message: msg, set_status: setStatus });
+                    this.showAdminTicketModal(ticketId, currentFilter);
+                } catch (err) {
+                    alert('Failed to send reply: ' + err.message);
+                }
+            };
+        } catch (err) {
+            document.getElementById('admin-ticket-modal-body').innerHTML = `<div class="text-danger">Failed to load ticket: ${err.message}</div>`;
+        }
+    },
+
+    getTicketStatusBadge(status) {
+        switch (status) {
+            case 'open':
+                return '<span style="background: rgba(58, 134, 255, 0.15); color: #3A86FF; border: 1px solid rgba(58, 134, 255, 0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">OPEN</span>';
+            case 'in_progress':
+                return '<span style="background: rgba(255, 183, 3, 0.15); color: #FFB703; border: 1px solid rgba(255, 183, 3, 0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">IN PROGRESS</span>';
+            case 'resolved':
+                return '<span style="background: rgba(0, 230, 118, 0.15); color: #00E676; border: 1px solid rgba(0, 230, 118, 0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">RESOLVED</span>';
+            case 'closed':
+                return '<span style="background: rgba(255, 255, 255, 0.08); color: var(--text-muted); border: 1px solid var(--border-color); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">CLOSED</span>';
+            default:
+                return `<span style="font-size: 0.72rem; font-weight: 700;">${(status || 'OPEN').toUpperCase()}</span>`;
+        }
+    },
+
+    getTicketPriorityBadge(priority) {
+        switch (priority) {
+            case 'urgent':
+                return '<span style="background: rgba(255, 59, 48, 0.15); color: #FF3B30; border: 1px solid rgba(255, 59, 48, 0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;"><i class="fa-solid fa-triangle-exclamation"></i> URGENT</span>';
+            case 'high':
+                return '<span style="background: rgba(255, 149, 0, 0.15); color: #FF9500; border: 1px solid rgba(255, 149, 0, 0.3); font-size: 0.72rem; font-weight: 800; padding: 2px 8px; border-radius: 6px;">HIGH</span>';
+            case 'medium':
+                return '<span style="background: rgba(58, 134, 255, 0.1); color: #3A86FF; font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">MEDIUM</span>';
+            default:
+                return '<span style="background: rgba(255, 255, 255, 0.05); color: var(--text-muted); font-size: 0.72rem; font-weight: 700; padding: 2px 8px; border-radius: 6px;">LOW</span>';
         }
     }
 };

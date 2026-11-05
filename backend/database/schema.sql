@@ -299,6 +299,37 @@ CREATE TABLE IF NOT EXISTS system_settings (
     updated_at DATETIME DEFAULT CURRENT_TIMESTAMP
 );
 
+-- 22. Support Tickets
+CREATE TABLE IF NOT EXISTS support_tickets (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_code TEXT UNIQUE NOT NULL,
+    user_id INTEGER,
+    guest_session_id TEXT,
+    user_email TEXT NOT NULL,
+    user_name TEXT NOT NULL,
+    subject TEXT NOT NULL,
+    category TEXT NOT NULL,
+    priority TEXT NOT NULL DEFAULT 'medium' CHECK(priority IN ('low', 'medium', 'high', 'urgent')),
+    status TEXT NOT NULL DEFAULT 'open' CHECK(status IN ('open', 'in_progress', 'resolved', 'closed')),
+    description TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    updated_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    resolved_at DATETIME,
+    FOREIGN KEY(user_id) REFERENCES users(id) ON DELETE SET NULL
+);
+
+-- 23. Ticket Replies
+CREATE TABLE IF NOT EXISTS ticket_replies (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    ticket_id INTEGER NOT NULL,
+    sender_id INTEGER,
+    sender_name TEXT NOT NULL,
+    sender_role TEXT NOT NULL DEFAULT 'user' CHECK(sender_role IN ('user', 'admin', 'staff')),
+    message TEXT NOT NULL,
+    created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+    FOREIGN KEY(ticket_id) REFERENCES support_tickets(id) ON DELETE CASCADE
+);
+
 -- Create indexes for high performance queries
 CREATE INDEX IF NOT EXISTS idx_users_email ON users(email);
 CREATE INDEX IF NOT EXISTS idx_users_username ON users(username);
@@ -310,4 +341,8 @@ CREATE INDEX IF NOT EXISTS idx_wallet_tx_user ON virtual_wallet_transactions(use
 CREATE INDEX IF NOT EXISTS idx_trades_user ON simulated_trades(user_id);
 CREATE INDEX IF NOT EXISTS idx_holdings_user ON virtual_holdings(user_id);
 CREATE INDEX IF NOT EXISTS idx_audit_admin ON admin_audit_logs(admin_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_user ON support_tickets(user_id);
+CREATE INDEX IF NOT EXISTS idx_tickets_status ON support_tickets(status);
+CREATE INDEX IF NOT EXISTS idx_tickets_code ON support_tickets(ticket_code);
+CREATE INDEX IF NOT EXISTS idx_replies_ticket ON ticket_replies(ticket_id);
 

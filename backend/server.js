@@ -17,6 +17,7 @@ const currencyRoutes = require('./routes/currencyRoutes');
 const learningRoutes = require('./routes/learningRoutes');
 const notificationRoutes = require('./routes/notificationRoutes');
 const simulationLabRoutes = require('./routes/simulationLabRoutes');
+const supportRoutes = require('./routes/supportRoutes');
 
 const app = express();
 const PORT = process.env.PORT || 4000;
@@ -58,6 +59,7 @@ app.use('/api/currency', currencyRoutes);
 app.use('/api/learning', learningRoutes);
 app.use('/api/notifications', notificationRoutes);
 app.use('/api/simulation-lab', simulationLabRoutes);
+app.use('/api/support', supportRoutes);
 
 // Health check
 app.get('/api/health', (req, res) => {
