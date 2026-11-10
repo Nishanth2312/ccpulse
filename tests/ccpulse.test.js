@@ -399,6 +399,108 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         db.prepare('DELETE FROM support_tickets WHERE id = ?').run(ticketId);
     });
 
+    // SCENARIO 23: In-Browser Client Database Engine & Persistence for GitHub Pages (Offline / Standalone)
+    test('Scenario 23: In-Browser Client Database Engine & Persistence for GitHub Pages', () => {
+        const ClientDB = require('../frontend/js/clientDatabase.js');
+        assert.ok(ClientDB, 'ClientDB module must be loadable');
+
+        // 1. Reset database to default pristine state
+        ClientDB.resetToDefault();
+
+        // 2. Test initial seeded users
+        const allUsers = ClientDB.users.getAll();
+        assert.ok(allUsers.length >= 2, 'Default client database must contain admin and trader users');
+        const adminUser = allUsers.find(u => u.role === 'admin');
+        assert.equal(adminUser.email, 'admin@ccpulse.com');
+
+        // 3. Test user registration in client database
+        const testEmail = 'newtrader_' + Date.now() + '@ccpulse.com';
+        const regRes = ClientDB.users.register({
+            fullName: 'GitHub Pages Trader',
+            username: 'gh_trader_' + Date.now(),
+            email: testEmail,
+            password: 'TraderPassword123!'
+        });
+
+        assert.ok(regRes.success, 'Registration must succeed in ClientDB');
+        assert.ok(regRes.user.id > 2, 'New user should receive auto-incremented ID');
+        assert.equal(regRes.wallet.availableCashUsd, 5000.00, 'Guaranteed $5,000 welcome bonus must be credited in ClientDB');
+        assert.equal(regRes.welcomeBonusCredited, true, 'welcomeBonusCredited flag must be true');
+
+        // 4. Test duplicate email prevention
+        assert.throws(() => {
+            ClientDB.users.register({
+                fullName: 'Duplicate Trader',
+                username: 'dup_trader_' + Date.now(),
+                email: testEmail,
+                password: 'Password123!'
+            });
+        }, /already exists/, 'Must reject duplicate email in ClientDB');
+
+        // 5. Test user login in client database
+        const loginRes = ClientDB.users.login({
+            email: testEmail,
+            password: 'TraderPassword123!'
+        });
+        assert.ok(loginRes.success, 'Login must succeed with correct credentials');
+        assert.equal(loginRes.user.email, testEmail);
+        assert.equal(loginRes.wallet.availableCashUsd, 5000.00);
+
+        // 6. Test trade execution and wallet persistence in client database
+        const btcCoin = { id: 1, symbol: 'BTC', name: 'Bitcoin', logo_url: './assets/coins/btc.svg' };
+        const tradeRes = ClientDB.trades.execute({
+            userId: regRes.user.id,
+            crypto: btcCoin,
+            type: 'BUY',
+            quantity: 0.01,
+            priceUsd: 70000.00
+        });
+
+        assert.ok(tradeRes.success, 'Trade execution must succeed in ClientDB');
+        assert.equal(tradeRes.wallet.availableCashUsd, 5000.00 - 700.00, 'Cash balance must be deducted by $700.00');
+        assert.equal(tradeRes.wallet.holdings.length, 1, 'Holding for BTC must be created');
+        assert.equal(tradeRes.wallet.holdings[0].symbol, 'BTC');
+
+        // 7. Test support ticket creation and resolution in client database
+        const ticketRes = ClientDB.tickets.create({
+            userId: regRes.user.id,
+            userEmail: testEmail,
+            userName: 'GitHub Pages Trader',
+            subject: 'ClientDB inquiry',
+            category: 'Simulator & Trading',
+            priority: 'normal',
+            description: 'Verifying client-side database persistence'
+        });
+        assert.ok(ticketRes.success, 'Ticket creation must succeed in ClientDB');
+        assert.ok(ticketRes.ticket.ticket_code.startsWith('TICK-'), 'Ticket code must start with TICK-');
+
+        // Add reply
+        const replyRes = ClientDB.tickets.addReply(ticketRes.ticket.id, {
+            senderName: 'CCPulse Admin',
+            senderRole: 'admin',
+            message: 'All client database operations verified'
+        });
+        assert.ok(replyRes.success);
+        assert.equal(replyRes.ticket.replies.length, 2);
+
+        // Update status
+        ClientDB.tickets.updateStatus(ticketRes.ticket.id, 'resolved');
+        const resolvedTicket = ClientDB.tickets.getById(ticketRes.ticket.id);
+        assert.equal(resolvedTicket.status, 'resolved');
+
+        // 8. Test Daily Analytics generated from ClientDB
+        const analytics = ClientDB.analytics.getDaily('7d');
+        assert.ok(analytics.success);
+        assert.ok(analytics.dailyTimeline.length >= 7);
+        assert.ok(analytics.aggregates.totalRegistrationsInPeriod >= 1);
+
+        // 9. Test JSON Database export
+        const exportedJson = ClientDB.exportJSON();
+        assert.ok(typeof exportedJson === 'string');
+        const parsed = JSON.parse(exportedJson);
+        assert.ok(parsed.users && parsed.wallets && parsed.trades, 'Exported JSON must contain all core tables');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

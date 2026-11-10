@@ -969,7 +969,88 @@ const AdminView = {
                         </div>
                     </form>
                 </div>
+
+                <!-- Database Engine & Storage Management Card -->
+                <div class="glass-card" style="padding: 24px; max-width: 650px; margin-top: 24px;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
+                        <h3 style="font-size: 1.15rem; font-weight: 700;">
+                            <i class="fa-solid fa-database text-cyan"></i> Database & Persistence Storage Engine
+                        </h3>
+                        <span style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: var(--border-radius-full); background: rgba(16,185,129,0.15); color: var(--color-success);">
+                            ${typeof ClientDB !== 'undefined' ? 'Active In-Browser Persistent DB' : 'Active SQLite Database'}
+                        </span>
+                    </div>
+
+                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
+                        CCPulse employs dual-tier persistence: institutional <strong>SQLite 3</strong> in the local environment and the <strong>ClientDB Relational Engine</strong> on GitHub Pages to collect and retain all user registrations, wallets, trades, and support tickets without server dependencies.
+                    </p>
+
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 18px;">
+                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Registered Users</div>
+                            <div class="font-mono text-cyan" id="db-stat-users" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
+                                ${typeof ClientDB !== 'undefined' ? ClientDB.users.getAll().length : 2}
+                            </div>
+                        </div>
+                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Virtual Wallets</div>
+                            <div class="font-mono text-cyan" id="db-stat-wallets" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
+                                ${typeof ClientDB !== 'undefined' ? ClientDB.getSnapshot().wallets.length : 2}
+                            </div>
+                        </div>
+                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Trades Executed</div>
+                            <div class="font-mono text-cyan" id="db-stat-trades" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
+                                ${typeof ClientDB !== 'undefined' ? ClientDB.trades.getAll().length : 0}
+                            </div>
+                        </div>
+                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
+                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Support Tickets</div>
+                            <div class="font-mono text-cyan" id="db-stat-tickets" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
+                                ${typeof ClientDB !== 'undefined' ? ClientDB.tickets.getAll().length : 0}
+                            </div>
+                        </div>
+                    </div>
+
+                    <div style="display: flex; gap: 12px; flex-wrap: wrap;">
+                        <button type="button" id="admin-export-db-btn" class="btn btn-outline" style="font-size: 0.85rem;">
+                            <i class="fa-solid fa-download"></i> Export Database Backup (JSON)
+                        </button>
+                        <button type="button" id="admin-reset-db-btn" class="btn btn-outline" style="font-size: 0.85rem; color: var(--color-danger);">
+                            <i class="fa-solid fa-rotate-left"></i> Reset Client Database
+                        </button>
+                    </div>
+                </div>
             `;
+
+            // Export Database Handler
+            const exportBtn = container.querySelector('#admin-export-db-btn');
+            if (exportBtn) {
+                exportBtn.onclick = () => {
+                    const jsonStr = API.database.exportJSON();
+                    const blob = new Blob([jsonStr], { type: 'application/json' });
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url;
+                    a.download = `ccpulse_database_backup_${new Date().toISOString().split('T')[0]}.json`;
+                    document.body.appendChild(a);
+                    a.click();
+                    document.body.removeChild(a);
+                    URL.revokeObjectURL(url);
+                };
+            }
+
+            // Reset Database Handler
+            const resetBtn = container.querySelector('#admin-reset-db-btn');
+            if (resetBtn) {
+                resetBtn.onclick = () => {
+                    if (confirm('Are you sure you want to reset the client database to factory default seeds? All custom users and trades created on this browser will be reset.')) {
+                        API.database.resetToDefault();
+                        alert('Client database reset to factory defaults.');
+                        this.renderSettingsTab(container);
+                    }
+                };
+            }
 
             container.querySelector('#global-settings-form').onsubmit = async (e) => {
                 e.preventDefault();

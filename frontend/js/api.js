@@ -74,28 +74,20 @@ const API = {
             try {
                 return await API.request('/auth/login', { method: 'POST', body: JSON.stringify(credentials) });
             } catch (err) {
-                // Client-side fallback for GitHub Pages
-                const email = (credentials.email || '').toLowerCase().trim();
-                const pass = credentials.password || '';
-                if ((email === 'admin@ccpulse.com' || email === 'admin') && (pass === 'Admin@CCPulse2026!' || pass === 'admin')) {
-                    const mockAdmin = { id: 1, email: 'admin@ccpulse.com', username: 'admin', fullName: 'CCPulse Chief Administrator', role: 'admin' };
-                    localStorage.setItem('ccpulse_jwt', 'gh-pages-admin-jwt');
-                    State.currentUser = mockAdmin;
-                    State.token = 'gh-pages-admin-jwt';
+                // Client-side database fallback for GitHub Pages & Offline
+                if (typeof ClientDB !== 'undefined') {
+                    const res = ClientDB.users.login({
+                        email: credentials.email,
+                        username: credentials.email,
+                        password: credentials.password
+                    });
+                    localStorage.setItem('ccpulse_jwt', res.token);
+                    State.currentUser = res.user;
+                    State.token = res.token;
+                    State.wallet = res.wallet;
                     State.isGuest = false;
                     State.notify('auth');
-                    return { success: true, user: mockAdmin, token: 'gh-pages-admin-jwt' };
-                } else if ((email === 'trader@ccpulse.com' && pass === 'Trader@123456') || pass.length >= 6) {
-                    const mockTrader = { id: 2, email: email, username: email.split('@')[0], fullName: 'Simulated Trader', role: 'user' };
-                    localStorage.setItem('ccpulse_jwt', 'gh-pages-trader-jwt');
-                    State.currentUser = mockTrader;
-                    State.token = 'gh-pages-trader-jwt';
-                    State.isGuest = false;
-                    if (!State.wallet) {
-                        State.wallet = { availableCashUsd: 5000.00, totalInvestedUsd: 0, totalPortfolioValueUsd: 5000.00, holdings: [] };
-                    }
-                    State.notify('auth');
-                    return { success: true, user: mockTrader, token: 'gh-pages-trader-jwt', welcomeBonusCredited: true };
+                    return res;
                 }
                 throw err;
             }
@@ -104,21 +96,35 @@ const API = {
             try {
                 return await API.request('/auth/register', { method: 'POST', body: JSON.stringify(formData) });
             } catch (err) {
-                const mockUser = { id: Date.now(), email: formData.email, username: formData.username, fullName: formData.fullName, role: 'user' };
-                localStorage.setItem('ccpulse_jwt', 'gh-pages-reg-jwt');
-                State.currentUser = mockUser;
-                State.token = 'gh-pages-reg-jwt';
-                State.isGuest = false;
-                State.wallet = { availableCashUsd: 5000.00, totalInvestedUsd: 0, totalPortfolioValueUsd: 5000.00, holdings: [] };
-                State.notify('auth');
-                return { success: true, user: mockUser, token: 'gh-pages-reg-jwt', welcomeBonusCredited: true };
+                // Client-side database fallback for GitHub Pages & Offline
+                if (typeof ClientDB !== 'undefined') {
+                    const res = ClientDB.users.register(formData);
+                    localStorage.setItem('ccpulse_jwt', res.token);
+                    State.currentUser = res.user;
+                    State.token = res.token;
+                    State.wallet = res.wallet;
+                    State.isGuest = false;
+                    State.notify('auth');
+                    return res;
+                }
+                throw err;
             }
         },
         me: async () => {
             try {
                 return await API.request('/auth/me');
             } catch (err) {
-                if (State.currentUser) return { success: true, user: State.currentUser };
+                if (typeof ClientDB !== 'undefined' && State.token) {
+                    const user = ClientDB.users.getByToken(State.token);
+                    if (user) {
+                        const wallet = ClientDB.wallets.getByUserId(user.id);
+                        State.currentUser = user;
+                        State.wallet = wallet;
+                        State.isGuest = false;
+                        return { success: true, user, wallet, unreadNotifications: 0 };
+                    }
+                }
+                if (State.currentUser) return { success: true, user: State.currentUser, wallet: State.wallet };
                 return { success: false, isGuest: true };
             }
         },
@@ -210,8 +216,20 @@ const API = {
             try {
                 return await API.request('/simulator/trade', { method: 'POST', body: JSON.stringify(tradeData) });
             } catch (err) {
-                // Client fallback trade
                 const coin = CLIENT_STATIC_COINS.find(c => c.id === Number(tradeData.cryptoId)) || CLIENT_STATIC_COINS[0];
+                if (typeof ClientDB !== 'undefined' && State.currentUser) {
+                    const res = ClientDB.trades.execute({
+                        userId: State.currentUser.id,
+                        crypto: coin,
+                        type: tradeData.type,
+                        quantity: tradeData.quantity,
+                        priceUsd: coin.current_price_usd
+                    });
+                    State.wallet = res.wallet;
+                    State.notify('wallet');
+                    return res;
+                }
+                // Guest fallback trade
                 State.updateGuestTrade({
                     type: tradeData.type,
                     crypto: coin,
@@ -235,6 +253,16 @@ const API = {
             try {
                 return await API.request('/simulator/portfolio');
             } catch (e) {
+                if (typeof ClientDB !== 'undefined' && State.currentUser) {
+                    const wallet = ClientDB.wallets.getByUserId(State.currentUser.id);
+                    const trades = ClientDB.trades.getByUserId(State.currentUser.id);
+                    return {
+                        success: true,
+                        wallet: wallet || { availableCashUsd: 5000.00, totalInvestedUsd: 0, totalPortfolioValueUsd: 5000.00, holdings: [] },
+                        holdings: wallet ? (wallet.holdings || []) : [],
+                        trades: trades || []
+                    };
+                }
                 const g = State.guestSession || { temporaryBalanceUsd: 5000.00, holdings: [], trades: [] };
                 return {
                     success: true,
@@ -249,7 +277,16 @@ const API = {
                 };
             }
         },
-        getTrades: () => API.request('/simulator/trades').catch(() => ({ success: true, trades: State.guestSession?.trades || [] }))
+        getTrades: async () => {
+            try {
+                return await API.request('/simulator/trades');
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined' && State.currentUser) {
+                    return { success: true, trades: ClientDB.trades.getByUserId(State.currentUser.id) };
+                }
+                return { success: true, trades: State.guestSession?.trades || [] };
+            }
+        }
     },
 
     // Currency
@@ -306,39 +343,112 @@ const API = {
 
     // Admin
     admin: {
-        getOverview: () => API.request('/admin/overview').catch(() => ({
-            success: true,
-            overview: {
-                totalRegisteredUsers: 2,
-                totalAnonymousGuests: 15,
-                totalWallets: 2,
-                totalTrades: 8,
-                totalVirtualDistributedUsd: 10000,
-                totalActiveCryptos: 5,
-                mostViewedCrypto: 'Bitcoin',
-                mostSimulatedCrypto: 'Bitcoin'
+        getOverview: async () => {
+            try {
+                return await API.request('/admin/overview');
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    const allUsers = ClientDB.users.getAll();
+                    const allTrades = ClientDB.trades.getAll();
+                    return {
+                        success: true,
+                        overview: {
+                            totalRegisteredUsers: allUsers.length,
+                            totalAnonymousGuests: 15,
+                            totalWallets: allUsers.length,
+                            totalTrades: allTrades.length,
+                            totalVirtualDistributedUsd: allUsers.length * 5000,
+                            totalActiveCryptos: 5,
+                            mostViewedCrypto: 'Bitcoin',
+                            mostSimulatedCrypto: 'Bitcoin'
+                        }
+                    };
+                }
+                return {
+                    success: true,
+                    overview: {
+                        totalRegisteredUsers: 2,
+                        totalAnonymousGuests: 15,
+                        totalWallets: 2,
+                        totalTrades: 8,
+                        totalVirtualDistributedUsd: 10000,
+                        totalActiveCryptos: 5,
+                        mostViewedCrypto: 'Bitcoin',
+                        mostSimulatedCrypto: 'Bitcoin'
+                    }
+                };
             }
-        })),
+        },
         getCryptos: () => API.request('/admin/cryptos').catch(() => ({ success: true, count: 5, cryptos: CLIENT_STATIC_COINS })),
         addCrypto: (data) => API.request('/admin/cryptos', { method: 'POST', body: JSON.stringify(data) }),
         updateCrypto: (id, data) => API.request(`/admin/cryptos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
         deleteCrypto: (id) => API.request(`/admin/cryptos/${id}`, { method: 'DELETE' }),
-        getUsers: (params = {}) => {
+        getUsers: async (params = {}) => {
             const query = new URLSearchParams(params).toString();
-            return API.request(`/admin/users?${query}`).catch(() => ({
-                success: true,
-                total: 2,
-                users: [
-                    { id: 1, username: 'admin', email: 'admin@ccpulse.com', role: 'admin', isActive: true, availableCashUsd: 5000 },
-                    { id: 2, username: 'trader', email: 'trader@ccpulse.com', role: 'user', isActive: true, availableCashUsd: 5000 }
-                ]
-            }));
+            try {
+                return await API.request(`/admin/users?${query}`);
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    const users = ClientDB.users.getAll();
+                    return {
+                        success: true,
+                        total: users.length,
+                        users
+                    };
+                }
+                return {
+                    success: true,
+                    total: 2,
+                    users: [
+                        { id: 1, username: 'admin', email: 'admin@ccpulse.com', role: 'admin', isActive: true, availableCashUsd: 5000 },
+                        { id: 2, username: 'trader', email: 'trader@ccpulse.com', role: 'user', isActive: true, availableCashUsd: 5000 }
+                    ]
+                };
+            }
         },
-        updateUserStatus: (id, statusData) => API.request(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify(statusData) }),
-        resetUserPassword: (id, data) => API.request(`/admin/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify(data) }),
+        updateUserStatus: async (id, statusData) => {
+            try {
+                return await API.request(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify(statusData) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.updateStatus(id, statusData);
+                }
+                throw e;
+            }
+        },
+        resetUserPassword: async (id, data) => {
+            try {
+                return await API.request(`/admin/users/${id}/reset-password`, { method: 'POST', body: JSON.stringify(data) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.resetPassword(id, data.password || 'Trader@123456');
+                }
+                throw e;
+            }
+        },
         getUserActivity: (id) => API.request(`/admin/users/${id}/activity`).catch(() => ({ success: true, activity: [] })),
-        grantBalance: (data) => API.request('/admin/balances/grant', { method: 'POST', body: JSON.stringify(data) }),
-        deductBalance: (data) => API.request('/admin/balances/deduct', { method: 'POST', body: JSON.stringify(data) }),
+        grantBalance: async (data) => {
+            try {
+                return await API.request('/admin/balances/grant', { method: 'POST', body: JSON.stringify(data) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    ClientDB.wallets.adjustBalance(data.userId, parseFloat(data.amountUsd), data.reason, 'ADMIN_GRANT');
+                    return { success: true, message: 'Balance granted successfully.' };
+                }
+                throw e;
+            }
+        },
+        deductBalance: async (data) => {
+            try {
+                return await API.request('/admin/balances/deduct', { method: 'POST', body: JSON.stringify(data) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    ClientDB.wallets.adjustBalance(data.userId, -parseFloat(data.amountUsd), data.reason, 'ADMIN_DEDUCT');
+                    return { success: true, message: 'Balance deducted successfully.' };
+                }
+                throw e;
+            }
+        },
         getBonusHistory: () => API.request('/admin/bonus-history').catch(() => ({ success: true, bonuses: [] })),
         getAuditLogs: (params = {}) => {
             const query = new URLSearchParams(params).toString();
@@ -359,6 +469,9 @@ const API = {
             try {
                 return await API.request(`/admin/analytics/daily?range=${range}`);
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.analytics.getDaily(range);
+                }
                 return generateClientDailyAnalytics(range);
             }
         },
@@ -369,6 +482,20 @@ const API = {
             try {
                 return await API.request(`/admin/tickets?${query}`);
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    const tickets = ClientDB.tickets.getAll(params);
+                    return {
+                        success: true,
+                        stats: {
+                            total: tickets.length,
+                            open: tickets.filter(t => t.status === 'open').length,
+                            in_progress: tickets.filter(t => t.status === 'in_progress').length,
+                            resolved: tickets.filter(t => t.status === 'resolved').length,
+                            resolution_rate: Math.round((tickets.filter(t => t.status === 'resolved').length / (tickets.length || 1)) * 100)
+                        },
+                        tickets
+                    };
+                }
                 const tickets = getClientStoredTickets();
                 const status = params.status || 'all';
                 const filtered = status === 'all' ? tickets : tickets.filter(t => t.status === status);
@@ -389,6 +516,15 @@ const API = {
             try {
                 return await API.request(`/admin/tickets/${id}`, { method: 'PATCH', body: JSON.stringify(data) });
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    if (data.admin_note) {
+                        ClientDB.tickets.addReply(id, { senderName: 'CCPulse Administrator', senderRole: 'admin', message: data.admin_note });
+                    }
+                    if (data.status) {
+                        return ClientDB.tickets.updateStatus(id, data.status);
+                    }
+                    return { success: true };
+                }
                 const tickets = getClientStoredTickets();
                 const ticket = tickets.find(t => t.id === parseInt(id, 10));
                 if (ticket) {
@@ -417,6 +553,14 @@ const API = {
             try {
                 return await API.request(`/admin/tickets/${id}/reply`, { method: 'POST', body: JSON.stringify(data) });
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    if (data.set_status) ClientDB.tickets.updateStatus(id, data.set_status);
+                    return ClientDB.tickets.addReply(id, {
+                        senderName: 'CCPulse Administrator',
+                        senderRole: 'admin',
+                        message: data.message
+                    });
+                }
                 const tickets = getClientStoredTickets();
                 const ticket = tickets.find(t => t.id === parseInt(id, 10));
                 if (ticket) {
@@ -446,6 +590,17 @@ const API = {
             try {
                 return await API.request('/support/tickets', { method: 'POST', body: JSON.stringify(ticketData) });
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.tickets.create({
+                        userId: State.currentUser ? State.currentUser.id : null,
+                        userEmail: (State.currentUser ? State.currentUser.email : ticketData.email) || 'guest@ccpulse.com',
+                        userName: (State.currentUser ? State.currentUser.username : ticketData.name) || 'Trader User',
+                        subject: ticketData.subject,
+                        category: ticketData.category || 'General Inquiry',
+                        priority: ticketData.priority || 'normal',
+                        description: ticketData.description
+                    });
+                }
                 const tickets = getClientStoredTickets();
                 const newTicket = {
                     id: Date.now(),
@@ -482,6 +637,9 @@ const API = {
             try {
                 return await API.request(`/support/tickets?${query}`);
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return { success: true, tickets: ClientDB.tickets.getAll(params) };
+                }
                 const tickets = getClientStoredTickets();
                 return { success: true, tickets };
             }
@@ -490,6 +648,11 @@ const API = {
             try {
                 return await API.request(`/support/tickets/${id}`);
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    const ticket = ClientDB.tickets.getById(id);
+                    if (ticket) return { success: true, ticket, replies: ticket.replies || [] };
+                    throw new Error('Ticket not found in database.');
+                }
                 const tickets = getClientStoredTickets();
                 const ticket = tickets.find(t => t.id === parseInt(id, 10));
                 if (ticket) {
@@ -502,6 +665,13 @@ const API = {
             try {
                 return await API.request(`/support/tickets/${id}/replies`, { method: 'POST', body: JSON.stringify(replyData) });
             } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.tickets.addReply(id, {
+                        senderName: State.currentUser ? State.currentUser.username : (replyData.sender_name || 'User'),
+                        senderRole: State.currentUser && State.currentUser.role === 'admin' ? 'admin' : 'user',
+                        message: replyData.message
+                    });
+                }
                 const tickets = getClientStoredTickets();
                 const ticket = tickets.find(t => t.id === parseInt(id, 10));
                 if (ticket) {
@@ -521,6 +691,51 @@ const API = {
                     return { success: true, replies: ticket.replies };
                 }
                 throw e;
+            }
+        }
+    },
+
+    // Database Engine Diagnostics & JSON Export/Backup
+    database: {
+        getStatus: async () => {
+            try {
+                return await API.request('/database/status');
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    const snap = ClientDB.getSnapshot();
+                    return {
+                        success: true,
+                        engine: 'In-Browser ClientDB (GitHub Pages Persistent)',
+                        storageLocation: 'localStorage (ccpulse_client_database_v2)',
+                        usersCount: snap.users.length,
+                        walletsCount: snap.wallets.length,
+                        tradesCount: snap.trades.length,
+                        ticketsCount: snap.support_tickets.length,
+                        lastUpdated: snap.meta.lastUpdated
+                    };
+                }
+                return {
+                    success: true,
+                    engine: 'SQLite 3 (Server / Local)',
+                    storageLocation: 'ccpulse.db'
+                };
+            }
+        },
+        exportJSON: () => {
+            if (typeof ClientDB !== 'undefined') {
+                return ClientDB.exportJSON();
+            }
+            return JSON.stringify({ error: 'Server database backup available through SQLite CLI or API dump.' });
+        },
+        importJSON: (jsonStr) => {
+            if (typeof ClientDB !== 'undefined') {
+                return ClientDB.importJSON(jsonStr);
+            }
+            throw new Error('Client database import only supported in in-browser mode.');
+        },
+        resetToDefault: () => {
+            if (typeof ClientDB !== 'undefined') {
+                return ClientDB.resetToDefault();
             }
         }
     },
