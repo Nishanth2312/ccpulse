@@ -4,21 +4,25 @@
   "webDir": "../frontend",
   "bundledWebRuntime": false,
   "server": {
-    "url": "http://10.0.2.2:4000",
+    "url": "https://nishanth2312.github.io/ccpulse/",
     "cleartext": true
   },
   "android": {
     "allowMixedContent": true,
     "captureInput": true,
-    "webContentsDebuggingEnabled": true
+    "webContentsDebuggingEnabled": true,
+    "backgroundColor": "#0C0E14"
   },
   "plugins": {
     "SplashScreen": {
-      "launchShowDuration": 1500,
-      "backgroundColor": "#070A12",
+      "launchShowDuration": 1800,
+      "backgroundColor": "#0C0E14",
       "showSpinner": true,
-      "spinnerColor": "#00F0FF"
+      "spinnerColor": "#16C784"
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0C0E14"
     }
   }
 }
-

@@ -1,0 +1,36 @@
+{
+  "appId": "com.ccpulse.app",
+  "appName": "CCPulse",
+  "webDir": "frontend",
+  "bundledWebRuntime": false,
+  "server": {
+    "url": "https://nishanth2312.github.io/ccpulse/",
+    "cleartext": true
+  },
+  "android": {
+    "allowMixedContent": true,
+    "captureInput": true,
+    "webContentsDebuggingEnabled": true,
+    "backgroundColor": "#0C0E14"
+  },
+  "ios": {
+    "contentInset": "always",
+    "allowsLinkPreview": false,
+    "scrollEnabled": true,
+    "backgroundColor": "#0C0E14"
+  },
+  "plugins": {
+    "SplashScreen": {
+      "launchShowDuration": 1800,
+      "backgroundColor": "#0C0E14",
+      "showSpinner": true,
+      "spinnerColor": "#16C784",
+      "splashFullScreen": true,
+      "splashImmersive": true
+    },
+    "StatusBar": {
+      "style": "DARK",
+      "backgroundColor": "#0C0E14"
+    }
+  }
+}
