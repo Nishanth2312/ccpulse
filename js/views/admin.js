@@ -690,7 +690,7 @@ const AdminView = {
 
                     <div>
                         <label style="font-size: 0.85rem; font-weight: 600;">Logo Image URL</label>
-                        <input type="url" id="add-c-logo" placeholder="https://assets.coingecko.com/..." style="width: 100%;">
+                        <input type="url" id="add-c-logo" placeholder="https://example.com/logo.svg or ./assets/coins/..." style="width: 100%;">
                     </div>
 
                     <div>

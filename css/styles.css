@@ -19,12 +19,12 @@
     --transition-normal: 0.25s ease;
     --header-height: 72px;
 
-    /* Universal Functional Colors - CoinGecko Authentic Palette */
+    /* Universal Functional Colors - High-Contrast Dark Palette */
     --color-success: #16C784;
     --color-danger: #EA3943;
     --color-warning: #F5A623;
-    --color-gecko-brand: #8DC647;
-    --color-gecko-market: #16C784;
+    --color-market-brand: #8DC647;
+    --color-market-accent: #16C784;
     --color-buy-green: linear-gradient(135deg, #16C784 0%, #10B981 100%);
     --color-sell-red: linear-gradient(135deg, #EA3943 0%, #DC2626 100%);
     --color-gold-gradient: linear-gradient(135deg, #16C784 0%, #8DC647 100%);
@@ -33,8 +33,8 @@
 
 /* ===================================================================
    THEME TOKENS: DARK MODE (Default & [data-theme="dark"])
-   CoinGecko Signature Charcoal Slate (#0C0E14), Surface (#141722),
-   Elevated Card (#1E2332), Gecko Market Green (#16C784), Brand (#8DC647)
+   Signature Charcoal Slate (#0C0E14), Surface (#141722),
+   Elevated Card (#1E2332), Market Green (#16C784), Brand (#8DC647)
    =================================================================== */
 :root[data-theme="dark"],
 :root:not([data-theme="light"]) {
@@ -75,8 +75,8 @@
 
 /* ===================================================================
    THEME TOKENS: LIGHT MODE ([data-theme="light"])
-   CoinGecko Crisp Clean White (#FFFFFF), Surface (#F8FAFD),
-   Borders (#EFF2F5), Gecko Market Green (#16C784), Brand (#8DC647)
+   Crisp Clean White (#FFFFFF), Surface (#F8FAFD),
+   Borders (#EFF2F5), Market Green (#16C784), Brand (#8DC647)
    =================================================================== */
 :root[data-theme="light"] {
     --bg-page: #FFFFFF;
@@ -223,7 +223,7 @@ input:focus, select:focus, textarea:focus {
 }
 
 /* ===================================================================
-   COINGECKO GLOBAL TELEMETRY BAR & HEADER ACCENTS
+   GLOBAL TELEMETRY BAR & HEADER ACCENTS
    =================================================================== */
 .cg-top-bar {
     background-color: var(--bg-surface);
@@ -303,7 +303,7 @@ input:focus, select:focus, textarea:focus {
     gap: 4px;
 }
 
-/* CoinGecko Highlights Grid (Market Cap Chart, Trending, Top Movers) */
+/* Highlights Grid (Market Cap Chart, Trending, Top Movers) */
 .cg-highlights-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -418,7 +418,7 @@ input:focus, select:focus, textarea:focus {
     color: var(--text-primary);
 }
 
-/* CoinGecko High-Density Table */
+/* High-Density Market Data Table */
 .cg-table-wrapper {
     background: var(--bg-surface);
     border: 1px solid var(--border-color);

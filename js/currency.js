@@ -103,7 +103,7 @@ const Currency = {
         if (refreshBtn) refreshBtn.classList.add('fa-spin');
 
         try {
-            // Simultaneously refresh live Forex rates and live CoinGecko cryptocurrency prices
+            // Simultaneously refresh live Forex rates and live cryptocurrency prices
             const [forexData, cryptoData] = await Promise.allSettled([
                 API.currency.refreshRates(),
                 API.cryptos.refreshRates()

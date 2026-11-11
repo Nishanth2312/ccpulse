@@ -1,6 +1,6 @@
 /**
- * CCPulse Markets View (CoinGecko Authentic Experience)
- * Directly matches CoinGecko design (https://www.coingecko.com/):
+ * CCPulse Markets View (Live Real-Time Market Experience)
+ * Comprehensive cryptocurrency ranking, live metrics, and interactive charts:
  * - Top Highlights: Market Cap 7-Day Trend Chart, Trending Coins 🔥, Largest Movers 🚀
  * - Category Tabs: All Cryptocurrencies, Top 10, Layer 1, DeFi, Privacy (BDX, XMR), Memes, Watchlist
  * - High-Density 11-Column Table: Star, Rank, Coin, Price, 1h %, 24h %, 7d %, 24h Vol, Market Cap, 7d Sparkline SVG, Actions
@@ -73,13 +73,13 @@ const MarketsView = {
         const topGainers = [...cryptos].sort((a, b) => (b.change_24h || 0) - (a.change_24h || 0)).slice(0, 4);
 
         container.innerHTML = `
-            <!-- CoinGecko Title & Subtitle Section -->
+            <!-- Global Market Overview & Title Section -->
             <div style="margin-bottom: 24px;">
                 <div style="display: flex; justify-content: space-between; align-items: flex-end; flex-wrap: wrap; gap: 14px;">
                     <div>
                         <h1 style="font-size: 1.95rem; font-weight: 800; letter-spacing: -0.4px; margin-bottom: 6px; display: flex; align-items: center; gap: 10px;">
                             <span>Cryptocurrency Prices by Market Cap</span>
-                            <span class="cg-badge"><i class="fa-solid fa-bolt"></i> COINGECKO LIVE</span>
+                            <span class="cg-badge"><i class="fa-solid fa-bolt"></i> REAL-TIME</span>
                         </h1>
                         <p style="color: var(--text-secondary); font-size: 0.94rem; margin-bottom: 8px;">
                             The global cryptocurrency market cap today is <strong style="color: var(--text-primary);">${totalMcapFormatted}</strong>, a <span class="cg-pct-badge up" style="font-size: 0.94rem;"><i class="fa-solid fa-caret-up"></i> 1.8%</span> change in the last 24 hours.
@@ -89,14 +89,14 @@ const MarketsView = {
                         <span class="badge-quota-shield" title="Protected with 30-minute cache TTL">
                             <i class="fa-solid fa-shield-halved"></i> 30m Quota Shield Active
                         </span>
-                        <button type="button" id="markets-refresh-rates-btn" class="btn btn-outline" style="font-size: 0.82rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh rates from CoinGecko / API Ninjas">
+                        <button type="button" id="markets-refresh-rates-btn" class="btn btn-outline" style="font-size: 0.82rem; padding: 6px 12px; display: inline-flex; align-items: center; gap: 6px;" title="Refresh rates from real-time market data providers">
                             <i class="fa-solid fa-arrows-rotate" id="markets-refresh-icon"></i> Sync Live
                         </button>
                     </div>
                 </div>
             </div>
 
-            <!-- CoinGecko 3 Top Highlight Widgets -->
+            <!-- 3 Top Market Highlight Widgets -->
             <div class="cg-highlights-grid">
                 <!-- Widget 1: Market Cap 7-Day Chart -->
                 <div class="cg-highlight-card">
@@ -188,7 +188,7 @@ const MarketsView = {
                 </div>
             </div>
 
-            <!-- CoinGecko Filter Tabs & Controls Row -->
+            <!-- Category Filter Tabs & Controls Row -->
             <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 14px; margin-bottom: 18px;">
                 <!-- Category Tabs -->
                 <div style="display: flex; gap: 8px; overflow-x: auto; padding-bottom: 4px; scrollbar-width: none;">
@@ -225,7 +225,7 @@ const MarketsView = {
                 </div>
             </div>
 
-            <!-- CoinGecko High-Density Table -->
+            <!-- High-Density Market Data Table -->
             <div class="cg-table-wrapper">
                 <table class="cg-table" id="markets-table">
                     <thead>
@@ -264,7 +264,7 @@ const MarketsView = {
                     </div>
                     <h2 style="font-size: 1.7rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;">How Does CCPulse Work?</h2>
                     <p style="color: var(--text-secondary); font-size: 0.92rem;">
-                        CCPulse gives developers, traders, and students an authentic cryptocurrency experience with real-time CoinGecko feeds, instant DEX swaps, and zero real capital risk.
+                        CCPulse gives developers, traders, and students an authentic cryptocurrency experience with real-time market data feeds, instant DEX swaps, and zero real capital risk.
                     </p>
                 </div>
 
