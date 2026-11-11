@@ -72,6 +72,16 @@ const AuthModals = {
                         <i class="fa-solid fa-arrow-right-to-bracket"></i> Sign In
                     </button>
 
+                    <!-- Quick Demo Credentials Pills for Reviewers -->
+                    <div style="margin-top: 10px; display: flex; gap: 8px;">
+                        <button type="button" class="btn btn-outline" id="quick-fill-admin-btn" style="flex: 1; font-size: 0.74rem; padding: 5px 8px; border-radius: 6px;" title="Fill Admin Credentials">
+                            <i class="fa-solid fa-shield-crown"></i> Admin Login
+                        </button>
+                        <button type="button" class="btn btn-outline" id="quick-fill-trader-btn" style="flex: 1; font-size: 0.74rem; padding: 5px 8px; border-radius: 6px;" title="Fill Trader Credentials">
+                            <i class="fa-solid fa-user"></i> Trader Login
+                        </button>
+                    </div>
+
                     <div style="position: relative; text-align: center; margin: 10px 0;">
                         <hr style="border: none; border-top: 1px solid var(--border-color);">
                         <span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: var(--bg-surface); padding: 0 10px; font-size: 0.78rem; color: var(--text-muted);">OR</span>
@@ -127,6 +137,22 @@ const AuthModals = {
             dialog.close();
             this.showForgotPassword();
         };
+
+        const adminFillBtn = dialog.querySelector('#quick-fill-admin-btn');
+        if (adminFillBtn) {
+            adminFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'admin@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Admin@CCPulse2026!';
+            };
+        }
+
+        const traderFillBtn = dialog.querySelector('#quick-fill-trader-btn');
+        if (traderFillBtn) {
+            traderFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'trader@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Trader@123456';
+            };
+        }
 
         dialog.showModal();
     },
@@ -237,6 +263,22 @@ const AuthModals = {
             this.showLogin();
         };
 
+        const adminFillBtn = dialog.querySelector('#quick-fill-admin-btn');
+        if (adminFillBtn) {
+            adminFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'admin@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Admin@CCPulse2026!';
+            };
+        }
+
+        const traderFillBtn = dialog.querySelector('#quick-fill-trader-btn');
+        if (traderFillBtn) {
+            traderFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'trader@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Trader@123456';
+            };
+        }
+
         dialog.showModal();
     },
 
@@ -275,6 +317,22 @@ const AuthModals = {
             dialog.close();
             window.location.hash = '#learning';
         };
+
+        const adminFillBtn = dialog.querySelector('#quick-fill-admin-btn');
+        if (adminFillBtn) {
+            adminFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'admin@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Admin@CCPulse2026!';
+            };
+        }
+
+        const traderFillBtn = dialog.querySelector('#quick-fill-trader-btn');
+        if (traderFillBtn) {
+            traderFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'trader@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Trader@123456';
+            };
+        }
 
         dialog.showModal();
     },
@@ -321,6 +379,22 @@ const AuthModals = {
                 statusBox.classList.remove('hidden');
             }
         };
+
+        const adminFillBtn = dialog.querySelector('#quick-fill-admin-btn');
+        if (adminFillBtn) {
+            adminFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'admin@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Admin@CCPulse2026!';
+            };
+        }
+
+        const traderFillBtn = dialog.querySelector('#quick-fill-trader-btn');
+        if (traderFillBtn) {
+            traderFillBtn.onclick = () => {
+                dialog.querySelector('#login-email').value = 'trader@ccpulse.com';
+                dialog.querySelector('#login-password').value = 'Trader@123456';
+            };
+        }
 
         dialog.showModal();
     }
