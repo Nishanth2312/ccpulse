@@ -6,7 +6,7 @@ const {
     getCryptoBySymbolOrSlug,
     getHistoricalChartData,
     getOrderBook,
-    fetchLiveCryptoRatesFromCoinGecko,
+    fetchLiveCryptoRatesFromPrimaryProvider,
     fetchMultiTierCryptoRates,
     getCryptoFeedStatus
 } = require('../services/cryptoMarketService');

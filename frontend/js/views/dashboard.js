@@ -221,7 +221,7 @@ const DashboardView = {
                     <h2 style="font-size: 1.4rem; font-weight: 800; margin-bottom: 4px;">Supported Digital Assets</h2>
                     <div style="display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; color: #10B981; font-weight: 600;">
                         <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; box-shadow: 0 0 6px #10B981; display: inline-block;"></span>
-                        Live CoinGecko Data Feed &bull; Auto-synced
+                        Live Crypto Data Feed &bull; Auto-synced
                     </div>
                 </div>
                 <a href="#markets" style="font-size: 0.9rem; color: var(--color-primary); font-weight: 600;">

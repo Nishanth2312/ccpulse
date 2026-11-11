@@ -142,7 +142,7 @@ router.post('/cryptos', (req, res) => {
         const price = parseFloat(current_price_usd) || 1.00;
         const supply = parseFloat(circulating_supply) || 10000000;
         const mcap = price * supply;
-        const logo = logo_url || 'https://assets.coingecko.com/coins/images/default/large/missing.png';
+        const logo = logo_url || './assets/coins/generic.svg';
         const chain = blockchain || 'Standard Blockchain';
 
         const stmt = db.prepare(`
@@ -160,7 +160,7 @@ router.post('/cryptos', (req, res) => {
             cleanSlug,
             logo,
             chain,
-            api_provider_id || 'coingecko',
+            api_provider_id || 'primary_feed',
             market_data_source || 'Simulated Engine / Live Feed',
             educational_content || `Educational overview for ${name} (${cleanSymbol}).`,
             risk_information || `Market and protocol risk profile for ${cleanSymbol}.`,

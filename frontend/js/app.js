@@ -69,7 +69,7 @@ const App = {
         const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help'].includes(currentHash);
         const isPortfolioActive = currentHash === 'portfolio';
 
-        // Desktop Navigation: Dedicated CoinGecko-Style Structure
+        // Desktop Navigation: Dedicated Global Crypto Structure
         // Cryptocurrencies | Exchanges | Learn | Portfolio | (Admin)
         const desktopHtml = `
             <!-- Cryptocurrencies Menu with Hover Dropdown -->
@@ -174,7 +174,7 @@ const App = {
                     </a>
                     <div class="dropdown-compliance-badge">
                         <i class="fa-solid fa-shield-check text-success"></i>
-                        <span>100% Risk-Free Simulation &bull; CoinGecko Data Integration</span>
+                        <span>100% Risk-Free Simulation &bull; Real-Time Data Integration</span>
                     </div>
                 </div>
             </div>
@@ -202,7 +202,7 @@ const App = {
         // Mobile Drawer: Categorized, touch-friendly, high contrast
         const mobileHtml = `
             <div class="drawer-nav-group">
-                <div class="drawer-section-label">CoinGecko Market Hub</div>
+                <div class="drawer-section-label">Crypto Market Hub</div>
                 <a href="#cryptocurrencies" class="mobile-nav-link ${isCryptosActive ? 'active' : ''}">
                     <div class="mobile-nav-icon"><i class="fa-solid fa-coins"></i></div>
                     <div class="mobile-nav-meta">
@@ -464,7 +464,7 @@ const App = {
         } else if (routePath === 'admin') {
             await AdminView.render(container, queryParams.get('tab') || 'overview');
         } else {
-            // Default fallback to CoinGecko Cryptocurrencies list
+            // Default fallback to Cryptocurrencies list
             await MarketsView.render(container, queryParams);
         }
     }

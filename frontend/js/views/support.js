@@ -109,7 +109,7 @@ const SupportView = {
                             </label>
                             <select id="ticket-category" style="width: 100%; padding: 10px 14px; border-radius: var(--border-radius-sm); border: 1px solid var(--border-color); background: var(--bg-input); color: var(--text-primary); font-family: var(--font-family);">
                                 <option value="Simulator & Trading">Simulator & Virtual Trading Issue</option>
-                                <option value="Crypto Pricing & Live Feeds">Crypto Pricing & CoinGecko / Forex Feed</option>
+                                <option value="Crypto Pricing & Live Feeds">Crypto Pricing & Real-Time Forex Feed</option>
                                 <option value="Account & Bonus">Account, Registration & Welcome Bonus</option>
                                 <option value="Feature Suggestion">Feature Request & Coin Addition</option>
                                 <option value="Bug Report">Technical Bug or UI Glitch</option>
@@ -403,7 +403,7 @@ const SupportView = {
             },
             {
                 q: "Where do the live cryptocurrency prices and exchange rates come from?",
-                a: "Crypto prices are pulled directly in real-time from the CoinGecko Simple Price API. Forex reference rates for USD, INR, EUR, GBP, AED, and JPY are synced live from open.er-api.com."
+                a: "Crypto prices are pulled directly in real-time from multi-tier live market data feeds. Forex reference rates for USD, INR, EUR, GBP, AED, and JPY are synced live from open.er-api.com."
             },
             {
                 q: "How does Beldex (BDX) work in the platform?",

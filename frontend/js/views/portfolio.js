@@ -233,7 +233,7 @@ const PortfolioView = {
                             <i class="fa-solid fa-shield-halved"></i> 30m Quota Shield
                         </span>
 
-                        <button type="button" class="btn btn-sm btn-outline" id="portfolio-manual-sync-btn" style="padding: 4px 10px; font-size: 0.76rem;" title="Force fresh external API pull (CoinGecko / API Ninjas)">
+                        <button type="button" class="btn btn-sm btn-outline" id="portfolio-manual-sync-btn" style="padding: 4px 10px; font-size: 0.76rem;" title="Force fresh external API pull (Live Market API / API Ninjas)">
                             <i class="fa-solid fa-cloud-arrow-down"></i> Sync Live
                         </button>
 

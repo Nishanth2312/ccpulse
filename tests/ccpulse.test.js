@@ -707,9 +707,9 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(portfolioJs.includes('30000') || portfolioJs.includes('30s') || portfolioJs.includes('startCron'), 'Must implement 30-second portfolio auto-refresh cron');
         assert.ok(portfolioJs.includes('LIVE AUTO-UPDATE') || portfolioJs.includes('cron-indicator') || portfolioJs.includes('badge'), 'Must display live cron pulsing badge');
 
-        // 4. Verify Instant Swap view and CoinGecko category filters
+        // 4. Verify Instant Swap view and market category filters
         assert.ok(swapJs.includes('SwapView') || swapJs.includes('executeSwap'), 'Swap view component must exist');
-        assert.ok(marketsJs.includes('category-filter') || marketsJs.includes('All Coins') || marketsJs.includes('Top 10'), 'Markets view must support CoinGecko category filters');
+        assert.ok(marketsJs.includes('category-filter') || marketsJs.includes('All Coins') || marketsJs.includes('Top 10'), 'Markets view must support market category filters');
     });
 
     // SCENARIO 29: API Ninjas Live Financial Integration & Multi-Currency Engine
@@ -811,8 +811,8 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.strictEqual(updatedWallet.balanceUsd, initialBal + 5000, 'Wallet balance must reflect retroactive airdrop');
     });
 
-    // SCENARIO 32: 30-Minute Quota Shield & Multi-Tier Failover (CoinGecko Demo Key -> API Ninjas -> Simulation)
-    test('Scenario 32: 30-Minute Quota Shield & Multi-Tier Failover (CoinGecko Key -> API Ninjas -> Simulation)', async () => {
+    // SCENARIO 32: 30-Minute Quota Shield & Multi-Tier Failover (Primary Key -> API Ninjas -> Simulation)
+    test('Scenario 32: 30-Minute Quota Shield & Multi-Tier Failover (Primary Key -> API Ninjas -> Simulation)', async () => {
         const { fetchMultiTierCryptoRates, getCryptoFeedStatus } = require('../backend/services/cryptoMarketService');
         assert.ok(typeof fetchMultiTierCryptoRates === 'function', 'fetchMultiTierCryptoRates must be exported');
 
@@ -826,17 +826,17 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.strictEqual(res2.success, true, 'Cached fetch must succeed');
         assert.strictEqual(res2.cached, true, 'Must return cached data to protect monthly quota');
 
-        // 3. Verify CoinGecko Demo API key and Tier 2 Ninjas key are defined in api.js
+        // 3. Verify Primary API key and Tier 2 Ninjas key are defined in api.js
         const fs = require('fs');
         const apiJs = fs.readFileSync(require('path').join(__dirname, '../frontend/js/api.js'), 'utf8');
-        assert.ok(apiJs.includes('CG-gkSfgK1H4xdgaM7tWABxpbEL'), 'CoinGecko Demo key must be configured in api.js');
+        assert.ok(apiJs.includes('CG-gkSfgK1H4xdgaM7tWABxpbEL'), 'Primary key must be configured in api.js');
         assert.ok(apiJs.includes('mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN'), 'API Ninjas key must be configured as Tier 2 fallback');
         assert.ok(apiJs.includes('MARKET_CACHE_TTL_MS = 30 * 60 * 1000'), '30-minute market cache TTL must be defined');
         assert.ok(apiJs.includes('FOREX_CACHE_TTL_MS = 30 * 60 * 1000'), '30-minute forex cache TTL must be defined');
     });
 
-    // SCENARIO 33: CoinGecko Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus
-    test('Scenario 33: CoinGecko Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus', () => {
+    // SCENARIO 33: High-Density Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus
+    test('Scenario 33: High-Density Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus', () => {
         const fs = require('fs');
         const path = require('path');
         const indexHtml = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
@@ -844,19 +844,19 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         const appJs = fs.readFileSync(path.join(__dirname, '../frontend/js/app.js'), 'utf8');
         const marketsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/markets.js'), 'utf8');
 
-        // 1. Verify CoinGecko Theme Tokens in styles.css
-        assert.ok(stylesCss.includes('--bg-page: #0C0E14;'), 'Dark mode must use CoinGecko dark slate #0C0E14');
-        assert.ok(stylesCss.includes('--bg-surface: #141722;'), 'Dark mode surface must use CoinGecko #141722');
-        assert.ok(stylesCss.includes('--color-primary: #16C784;'), 'Primary color must use CoinGecko green #16C784');
-        assert.ok(stylesCss.includes('--color-danger: #EA3943;'), 'Danger color must use CoinGecko red #EA3943');
-        assert.ok(stylesCss.includes('.cg-top-bar'), 'CSS must define CoinGecko top telemetry bar');
-        assert.ok(stylesCss.includes('.cg-highlights-grid'), 'CSS must define CoinGecko highlights 3-card grid');
-        assert.ok(stylesCss.includes('.cg-table'), 'CSS must define CoinGecko high-density table');
+        // 1. Verify Authentic Theme Tokens in styles.css
+        assert.ok(stylesCss.includes('--bg-page: #0C0E14;'), 'Dark mode must use dark slate #0C0E14');
+        assert.ok(stylesCss.includes('--bg-surface: #141722;'), 'Dark mode surface must use #141722');
+        assert.ok(stylesCss.includes('--color-primary: #16C784;'), 'Primary color must use green #16C784');
+        assert.ok(stylesCss.includes('--color-danger: #EA3943;'), 'Danger color must use red #EA3943');
+        assert.ok(stylesCss.includes('.cg-top-bar'), 'CSS must define top telemetry bar');
+        assert.ok(stylesCss.includes('.cg-highlights-grid'), 'CSS must define highlights 3-card grid');
+        assert.ok(stylesCss.includes('.cg-table'), 'CSS must define high-density table');
         assert.ok(stylesCss.includes('.cg-sparkline-svg'), 'CSS must define SVG sparkline chart');
         assert.ok(stylesCss.includes('.nexus-features-grid'), 'CSS must define nexus features process grid');
 
         // 2. Verify Top Telemetry Bar in index.html
-        assert.ok(indexHtml.includes('id="cg-top-bar"'), 'index.html must have CoinGecko global telemetry bar');
+        assert.ok(indexHtml.includes('id="cg-top-bar"'), 'index.html must have global telemetry bar');
         assert.ok(indexHtml.includes('Coins:'), 'Telemetry bar must display Coins count');
         assert.ok(indexHtml.includes('Exchanges:'), 'Telemetry bar must display Exchanges count');
         assert.ok(indexHtml.includes('Market Cap:'), 'Telemetry bar must display Market Cap');
@@ -865,7 +865,7 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(indexHtml.includes('ETH Gas:'), 'Telemetry bar must display Gas');
         assert.ok(indexHtml.includes('30m Quota Shield Active'), 'Telemetry bar must indicate active quota shield');
 
-        // 3. Verify Dedicated CoinGecko Menus in app.js
+        // 3. Verify Dedicated Navigation Menus in app.js
         assert.ok(appJs.includes('Cryptocurrencies'), 'app.js must define Cryptocurrencies menu');
         assert.ok(appJs.includes('Exchanges'), 'app.js must define Exchanges menu');
         assert.ok(appJs.includes('Learn'), 'app.js must define Learn menu');
@@ -876,7 +876,7 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(appJs.includes('#portfolio'), 'app.js must route #portfolio');
 
         // 4. Verify MarketsView features in markets.js
-        assert.ok(marketsJs.includes('Cryptocurrency Prices by Market Cap'), 'MarketsView must display CoinGecko heading');
+        assert.ok(marketsJs.includes('Cryptocurrency Prices by Market Cap'), 'MarketsView must display heading');
         assert.ok(marketsJs.includes('cg-highlights-grid'), 'MarketsView must render top 3 highlights cards');
         assert.ok(marketsJs.includes('Market Cap Overview'), 'MarketsView must render Market Cap chart card');
         assert.ok(marketsJs.includes('Trending Coins'), 'MarketsView must render Trending coins card');

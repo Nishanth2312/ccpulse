@@ -193,7 +193,7 @@ const ClientDB = (function() {
                 category: 'Trading Simulator',
                 priority: 'normal',
                 status: 'resolved',
-                description: 'Wanted to verify if the Beldex privacy coin order books use live CoinGecko feed or simulator matching.',
+                description: 'Wanted to verify if the Beldex privacy coin order books use live market feed or simulator matching.',
                 created_at: '2026-11-03T09:15:00.000Z',
                 updated_at: '2026-11-03T11:45:00.000Z',
                 replies: [
@@ -201,14 +201,14 @@ const ClientDB = (function() {
                         id: 1,
                         sender_role: 'user',
                         sender_name: 'Simulated Trader',
-                        message: 'Wanted to verify if the Beldex privacy coin order books use live CoinGecko feed or simulator matching.',
+                        message: 'Wanted to verify if the Beldex privacy coin order books use live market feed or simulator matching.',
                         created_at: '2026-11-03T09:15:00.000Z'
                     },
                     {
                         id: 2,
                         sender_role: 'admin',
                         sender_name: 'CCPulse Support Team',
-                        message: 'Hello! CCPulse connects directly to CoinGecko live prices with automatic resilient fallback to internal simulated depth when offline.',
+                        message: 'Hello! CCPulse connects directly to live market prices with automatic resilient fallback to internal simulated depth when offline.',
                         created_at: '2026-11-03T11:45:00.000Z'
                     }
                 ]
