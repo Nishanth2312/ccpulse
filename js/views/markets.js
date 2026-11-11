@@ -48,16 +48,17 @@ const MarketsView = {
         if (totalMcapUsd === 0) totalMcapUsd = 2680000000000;
         if (totalVolUsd === 0) totalVolUsd = 84200000000;
 
-        const totalMcapFormatted = Currency.format(totalMcapUsd);
-        const totalVolFormatted = Currency.format(totalVolUsd);
+        const totalMcapFormatted = Currency.formatCompact(totalMcapUsd, null, true);
+        const totalMcapShort = Currency.formatCompact(totalMcapUsd, null, false);
+        const totalVolShort = Currency.formatCompact(totalVolUsd, null, false);
 
         // Update Top Marquee in Document Header if present
         const cgStatCoins = document.getElementById('cg-stat-coins');
         const cgStatMcap = document.getElementById('cg-stat-mcap');
         const cgStatVol = document.getElementById('cg-stat-vol');
         if (cgStatCoins) cgStatCoins.textContent = cryptos.length.toString();
-        if (cgStatMcap) cgStatMcap.textContent = totalMcapFormatted;
-        if (cgStatVol) cgStatVol.textContent = totalVolFormatted;
+        if (cgStatMcap) cgStatMcap.textContent = totalMcapShort;
+        if (cgStatVol) cgStatVol.textContent = totalVolShort;
 
         // Trending coins list (BTC, BDX, SOL, XMR, ETH)
         const trendingCoins = [
@@ -107,7 +108,7 @@ const MarketsView = {
                         </div>
                         <span class="cg-pct-badge up"><i class="fa-solid fa-caret-up"></i> +1.8%</span>
                     </div>
-                    <div class="cg-highlight-val" style="margin-bottom: 10px;">${totalMcapFormatted}</div>
+                    <div class="cg-highlight-val" style="margin-bottom: 10px;" title="${Currency.format(totalMcapUsd)}">${totalMcapFormatted}</div>
                     <div style="height: 72px; width: 100%;">
                         ${this.renderMarketCapChart()}
                     </div>
@@ -489,8 +490,10 @@ const MarketsView = {
 
         tbody.innerHTML = filtered.map((c, idx) => {
             const price = Currency.formatCryptoPrice(c.current_price_usd);
-            const vol = Currency.format(c.volume_24h);
-            const mcap = Currency.format(c.market_cap_usd);
+            const vol = Currency.formatCompact(c.volume_24h);
+            const volFull = Currency.format(c.volume_24h);
+            const mcap = Currency.formatCompact(c.market_cap_usd);
+            const mcapFull = Currency.format(c.market_cap_usd);
             const logo = State.getCoinLogo(c);
 
             // Compute realistic 1h and 7d changes if not present
@@ -538,10 +541,10 @@ const MarketsView = {
                             ${Math.abs(change7d).toFixed(1)}%
                         </span>
                     </td>
-                    <td class="font-mono" style="font-size: 0.84rem; color: var(--text-secondary);">
+                    <td class="font-mono" style="font-size: 0.84rem; color: var(--text-secondary);" title="${volFull}">
                         ${vol}
                     </td>
-                    <td class="font-mono" style="font-size: 0.84rem; font-weight: 700; color: var(--text-primary);">
+                    <td class="font-mono" style="font-size: 0.84rem; font-weight: 700; color: var(--text-primary);" title="${mcapFull}">
                         ${mcap}
                     </td>
                     <td style="text-align: center;">

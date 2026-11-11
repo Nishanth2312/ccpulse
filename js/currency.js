@@ -46,6 +46,37 @@ const Currency = {
         }
     },
 
+    formatCompact(amountUsd, targetCurrency = null, fullWord = false) {
+        const code = (targetCurrency || this.getActiveCode()).toUpperCase();
+        const meta = this.meta[code] || { symbol: '$', decimals: 2, locale: 'en-US' };
+        const rate = this.getRate(code);
+        const val = Number(amountUsd) * rate;
+
+        if (isNaN(val) || val === 0) return `${meta.symbol}0.00`;
+
+        const absVal = Math.abs(val);
+        let num = val;
+        let suffix = '';
+
+        if (absVal >= 1e12) {
+            num = val / 1e12;
+            suffix = fullWord ? ' Trillion' : 'T';
+        } else if (absVal >= 1e9) {
+            num = val / 1e9;
+            suffix = fullWord ? ' Billion' : 'B';
+        } else if (absVal >= 1e6) {
+            num = val / 1e6;
+            suffix = fullWord ? ' Million' : 'M';
+        } else if (absVal >= 1e3 && !fullWord) {
+            num = val / 1e3;
+            suffix = 'K';
+        } else {
+            return this.format(amountUsd, targetCurrency);
+        }
+
+        return `${meta.symbol}${num.toFixed(2)}${suffix}`;
+    },
+
     formatCryptoPrice(priceUsd, targetCurrency = null) {
         const code = (targetCurrency || this.getActiveCode()).toUpperCase();
         const meta = this.meta[code] || { symbol: '$', decimals: 2, locale: 'en-US' };
