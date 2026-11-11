@@ -9,6 +9,10 @@ const Theme = {
         return State.theme || 'dark';
     },
 
+    setTheme(theme) {
+        this.apply(theme);
+    },
+
     getResolvedTheme(theme = null) {
         const mode = theme || this.getCurrent();
         if (mode === 'system') {

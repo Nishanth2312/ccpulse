@@ -1386,8 +1386,12 @@ const AdminView = {
 
                     this.showAdminToast(`Platform settings updated successfully! Welcome bonus is now $${parseFloat(bonusVal).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD + ${btcVal} BTC for all new registrations.`, 'success');
 
-                    if (typeof Theme !== 'undefined' && themeVal !== 'system') {
-                        Theme.setTheme(themeVal);
+                    if (typeof Theme !== 'undefined') {
+                        if (typeof Theme.setTheme === 'function') {
+                            Theme.setTheme(themeVal);
+                        } else if (typeof Theme.apply === 'function') {
+                            Theme.apply(themeVal);
+                        }
                     }
                 } catch (err) {
                     this.showAdminToast(`Error updating settings: ${err.message}`, 'danger');
