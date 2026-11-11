@@ -1080,6 +1080,54 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(fearGreedJs.includes('window.FearGreedView = FearGreedView'), 'fearGreed.js must export to window');
     });
 
+    test('Scenario 45: PWA Manifest & App Store / Play Store Install Configuration', () => {
+        const fs = require('fs');
+        const manifestPath = path.join(__dirname, '../frontend/manifest.json');
+        assert.ok(fs.existsSync(manifestPath), 'manifest.json must exist');
+        
+        const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
+        assert.ok(manifest.name.includes('CCPulse'), 'Manifest name must specify CCPulse');
+        assert.strictEqual(manifest.display, 'standalone', 'PWA display mode must be standalone for native look');
+        assert.ok(manifest.icons.length >= 2, 'Manifest must specify multiple icon sizes for Android and iOS');
+        assert.ok(manifest.shortcuts.length >= 3, 'Manifest must provide quick app shortcuts');
+    });
+
+    test('Scenario 46: Service Worker Offline Caching & App Shell Architecture', () => {
+        const fs = require('fs');
+        const swPath = path.join(__dirname, '../frontend/sw.js');
+        assert.ok(fs.existsSync(swPath), 'sw.js must exist in frontend');
+
+        const swContent = fs.readFileSync(swPath, 'utf8');
+        assert.ok(swContent.includes('PRECACHE_ASSETS'), 'Service worker must define precache asset array');
+        assert.ok(swContent.includes('addEventListener(\'install\''), 'Service worker must handle install lifecycle');
+        assert.ok(swContent.includes('addEventListener(\'fetch\''), 'Service worker must intercept network requests');
+    });
+
+    test('Scenario 47: Play Store & iOS App Store Compliance Declarations & Disclosures', () => {
+        const fs = require('fs');
+        const compliancePath = path.join(__dirname, '../frontend/js/views/compliance.js');
+        assert.ok(fs.existsSync(compliancePath), 'compliance.js view must exist');
+
+        const complianceContent = fs.readFileSync(compliancePath, 'utf8');
+        assert.ok(complianceContent.includes('ComplianceView'), 'Must define ComplianceView object');
+        assert.ok(complianceContent.includes('Guideline 3.1.5'), 'Must declare Apple App Store Guideline 3.1.5 compliance');
+        assert.ok(complianceContent.includes('Google Play Developer Policy'), 'Must declare Google Play policy compliance');
+        assert.ok(complianceContent.includes('Zero Custodial Risk'), 'Must certify zero custodial crypto risk');
+        assert.ok(complianceContent.includes('window.ComplianceView = ComplianceView'), 'Must expose ComplianceView on window');
+    });
+
+    test('Scenario 48: Global Instant Command Palette & Crypto Search Modal', () => {
+        const fs = require('fs');
+        const searchPath = path.join(__dirname, '../frontend/js/views/searchModal.js');
+        assert.ok(fs.existsSync(searchPath), 'searchModal.js must exist');
+
+        const searchContent = fs.readFileSync(searchPath, 'utf8');
+        assert.ok(searchContent.includes('SearchModal'), 'Must define SearchModal object');
+        assert.ok(searchContent.includes('palette-search-input'), 'Must provide instant search input');
+        assert.ok(searchContent.includes('renderCoinItems'), 'Must render dynamic cryptocurrency list items');
+        assert.ok(searchContent.includes('window.SearchModal = SearchModal'), 'Must expose SearchModal on window');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

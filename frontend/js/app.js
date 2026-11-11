@@ -38,6 +38,45 @@ const App = {
         this.setupMobileDrawer();
         this.setupNotifications();
 
+        // Setup Quick Command Palette & Search Modal
+        if (typeof SearchModal !== 'undefined') {
+            SearchModal.init();
+            const headerSearchBtn = document.getElementById('header-search-btn');
+            if (headerSearchBtn) {
+                headerSearchBtn.onclick = () => SearchModal.open();
+            }
+        }
+
+        // PWA Service Worker Registration (Store & Mobile Standards)
+        if ('serviceWorker' in navigator && window.location.protocol.startsWith('http')) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('./sw.js').catch(err => {
+                    console.log('PWA ServiceWorker registration note:', err.message);
+                });
+            });
+        }
+
+        // PWA Install Prompt Listener (Android / Desktop Chrome / Edge)
+        let deferredPrompt = null;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault();
+            deferredPrompt = e;
+            const installBtn = document.getElementById('pwa-install-header-btn');
+            if (installBtn) {
+                installBtn.classList.remove('hidden');
+                installBtn.onclick = async () => {
+                    if (!deferredPrompt) return;
+                    deferredPrompt.prompt();
+                    const choice = await deferredPrompt.userChoice;
+                    if (choice && choice.outcome === 'accepted') {
+                        Toast.success('CCPulse App installed to your device home screen!', 'Installation Complete');
+                        installBtn.classList.add('hidden');
+                    }
+                    deferredPrompt = null;
+                };
+            }
+        });
+
         // Subscribe to state changes
         State.subscribe((state, changeKey) => {
             this.renderNav();
@@ -66,7 +105,7 @@ const App = {
         const isCryptosActive = ['cryptocurrencies', 'markets', 'dashboard', 'fear-greed', 'sentiment'].includes(currentHash) || currentHash.startsWith('crypto');
         const isExchangesActive = ['exchanges', 'swap', 'simulator', 'simulation-lab', 'dca-simulator', 'dca', 'trade-journal', 'journal'].includes(currentHash);
         const isTradeActive = isExchangesActive;
-        const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help', 'achievements', 'leaderboard', 'price-alerts', 'alerts'].includes(currentHash);
+        const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help', 'achievements', 'leaderboard', 'price-alerts', 'alerts', 'compliance', 'privacy', 'terms', 'disclosures'].includes(currentHash);
         const isPortfolioActive = currentHash === 'portfolio';
 
         // Desktop Navigation: Dedicated Global Crypto Structure
@@ -198,6 +237,13 @@ const App = {
                         <div class="dropdown-text">
                             <span class="dropdown-title">Price Alerts & Watchlist</span>
                             <span class="dropdown-sub">Custom price trigger alerts & personal simulation watchlist</span>
+                        </div>
+                    </a>
+                    <a href="#compliance" class="dropdown-item ${['compliance', 'privacy', 'terms'].includes(currentHash) ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981;"><i class="fa-solid fa-certificate"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Store Compliance & Legal</span>
+                            <span class="dropdown-sub">Play Store & App Store compliance, privacy & terms</span>
                         </div>
                     </a>
                     <a href="#safety-center" class="dropdown-item ${currentHash === 'safety-center' ? 'active' : ''}" role="menuitem">
@@ -557,6 +603,9 @@ const App = {
             if (typeof FearGreedView !== 'undefined') await FearGreedView.render(container);
         } else if (routePath === 'price-alerts' || routePath === 'alerts') {
             if (typeof PriceAlertsView !== 'undefined') await PriceAlertsView.render(container);
+        } else if (routePath === 'compliance' || routePath === 'privacy' || routePath === 'terms' || routePath === 'disclosures') {
+            const initialTab = routePath === 'privacy' ? 'privacy-policy' : (routePath === 'terms' ? 'terms-of-service' : (routePath === 'disclosures' ? 'disclaimers' : 'store-compliance'));
+            if (typeof ComplianceView !== 'undefined') await ComplianceView.render(container, initialTab);
         } else if (routePath === 'learn' || routePath === 'learning') {
             await LearningView.render(container);
         } else if (routePath.startsWith('learn/') || routePath.startsWith('learning/')) {

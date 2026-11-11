@@ -453,6 +453,79 @@ async function main() {
     assert.strictEqual(fgResult.hasSvgGauge, true, 'Fear & Greed view must render SVG gauge dial');
     console.log('✓ Fear & Greed Sentiment Engine gauge dial and multi-factor meters verified in browser!');
 
+    // Test 13: Instant Crypto Search & Command Palette Modal
+    console.log('\n[Test 13: Instant Crypto Search & Command Palette]');
+    const searchModalResult = await evalInPage(`(() => {
+        if (!window.SearchModal) return { error: 'SearchModal not defined' };
+
+        SearchModal.open();
+        const backdrop = document.getElementById('search-modal-backdrop');
+        const input = document.getElementById('palette-search-input');
+        const items = document.querySelectorAll('.search-result-item');
+
+        const initialCount = items.length;
+        
+        // Test filtering
+        if (input) {
+            input.value = 'Beldex';
+            input.dispatchEvent(new Event('input'));
+        }
+
+        const filteredItems = document.querySelectorAll('.search-result-item');
+        const hasBeldex = Array.from(filteredItems).some(it => it.textContent.includes('Beldex'));
+
+        // Close modal
+        SearchModal.close();
+        const isClosed = document.getElementById('search-modal-backdrop') === null;
+
+        return {
+            hasBackdrop: backdrop !== null,
+            initialCount,
+            filteredCount: filteredItems.length,
+            hasBeldex,
+            isClosed
+        };
+    })()`);
+    console.log('Search Modal Result:', searchModalResult);
+    assert.ok(searchModalResult.initialCount >= 10, 'Search modal must display cryptocurrency assets');
+    assert.strictEqual(searchModalResult.hasBeldex, true, 'Search modal filter must locate Beldex');
+    assert.strictEqual(searchModalResult.isClosed, true, 'Search modal must close cleanly');
+    console.log('✓ Instant Crypto Search & Command Palette verified in browser!');
+
+    // Test 14: App Store & Play Store Compliance & Legal Declarations View
+    console.log('\n[Test 14: App Store & Play Store Compliance View]');
+    const complianceResult = await evalInPage(`(async () => {
+        window.location.hash = '#compliance';
+        await App.route();
+        await new Promise(r => setTimeout(r, 400));
+
+        const hero = document.querySelector('.compliance-hero');
+        const tabs = document.querySelectorAll('.compliance-tab-btn');
+        const table = document.querySelector('.compliance-table');
+        const cards = document.querySelectorAll('.compliance-card');
+
+        // Switch to Privacy Policy tab
+        const privacyTab = Array.from(tabs).find(t => t.getAttribute('data-tab') === 'privacy-policy');
+        if (privacyTab) privacyTab.click();
+        await new Promise(r => setTimeout(r, 200));
+
+        const content = document.getElementById('compliance-tab-content');
+        const hasZeroDataNotice = content ? content.textContent.includes('Zero Financial Data Collection') : false;
+
+        return {
+            hasHero: hero !== null,
+            tabCount: tabs.length,
+            hasTable: table !== null,
+            cardCount: cards.length,
+            hasZeroDataNotice
+        };
+    })()`);
+    console.log('Compliance View Result:', complianceResult);
+    assert.strictEqual(complianceResult.hasHero, true, 'Compliance view must render hero header');
+    assert.strictEqual(complianceResult.tabCount, 4, 'Compliance view must provide all 4 legal tabs');
+    assert.strictEqual(complianceResult.hasZeroDataNotice, true, 'Privacy Policy must certify zero financial data collection');
+    console.log('✓ Store Compliance, Privacy Policy, and Terms of Service certified in browser!');
+
     // Check for runtime errors
     console.log('\nRuntime console errors during test:', consoleErrors);
     assert.strictEqual(consoleErrors.length, 0, 'There should be 0 unhandled console errors');

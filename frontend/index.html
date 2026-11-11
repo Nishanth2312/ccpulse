@@ -2,8 +2,18 @@
 <html lang="en" data-theme="dark">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
     <title>CCPulse - Cryptocurrency Educational & Simulation Platform</title>
+
+    <!-- PWA & Mobile Cross-Platform Standards -->
+    <link rel="manifest" href="./manifest.json">
+    <meta name="theme-color" content="#16C784">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="CCPulse">
+    <link rel="apple-touch-icon" href="./assets/icons/icon-192.png">
+    <link rel="icon" type="image/png" sizes="192x192" href="./assets/icons/icon-192.png">
+    <link rel="icon" type="image/svg+xml" href="./assets/icons/icon.svg">
 
     <!-- MANDATORY Modern Web Guidance for Color Scheme & FOUC Prevention -->
     <meta name="color-scheme" content="light dark">
@@ -48,6 +58,8 @@
         <div id="cg-top-bar" class="cg-top-bar">
             <div class="cg-top-container">
                 <div class="cg-stats-scroll">
+                    <span class="sandbox-indicator-pill"><span class="pulse-dot"></span> Sandbox Mode</span>
+                    <span class="cg-stat-divider">&bull;</span>
                     <span class="cg-stat-item">Coins: <strong class="cg-stat-val" id="cg-stat-coins">15,240</strong></span>
                     <span class="cg-stat-divider">&bull;</span>
                     <span class="cg-stat-item">Exchanges: <strong class="cg-stat-val">1,120</strong></span>
@@ -63,8 +75,13 @@
                     <span class="cg-stat-item"><span class="badge-quota-shield"><i class="fa-solid fa-shield-halved"></i> 30m Quota Shield Active</span></span>
                 </div>
                 <div class="cg-top-right" style="display: flex; align-items: center; gap: 8px;">
+                    <button type="button" class="search-trigger-btn" id="header-search-btn" title="Quick Asset Search (Ctrl+K or /)" aria-label="Search Cryptocurrencies">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                        <span>Search</span>
+                        <span class="kbd-pill">⌘K</span>
+                    </button>
                     <span style="font-size: 0.72rem; color: #8DC647; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
-                        <i class="fa-solid fa-signal"></i> Live Market Feed
+                        <i class="fa-solid fa-signal"></i> Live Feed
                     </span>
                 </div>
             </div>
@@ -88,6 +105,12 @@
                 </nav>
 
                 <div class="header-right">
+                    <!-- PWA Install Button (Appears when installable on Android / Desktop Chrome) -->
+                    <button type="button" id="pwa-install-header-btn" class="pwa-install-pill hidden" title="Install CCPulse Progressive Web App" aria-label="Install App">
+                        <i class="fa-solid fa-mobile-screen-button"></i>
+                        <span>Install App</span>
+                    </button>
+
                     <!-- Live Market Feed Status Pill + Refresh -->
                     <div class="live-feed-pill" title="Live Market & Forex Feeds Connected">
                         <span class="live-pulsing-dot"></span>
@@ -183,14 +206,16 @@
                 </div>
 
                 <div class="footer-col">
-                    <h4>Navigation</h4>
+                    <h4>Navigation & Compliance</h4>
                     <ul class="footer-links">
                         <li><a href="#cryptocurrencies">Cryptocurrency Prices</a></li>
                         <li><a href="#exchanges">Exchanges & Swaps</a></li>
                         <li><a href="#simulator">Trading Simulator</a></li>
                         <li><a href="#portfolio">Virtual Portfolio</a></li>
                         <li><a href="#leaderboard">Leaderboard & League</a></li>
-                        <li><a href="#learn">Crypto Academy</a></li>
+                        <li><a href="#compliance">Store Compliance Declarations</a></li>
+                        <li><a href="#privacy">Privacy Policy</a></li>
+                        <li><a href="#terms">Terms of Service</a></li>
                     </ul>
                 </div>
 
@@ -283,6 +308,8 @@
     <script src="./js/views/tradeJournal.js"></script>
     <script src="./js/views/leaderboard.js"></script>
     <script src="./js/views/fearGreed.js"></script>
+    <script src="./js/views/compliance.js"></script>
+    <script src="./js/views/searchModal.js"></script>
     <script src="./js/app.js"></script>
 </body>
 </html>
