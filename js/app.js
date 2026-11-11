@@ -65,6 +65,7 @@ const App = {
 
         const isCryptosActive = ['cryptocurrencies', 'markets', 'dashboard'].includes(currentHash) || currentHash.startsWith('crypto');
         const isExchangesActive = ['exchanges', 'swap', 'simulator', 'simulation-lab'].includes(currentHash);
+        const isTradeActive = isExchangesActive;
         const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help'].includes(currentHash);
         const isPortfolioActive = currentHash === 'portfolio';
 
@@ -264,7 +265,7 @@ const App = {
         // Update Mobile Bottom Tab Bar active state
         document.querySelectorAll('.bottom-nav-item').forEach(item => {
             const navId = item.getAttribute('data-nav');
-            if (navId === currentHash || (navId === 'simulator' && isTradeActive)) {
+            if (navId === currentHash || (navId === 'simulator' && isTradeActive) || (navId === 'exchanges' && isExchangesActive) || (navId === 'cryptocurrencies' && isCryptosActive)) {
                 item.classList.add('active');
             } else {
                 item.classList.remove('active');
