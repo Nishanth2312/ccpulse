@@ -1,0 +1,46 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs>
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#0C0E14"/>
+      <stop offset="50%" stop-color="#141722"/>
+      <stop offset="100%" stop-color="#080A0F"/>
+    </linearGradient>
+    <linearGradient id="neonBrand" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#16C784"/>
+      <stop offset="60%" stop-color="#10B981"/>
+      <stop offset="100%" stop-color="#8DC647"/>
+    </linearGradient>
+    <filter id="neonGlow" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="12" result="blur"/>
+      <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+    </filter>
+  </defs>
+
+  <!-- Squircle App Background -->
+  <rect x="16" y="16" width="480" height="480" rx="108" fill="url(#bgGrad)" stroke="#16C784" stroke-width="4" stroke-opacity="0.3"/>
+
+  <!-- Subtle Concentric Circular Glow -->
+  <circle cx="256" cy="256" r="160" fill="none" stroke="#16C784" stroke-width="1.5" stroke-opacity="0.15" stroke-dasharray="8 6"/>
+  <circle cx="256" cy="256" r="120" fill="none" stroke="#8DC647" stroke-width="2" stroke-opacity="0.25"/>
+
+  <!-- Central Pulse Waveform Line -->
+  <path d="M 96 256 L 176 256 L 208 176 L 244 336 L 280 208 L 308 288 L 336 256 L 416 256" 
+        fill="none" stroke="url(#neonBrand)" stroke-width="14" stroke-linecap="round" stroke-linejoin="round" filter="url(#neonGlow)"/>
+
+  <!-- Upper Floating Coin -->
+  <circle cx="256" cy="140" r="32" fill="url(#neonBrand)" filter="url(#neonGlow)"/>
+  <circle cx="256" cy="140" r="24" fill="#0C0E14"/>
+  <text x="256" y="148" font-family="system-ui, sans-serif" font-weight="900" font-size="22" fill="#16C784" text-anchor="middle">C</text>
+
+  <!-- Lower Anchor Nodes -->
+  <circle cx="208" cy="176" r="7" fill="#8DC647"/>
+  <circle cx="244" cy="336" r="8" fill="#16C784"/>
+  <circle cx="280" cy="208" r="7" fill="#10B981"/>
+  <circle cx="308" cy="288" r="6" fill="#8DC647"/>
+
+  <!-- CCPulse Wordmark Pill -->
+  <rect x="156" y="380" width="200" height="44" rx="22" fill="#141722" stroke="url(#neonBrand)" stroke-width="2"/>
+  <text x="256" y="408" font-family="system-ui, -apple-system, sans-serif" font-weight="800" font-size="20" fill="#FFFFFF" text-anchor="middle" letter-spacing="1">
+    CC<tspan fill="#8DC647">PULSE</tspan>
+  </text>
+</svg>

@@ -1,0 +1,82 @@
+{
+  "name": "CCPulse - Crypto Simulation & Learning Sandbox",
+  "short_name": "CCPulse",
+  "description": "Next-generation cryptocurrency market simulation and educational platform. Practice trading real-time crypto markets with virtual credits without risking real capital.",
+  "start_url": "./index.html",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#0C0E14",
+  "theme_color": "#16C784",
+  "orientation": "any",
+  "categories": ["education", "finance"],
+  "icons": [
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "./assets/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "./assets/icons/icon.svg",
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Live Market Prices",
+      "short_name": "Markets",
+      "description": "View live cryptocurrency rankings and prices",
+      "url": "./index.html#cryptocurrencies",
+      "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Trading Simulator",
+      "short_name": "Trade",
+      "description": "Simulate spot crypto trades risk-free",
+      "url": "./index.html#simulator",
+      "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Instant Token Swap",
+      "short_name": "Swap",
+      "description": "Simulate DEX coin-to-coin swaps",
+      "url": "./index.html#swap",
+      "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Virtual Portfolio",
+      "short_name": "Portfolio",
+      "description": "Track your simulated portfolio and P&L",
+      "url": "./index.html#portfolio",
+      "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+    },
+    {
+      "name": "Simulation Leaderboard",
+      "short_name": "Leaderboard",
+      "description": "View paper trading league rankings",
+      "url": "./index.html#leaderboard",
+      "icons": [{ "src": "./assets/icons/icon-192.png", "sizes": "192x192" }]
+    }
+  ],
+  "prefer_related_applications": false
+}
