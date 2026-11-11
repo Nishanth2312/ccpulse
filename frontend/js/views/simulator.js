@@ -329,8 +329,12 @@ const SimulatorView = {
                     // Authenticated user atomic trade execution
                     const res = await API.simulator.trade({
                         crypto_id: this.selectedCrypto.id,
+                        cryptoId: this.selectedCrypto.id,
+                        symbol: this.selectedCrypto.symbol,
+                        name: this.selectedCrypto.name,
                         type: this.orderType,
-                        quantity: qty
+                        quantity: qty,
+                        priceUsd: this.selectedCrypto.current_price_usd
                     });
 
                     State.wallet = res.wallet;
@@ -338,7 +342,7 @@ const SimulatorView = {
 
                     feedbackEl.style.background = 'rgba(16, 185, 129, 0.1)';
                     feedbackEl.style.color = 'var(--color-success)';
-                    feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${res.message}`;
+                    feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${res.message || ('Successfully executed simulated ' + this.orderType + ' for ' + qty.toLocaleString() + ' ' + this.selectedCrypto.symbol + '!')}`;
                     feedbackEl.classList.remove('hidden');
                 }
 

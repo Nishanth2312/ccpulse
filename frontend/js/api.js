@@ -216,34 +216,55 @@ const API = {
             try {
                 return await API.request('/simulator/trade', { method: 'POST', body: JSON.stringify(tradeData) });
             } catch (err) {
-                const coin = CLIENT_STATIC_COINS.find(c => c.id === Number(tradeData.cryptoId)) || CLIENT_STATIC_COINS[0];
+                const cid = Number(tradeData.crypto_id || tradeData.cryptoId);
+                const sym = (tradeData.symbol || '').toUpperCase();
+
+                let coin = null;
+                if (State.cryptos && State.cryptos.length) {
+                    coin = State.cryptos.find(c => c.id === cid || (sym && c.symbol.toUpperCase() === sym));
+                }
+                if (!coin) {
+                    coin = CLIENT_STATIC_COINS.find(c => c.id === cid || (sym && c.symbol.toUpperCase() === sym));
+                }
+                if (!coin) {
+                    coin = CLIENT_STATIC_COINS[0];
+                }
+
+                const priceUsd = tradeData.priceUsd ? parseFloat(tradeData.priceUsd) : coin.current_price_usd;
+                const qty = parseFloat(tradeData.quantity);
+
                 if (typeof ClientDB !== 'undefined' && State.currentUser) {
                     const res = ClientDB.trades.execute({
                         userId: State.currentUser.id,
                         crypto: coin,
                         type: tradeData.type,
-                        quantity: tradeData.quantity,
-                        priceUsd: coin.current_price_usd
+                        quantity: qty,
+                        priceUsd: priceUsd
                     });
                     State.wallet = res.wallet;
                     State.notify('wallet');
-                    return res;
+                    return {
+                        success: true,
+                        message: `Successfully executed simulated ${tradeData.type} for ${qty.toLocaleString()} ${coin.symbol}!`,
+                        ...res
+                    };
                 }
                 // Guest fallback trade
                 State.updateGuestTrade({
                     type: tradeData.type,
                     crypto: coin,
-                    quantity: tradeData.quantity,
-                    priceUsd: coin.current_price_usd
+                    quantity: qty,
+                    priceUsd: priceUsd
                 });
                 return {
                     success: true,
+                    message: `Successfully executed simulated ${tradeData.type} for ${qty.toLocaleString()} ${coin.symbol}!`,
                     trade: {
                         tradeType: tradeData.type,
                         symbol: coin.symbol,
-                        quantity: tradeData.quantity,
-                        executionPriceUsd: coin.current_price_usd,
-                        totalCostUsd: tradeData.quantity * coin.current_price_usd
+                        quantity: qty,
+                        executionPriceUsd: priceUsd,
+                        totalCostUsd: qty * priceUsd
                     },
                     wallet: State.guestSession
                 };

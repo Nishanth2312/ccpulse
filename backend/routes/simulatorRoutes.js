@@ -14,13 +14,14 @@ const {
  */
 router.post('/trade', authenticateToken, (req, res) => {
     try {
-        const { crypto_id, type, quantity, custom_price } = req.body;
+        const { crypto_id, cryptoId, type, quantity, custom_price } = req.body;
+        const cid = crypto_id || cryptoId;
 
-        if (!crypto_id || !type || !quantity) {
+        if (!cid || !type || !quantity) {
             return res.status(400).json({ success: false, error: 'Cryptocurrency ID, order type (BUY/SELL), and quantity are required.' });
         }
 
-        const crypto = db.prepare('SELECT * FROM cryptocurrencies WHERE id = ?').get(crypto_id);
+        const crypto = db.prepare('SELECT * FROM cryptocurrencies WHERE id = ?').get(cid);
         if (!crypto) {
             return res.status(404).json({ success: false, error: 'Cryptocurrency not found.' });
         }
