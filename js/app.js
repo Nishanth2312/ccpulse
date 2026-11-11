@@ -63,10 +63,10 @@ const App = {
         const isAdmin = isAuth && State.currentUser.role === 'admin';
         const currentHash = window.location.hash.slice(1).split('?')[0].split('/')[0] || 'cryptocurrencies';
 
-        const isCryptosActive = ['cryptocurrencies', 'markets', 'dashboard'].includes(currentHash) || currentHash.startsWith('crypto');
-        const isExchangesActive = ['exchanges', 'swap', 'simulator', 'simulation-lab'].includes(currentHash);
+        const isCryptosActive = ['cryptocurrencies', 'markets', 'dashboard', 'fear-greed', 'sentiment'].includes(currentHash) || currentHash.startsWith('crypto');
+        const isExchangesActive = ['exchanges', 'swap', 'simulator', 'simulation-lab', 'dca-simulator', 'dca', 'trade-journal', 'journal'].includes(currentHash);
         const isTradeActive = isExchangesActive;
-        const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help'].includes(currentHash);
+        const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help', 'achievements', 'leaderboard', 'price-alerts', 'alerts'].includes(currentHash);
         const isPortfolioActive = currentHash === 'portfolio';
 
         // Desktop Navigation: Dedicated Global Crypto Structure
@@ -108,6 +108,13 @@ const App = {
                             <span class="dropdown-sub">Highest 24h volatility and percentage growth leaders</span>
                         </div>
                     </a>
+                    <a href="#fear-greed" class="dropdown-item ${currentHash === 'fear-greed' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;"><i class="fa-solid fa-gauge-high"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Fear & Greed Sentiment</span>
+                            <span class="dropdown-sub">Multi-factor market psychology gauge & contrarian analysis</span>
+                        </div>
+                    </a>
                 </div>
             </div>
 
@@ -133,6 +140,20 @@ const App = {
                             <span class="dropdown-sub">Real-time order books, buy/sell limit & market execution</span>
                         </div>
                     </a>
+                    <a href="#dca-simulator" class="dropdown-item ${currentHash === 'dca-simulator' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;"><i class="fa-solid fa-calculator"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">DCA Strategy Simulator</span>
+                            <span class="dropdown-sub">Simulate Dollar Cost Averaging vs Lump Sum investing</span>
+                        </div>
+                    </a>
+                    <a href="#trade-journal" class="dropdown-item ${currentHash === 'trade-journal' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(168, 85, 247, 0.15); color: #A855F7;"><i class="fa-solid fa-book-bookmark"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Trading Journal & Analytics</span>
+                            <span class="dropdown-sub">Equity curve, win rates, trade metrics & CSV export</span>
+                        </div>
+                    </a>
                     <a href="#simulation-lab" class="dropdown-item ${currentHash === 'simulation-lab' ? 'active' : ''}" role="menuitem">
                         <div class="dropdown-icon lab-icon"><i class="fa-solid fa-flask-vial"></i></div>
                         <div class="dropdown-text">
@@ -156,6 +177,27 @@ const App = {
                         <div class="dropdown-text">
                             <span class="dropdown-title">Crypto Academy</span>
                             <span class="dropdown-sub">Step-by-step interactive courses, guides & analysis</span>
+                        </div>
+                    </a>
+                    <a href="#leaderboard" class="dropdown-item ${currentHash === 'leaderboard' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(234, 179, 8, 0.15); color: #EAB308;"><i class="fa-solid fa-trophy"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Simulation Leaderboard</span>
+                            <span class="dropdown-sub">Live paper trading league rankings, ROI % & top traders</span>
+                        </div>
+                    </a>
+                    <a href="#achievements" class="dropdown-item ${currentHash === 'achievements' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(236, 72, 153, 0.15); color: #EC4899;"><i class="fa-solid fa-medal"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Achievements & Badges</span>
+                            <span class="dropdown-sub">12 milestones, rank progression & simulator accomplishments</span>
+                        </div>
+                    </a>
+                    <a href="#price-alerts" class="dropdown-item ${currentHash === 'price-alerts' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(14, 165, 233, 0.15); color: #0EA5E9;"><i class="fa-solid fa-bell"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Price Alerts & Watchlist</span>
+                            <span class="dropdown-sub">Custom price trigger alerts & personal simulation watchlist</span>
                         </div>
                     </a>
                     <a href="#safety-center" class="dropdown-item ${currentHash === 'safety-center' ? 'active' : ''}" role="menuitem">
@@ -217,6 +259,45 @@ const App = {
                         <span class="mobile-nav-desc">Instant token swap & spot simulator</span>
                     </div>
                 </a>
+                <a href="#fear-greed" class="mobile-nav-link ${currentHash === 'fear-greed' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(239, 68, 68, 0.15); color: #EF4444;"><i class="fa-solid fa-gauge-high"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Fear & Greed Index</span>
+                        <span class="mobile-nav-desc">Market sentiment gauge & contrarian analysis</span>
+                    </div>
+                </a>
+            </div>
+
+            <div class="drawer-nav-group">
+                <div class="drawer-section-label">Simulation & Tools</div>
+                <a href="#dca-simulator" class="mobile-nav-link ${currentHash === 'dca-simulator' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(59, 130, 246, 0.15); color: #3B82F6;"><i class="fa-solid fa-calculator"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">DCA Strategy Simulator</span>
+                        <span class="mobile-nav-desc">Dollar cost averaging vs lump sum comparison</span>
+                    </div>
+                </a>
+                <a href="#trade-journal" class="mobile-nav-link ${currentHash === 'trade-journal' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(168, 85, 247, 0.15); color: #A855F7;"><i class="fa-solid fa-book-bookmark"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Trading Journal</span>
+                        <span class="mobile-nav-desc">Analytics, win rates, equity curve & export</span>
+                    </div>
+                </a>
+                <a href="#price-alerts" class="mobile-nav-link ${currentHash === 'price-alerts' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(14, 165, 233, 0.15); color: #0EA5E9;"><i class="fa-solid fa-bell"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Price Alerts & Watchlist</span>
+                        <span class="mobile-nav-desc">Breakout alerts & custom asset tracking</span>
+                    </div>
+                </a>
+                <a href="#simulation-lab" class="mobile-nav-link ${currentHash === 'simulation-lab' ? 'active' : ''}">
+                    <div class="mobile-nav-icon lab-icon"><i class="fa-solid fa-flask-vial"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Simulation Stress Lab</span>
+                        <span class="mobile-nav-desc">Test portfolios against market shocks</span>
+                    </div>
+                </a>
             </div>
 
             <div class="drawer-nav-group">
@@ -226,6 +307,20 @@ const App = {
                     <div class="mobile-nav-meta">
                         <span class="mobile-nav-title">Portfolio</span>
                         <span class="mobile-nav-desc">Virtual holdings, 30s cron charts & P&L</span>
+                    </div>
+                </a>
+                <a href="#leaderboard" class="mobile-nav-link ${currentHash === 'leaderboard' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(234, 179, 8, 0.15); color: #EAB308;"><i class="fa-solid fa-trophy"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Simulation Leaderboard</span>
+                        <span class="mobile-nav-desc">Global paper trading league rankings</span>
+                    </div>
+                </a>
+                <a href="#achievements" class="mobile-nav-link ${currentHash === 'achievements' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(236, 72, 153, 0.15); color: #EC4899;"><i class="fa-solid fa-medal"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Achievements & Badges</span>
+                        <span class="mobile-nav-desc">12 milestones & simulator accomplishments</span>
                     </div>
                 </a>
                 <a href="#learn" class="mobile-nav-link ${isLearnActive ? 'active' : ''}">
@@ -450,6 +545,18 @@ const App = {
             await SimulatorView.render(container, preselectedCoin);
         } else if (routePath === 'portfolio') {
             await PortfolioView.render(container);
+        } else if (routePath === 'dca-simulator' || routePath === 'dca') {
+            if (typeof DCASimulatorView !== 'undefined') await DCASimulatorView.render(container);
+        } else if (routePath === 'trade-journal' || routePath === 'journal') {
+            if (typeof TradeJournalView !== 'undefined') await TradeJournalView.render(container);
+        } else if (routePath === 'leaderboard') {
+            if (typeof LeaderboardView !== 'undefined') await LeaderboardView.render(container);
+        } else if (routePath === 'achievements') {
+            if (typeof AchievementsView !== 'undefined') await AchievementsView.render(container);
+        } else if (routePath === 'fear-greed' || routePath === 'sentiment') {
+            if (typeof FearGreedView !== 'undefined') await FearGreedView.render(container);
+        } else if (routePath === 'price-alerts' || routePath === 'alerts') {
+            if (typeof PriceAlertsView !== 'undefined') await PriceAlertsView.render(container);
         } else if (routePath === 'learn' || routePath === 'learning') {
             await LearningView.render(container);
         } else if (routePath.startsWith('learn/') || routePath.startsWith('learning/')) {
