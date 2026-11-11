@@ -387,26 +387,27 @@ const ClientDB = (function() {
 
                 db.users.push(newUser);
 
-                // Create Virtual Wallet with guaranteed $10,000 USD + 1.0 Bitcoin
-                const bonusAmount = parseFloat(db.system_settings.default_welcome_bonus || '10000.00');
+                // Create Virtual Wallet with guaranteed welcome bonus USD + BTC
+                const bonusAmount = parseFloat((db.system_settings && db.system_settings.default_welcome_bonus) || '10000.00');
+                const btcQuantity = parseFloat((db.system_settings && db.system_settings.default_btc_bonus) || '1.0');
                 const btcBonusPrice = 73932.53;
                 const nextWalletId = db.wallets.reduce((max, w) => Math.max(max, w.id), 0) + 1;
-                const initialHoldings = [
+                const initialHoldings = btcQuantity > 0 ? [
                     {
                         crypto_id: 1,
                         symbol: 'BTC',
                         name: 'Bitcoin',
-                        quantity: 1.0,
+                        quantity: btcQuantity,
                         avg_buy_price_usd: btcBonusPrice,
-                        total_invested_usd: btcBonusPrice,
+                        total_invested_usd: btcBonusPrice * btcQuantity,
                         logo_url: './assets/coins/btc.svg'
                     }
-                ];
+                ] : [];
                 const newWallet = {
                     id: nextWalletId,
                     userId: newUser.id,
                     balanceUsd: bonusAmount,
-                    investedUsd: btcBonusPrice,
+                    investedUsd: btcBonusPrice * btcQuantity,
                     welcomeBonusCredited: true,
                     holdings: initialHoldings
                 };
@@ -422,22 +423,24 @@ const ClientDB = (function() {
                     amountUsd: bonusAmount,
                     balanceBeforeUsd: 0,
                     balanceAfterUsd: bonusAmount,
-                    description: 'Guaranteed Welcome Bonus credited upon registration ($10,000.00 USD + 1.0 BTC)',
+                    description: `Guaranteed Welcome Bonus credited upon registration ($${bonusAmount.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD + ${btcQuantity} BTC)`,
                     createdAt: new Date().toISOString()
                 });
 
-                // Log wallet 1.0 BTC gift bonus transaction
-                db.wallet_transactions.push({
-                    id: nextTxId + 1,
-                    walletId: newWallet.id,
-                    userId: newUser.id,
-                    type: 'WELCOME_BONUS',
-                    amountUsd: btcBonusPrice,
-                    balanceBeforeUsd: bonusAmount,
-                    balanceAfterUsd: bonusAmount,
-                    description: 'Welcome Bonus: 1.00000000 BTC Gift Credited to Holdings',
-                    createdAt: new Date(Date.now() + 1000).toISOString()
-                });
+                // Log wallet BTC gift bonus transaction if any
+                if (btcQuantity > 0) {
+                    db.wallet_transactions.push({
+                        id: nextTxId + 1,
+                        walletId: newWallet.id,
+                        userId: newUser.id,
+                        type: 'WELCOME_BONUS',
+                        amountUsd: btcBonusPrice * btcQuantity,
+                        balanceBeforeUsd: bonusAmount,
+                        balanceAfterUsd: bonusAmount,
+                        description: `Welcome Bonus: ${btcQuantity} BTC Gift Credited to Holdings`,
+                        createdAt: new Date(Date.now() + 1000).toISOString()
+                    });
+                }
 
                 saveDatabase();
 
@@ -447,9 +450,10 @@ const ClientDB = (function() {
                     user: newUser,
                     token,
                     wallet: {
+                        balanceUsd: newWallet.balanceUsd,
                         availableCashUsd: newWallet.balanceUsd,
-                        totalInvestedUsd: btcBonusPrice,
-                        totalPortfolioValueUsd: newWallet.balanceUsd + btcBonusPrice,
+                        totalInvestedUsd: btcBonusPrice * btcQuantity,
+                        totalPortfolioValueUsd: newWallet.balanceUsd + (btcBonusPrice * btcQuantity),
                         holdings: initialHoldings
                     },
                     welcomeBonusCredited: true
@@ -621,6 +625,7 @@ const ClientDB = (function() {
                 return {
                     id: wallet.id,
                     userId: wallet.userId,
+                    balanceUsd: wallet.balanceUsd,
                     availableCashUsd: wallet.balanceUsd,
                     investedUsd: totalInvestedUsd,
                     totalPortfolioValueUsd: totalPortfolio,
@@ -1104,6 +1109,161 @@ const ClientDB = (function() {
                     dailyTimeline: rows,
                     dailyBreakdown: rows,
                     lastUpdated: new Date().toISOString()
+                };
+            }
+        },
+
+        // =====================================================================
+        // SYSTEM SETTINGS & POLICIES MANAGEMENT
+        // =====================================================================
+        settings: {
+            get() {
+                const db = loadDatabase();
+                if (!db.system_settings) {
+                    db.system_settings = {
+                        default_welcome_bonus: '10000.00',
+                        default_btc_bonus: '1.0',
+                        default_currency: 'USD',
+                        default_theme: 'dark',
+                        market_refresh_interval_sec: '30',
+                        maintenance_mode: 'false',
+                        swap_fee_percent: '0.15',
+                        allow_guest_trading: true
+                    };
+                    saveDatabase();
+                }
+                return {
+                    default_welcome_bonus: String(db.system_settings.default_welcome_bonus || '10000.00'),
+                    default_btc_bonus: String(db.system_settings.default_btc_bonus || '1.0'),
+                    default_currency: db.system_settings.default_currency || 'USD',
+                    default_theme: db.system_settings.default_theme || 'dark',
+                    market_refresh_interval_sec: String(db.system_settings.market_refresh_interval_sec || '30'),
+                    maintenance_mode: db.system_settings.maintenance_mode === true || db.system_settings.maintenance_mode === 'true' ? 'true' : 'false',
+                    swap_fee_percent: String(db.system_settings.swap_fee_percent || '0.15'),
+                    allow_guest_trading: db.system_settings.allow_guest_trading !== false
+                };
+            },
+
+            update(newSettings) {
+                const db = loadDatabase();
+                if (!db.system_settings) db.system_settings = {};
+
+                if (newSettings.default_welcome_bonus !== undefined) {
+                    const parsed = parseFloat(newSettings.default_welcome_bonus);
+                    db.system_settings.default_welcome_bonus = !isNaN(parsed) && parsed >= 0 ? parsed.toFixed(2) : '10000.00';
+                }
+                if (newSettings.default_btc_bonus !== undefined) {
+                    const parsedBtc = parseFloat(newSettings.default_btc_bonus);
+                    db.system_settings.default_btc_bonus = !isNaN(parsedBtc) && parsedBtc >= 0 ? parsedBtc.toString() : '1.0';
+                }
+                if (newSettings.default_theme !== undefined) {
+                    db.system_settings.default_theme = newSettings.default_theme;
+                }
+                if (newSettings.market_refresh_interval_sec !== undefined) {
+                    db.system_settings.market_refresh_interval_sec = String(newSettings.market_refresh_interval_sec);
+                }
+                if (newSettings.maintenance_mode !== undefined) {
+                    db.system_settings.maintenance_mode = newSettings.maintenance_mode === true || newSettings.maintenance_mode === 'true' ? 'true' : 'false';
+                }
+                if (newSettings.swap_fee_percent !== undefined) {
+                    db.system_settings.swap_fee_percent = String(newSettings.swap_fee_percent);
+                }
+                if (newSettings.allow_guest_trading !== undefined) {
+                    db.system_settings.allow_guest_trading = Boolean(newSettings.allow_guest_trading);
+                }
+                if (newSettings.default_currency !== undefined) {
+                    db.system_settings.default_currency = newSettings.default_currency;
+                }
+
+                saveDatabase();
+
+                if (!db.audit_logs) db.audit_logs = [];
+                const auditId = db.audit_logs.reduce((max, a) => Math.max(max, a.id), 0) + 1;
+                db.audit_logs.unshift({
+                    id: auditId,
+                    admin_username: 'admin',
+                    action: 'UPDATE_SYSTEM_SETTINGS',
+                    entity_type: 'SYSTEM_SETTINGS',
+                    details: `Updated platform settings: Welcome Bonus=$${db.system_settings.default_welcome_bonus} USD, BTC=${db.system_settings.default_btc_bonus || '1.0'} BTC, Theme=${db.system_settings.default_theme}, Maintenance=${db.system_settings.maintenance_mode}`,
+                    timestamp: new Date().toISOString()
+                });
+                saveDatabase();
+
+                return {
+                    success: true,
+                    message: 'Platform settings saved successfully in system database.',
+                    settings: this.get()
+                };
+            },
+
+            airdropBonusToAllUsers(cashAmountUsd = 0, btcAmount = 0) {
+                const db = loadDatabase();
+                const cash = parseFloat(cashAmountUsd) || 0;
+                const btc = parseFloat(btcAmount) || 0;
+                let creditedWallets = 0;
+
+                for (const w of db.wallets) {
+                    let changed = false;
+                    const prevBal = w.balanceUsd || 0;
+                    if (cash > 0) {
+                        w.balanceUsd = prevBal + cash;
+                        if (!db.wallet_transactions) db.wallet_transactions = [];
+                        const nextTxId = db.wallet_transactions.reduce((max, tx) => Math.max(max, tx.id), 0) + 1;
+                        db.wallet_transactions.push({
+                            id: nextTxId,
+                            walletId: w.id,
+                            userId: w.userId,
+                            type: 'WELCOME_BONUS',
+                            amountUsd: cash,
+                            balanceBeforeUsd: prevBal,
+                            balanceAfterUsd: w.balanceUsd,
+                            description: `Admin Welcome Bonus Airdrop: +$${cash.toLocaleString('en-US', { minimumFractionDigits: 2 })} USD credited`,
+                            createdAt: new Date().toISOString()
+                        });
+                        changed = true;
+                    }
+
+                    if (btc > 0) {
+                        if (!w.holdings) w.holdings = [];
+                        const btcHolding = w.holdings.find(h => h.symbol === 'BTC');
+                        if (btcHolding) {
+                            btcHolding.quantity += btc;
+                            btcHolding.total_invested_usd += btc * 73932.53;
+                        } else {
+                            w.holdings.push({
+                                crypto_id: 1,
+                                symbol: 'BTC',
+                                name: 'Bitcoin',
+                                quantity: btc,
+                                avg_buy_price_usd: 73932.53,
+                                total_invested_usd: btc * 73932.53,
+                                logo_url: './assets/coins/btc.svg'
+                            });
+                        }
+                        changed = true;
+                    }
+
+                    if (changed) creditedWallets++;
+                }
+
+                if (!db.audit_logs) db.audit_logs = [];
+                const auditId = db.audit_logs.reduce((max, a) => Math.max(max, a.id), 0) + 1;
+                db.audit_logs.unshift({
+                    id: auditId,
+                    admin_username: 'admin',
+                    action: 'AIRDROP_WELCOME_BONUS',
+                    entity_type: 'WALLETS',
+                    details: `Distributed welcome bonus airdrop (+$${cash.toFixed(2)} USD, +${btc} BTC) across ${creditedWallets} user wallets`,
+                    timestamp: new Date().toISOString()
+                });
+
+                saveDatabase();
+
+                return {
+                    success: true,
+                    creditedWallets,
+                    cashDistributedUsd: cash * creditedWallets,
+                    btcDistributed: btc * creditedWallets
                 };
             }
         },

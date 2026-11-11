@@ -1914,3 +1914,501 @@ dialog::backdrop {
     }
 }
 
+/* ===================================================================
+   CLOUDFLARE-STYLE ENTERPRISE ADMIN CONSOLE NAVIGATION & LAYOUT
+   =================================================================== */
+
+.cf-admin-container {
+    display: flex;
+    align-items: stretch;
+    min-height: calc(100vh - var(--header-height) - 100px);
+    margin: -24px -20px -32px -20px;
+    position: relative;
+    font-family: var(--font-family);
+}
+
+/* Left Sidebar - Cloudflare Styled */
+.cf-admin-sidebar {
+    width: 260px;
+    min-width: 260px;
+    max-width: 260px;
+    background: #0B1124;
+    border-right: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: width var(--transition-normal), transform var(--transition-normal);
+    z-index: 100;
+    position: relative;
+}
+
+:root[data-theme="light"] .cf-admin-sidebar {
+    background: #F8FAFC;
+    border-right: 1px solid #E2E8F0;
+}
+
+.cf-admin-sidebar-inner {
+    padding: 20px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    overflow-y: auto;
+    max-height: calc(100vh - 100px);
+    scrollbar-width: thin;
+}
+
+/* Cloudflare Brand Header */
+.cf-brand {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 6px 8px 12px 8px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] .cf-brand {
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.cf-brand-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 8px;
+    background: linear-gradient(135deg, #F6821F 0%, #FAAD3F 100%);
+    color: #FFFFFF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    box-shadow: 0 4px 12px rgba(246, 130, 31, 0.35);
+}
+
+.cf-brand-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1.1;
+    letter-spacing: -0.02em;
+}
+
+.cf-brand-badge {
+    display: inline-block;
+    font-size: 0.68rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: #F6821F;
+    letter-spacing: 0.05em;
+}
+
+.cf-domain-pill {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255, 255, 255, 0.04);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    padding: 6px 10px;
+    font-size: 0.78rem;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+}
+
+:root[data-theme="light"] .cf-domain-pill {
+    background: #EDF2F7;
+    border-color: #CBD5E1;
+    color: #334155;
+}
+
+.cf-search-box {
+    position: relative;
+    margin-bottom: 4px;
+}
+
+.cf-search-box input {
+    width: 100%;
+    padding: 7px 10px 7px 30px;
+    font-size: 0.82rem;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .cf-search-box input {
+    background: #FFFFFF;
+    border-color: #CBD5E1;
+}
+
+.cf-search-box i {
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+/* Nav Groups & Items */
+.cf-nav-section {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    margin-bottom: 12px;
+}
+
+.cf-nav-heading {
+    font-size: 0.68rem;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--text-muted);
+    padding: 6px 10px 4px 10px;
+    user-select: none;
+}
+
+.cf-nav-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.86rem;
+    font-weight: 600;
+    color: var(--text-secondary);
+    background: transparent;
+    border: 1px solid transparent;
+    cursor: pointer;
+    text-align: left;
+    transition: all 0.18s ease;
+    width: 100%;
+}
+
+.cf-nav-item:hover {
+    background: rgba(255, 255, 255, 0.05);
+    color: var(--text-primary);
+}
+
+:root[data-theme="light"] .cf-nav-item:hover {
+    background: #E2E8F0;
+    color: #0F172A;
+}
+
+.cf-nav-item.active {
+    background: rgba(246, 130, 31, 0.14);
+    color: #F6821F !important;
+    border-color: rgba(246, 130, 31, 0.3);
+    font-weight: 700;
+}
+
+:root[data-theme="light"] .cf-nav-item.active {
+    background: rgba(246, 130, 31, 0.12);
+    color: #D96509 !important;
+    border-color: rgba(246, 130, 31, 0.35);
+}
+
+.cf-nav-item-content {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    flex: 1;
+}
+
+.cf-nav-item-icon {
+    width: 20px;
+    text-align: center;
+    font-size: 0.95rem;
+    color: var(--text-muted);
+    transition: color 0.18s ease;
+}
+
+.cf-nav-item.active .cf-nav-item-icon {
+    color: #F6821F;
+}
+
+:root[data-theme="light"] .cf-nav-item.active .cf-nav-item-icon {
+    color: #D96509;
+}
+
+.cf-nav-badge {
+    font-size: 0.7rem;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.1);
+    color: var(--text-secondary);
+}
+
+.cf-nav-badge.danger {
+    background: rgba(255, 59, 48, 0.2);
+    color: var(--color-danger);
+}
+
+.cf-nav-badge.warning {
+    background: rgba(245, 158, 11, 0.2);
+    color: #F59E0B;
+}
+
+.cf-nav-badge.success {
+    background: rgba(0, 230, 118, 0.2);
+    color: var(--color-success);
+}
+
+/* Sidebar Footer Profile & Collapse */
+.cf-sidebar-footer {
+    padding: 12px 14px;
+    border-top: 1px solid rgba(255, 255, 255, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+:root[data-theme="light"] .cf-sidebar-footer {
+    border-top: 1px solid #E2E8F0;
+}
+
+.cf-admin-profile {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 6px 8px;
+    border-radius: 6px;
+    background: rgba(255, 255, 255, 0.03);
+}
+
+:root[data-theme="light"] .cf-admin-profile {
+    background: #EDF2F7;
+}
+
+.cf-avatar {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    background: #1E293B;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 0.85rem;
+    color: #F6821F;
+}
+
+.cf-profile-info {
+    flex: 1;
+    overflow: hidden;
+}
+
+.cf-profile-name {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.cf-profile-role {
+    font-size: 0.68rem;
+    color: var(--text-muted);
+}
+
+.cf-collapse-btn {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    justify-content: center;
+    padding: 6px 10px;
+    border-radius: 6px;
+    background: transparent;
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    cursor: pointer;
+    width: 100%;
+    transition: all 0.2s ease;
+}
+
+:root[data-theme="light"] .cf-collapse-btn {
+    border-color: #CBD5E1;
+}
+
+.cf-collapse-btn:hover {
+    background: rgba(255, 255, 255, 0.06);
+    color: var(--text-primary);
+}
+
+/* Collapsed Desktop State */
+.cf-admin-sidebar.collapsed {
+    width: 68px;
+    min-width: 68px;
+    max-width: 68px;
+}
+
+.cf-admin-sidebar.collapsed .cf-brand-text,
+.cf-admin-sidebar.collapsed .cf-domain-pill,
+.cf-admin-sidebar.collapsed .cf-search-box,
+.cf-admin-sidebar.collapsed .cf-nav-heading,
+.cf-admin-sidebar.collapsed .cf-nav-item span,
+.cf-admin-sidebar.collapsed .cf-nav-badge,
+.cf-admin-sidebar.collapsed .cf-profile-info,
+.cf-admin-sidebar.collapsed .cf-collapse-btn span {
+    display: none;
+}
+
+.cf-admin-sidebar.collapsed .cf-nav-item {
+    justify-content: center;
+    padding: 10px 0;
+}
+
+/* Main Content Area */
+.cf-admin-main {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+    padding: 20px 24px 40px 24px;
+}
+
+/* Topbar Header */
+.cf-admin-topbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 12px;
+    padding-bottom: 16px;
+    margin-bottom: 24px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+}
+
+:root[data-theme="light"] .cf-admin-topbar {
+    border-bottom: 1px solid #E2E8F0;
+}
+
+.cf-topbar-left {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.cf-mobile-toggle-btn {
+    display: none;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 12px;
+    font-size: 0.85rem;
+    border-radius: 6px;
+    border: 1px solid rgba(246, 130, 31, 0.4);
+    background: rgba(246, 130, 31, 0.1);
+    color: #F6821F;
+    cursor: pointer;
+    font-weight: 700;
+}
+
+.cf-breadcrumbs {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.9rem;
+    color: var(--text-muted);
+}
+
+.cf-breadcrumbs i {
+    font-size: 0.75rem;
+}
+
+.cf-crumb-active {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.cf-topbar-right {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cf-status-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.76rem;
+    padding: 4px 10px;
+    border-radius: 999px;
+    background: rgba(0, 230, 118, 0.12);
+    border: 1px solid rgba(0, 230, 118, 0.3);
+    color: var(--color-success);
+    font-weight: 600;
+}
+
+/* Toast Success Banner for Settings Save */
+.cf-toast-banner {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    background: linear-gradient(135deg, rgba(0, 230, 118, 0.15) 0%, rgba(16, 185, 129, 0.1) 100%);
+    border: 1px solid rgba(0, 230, 118, 0.4);
+    border-left: 4px solid var(--color-success);
+    border-radius: 8px;
+    padding: 14px 18px;
+    margin-bottom: 20px;
+    color: var(--text-primary);
+    font-size: 0.92rem;
+    animation: cfSlideDown 0.3s ease-out;
+}
+
+@keyframes cfSlideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Responsive Drawer on Tablets & Mobile */
+@media (max-width: 992px) {
+    .cf-admin-container {
+        margin: -16px -12px -24px -12px;
+    }
+
+    .cf-mobile-toggle-btn {
+        display: inline-flex;
+    }
+
+    .cf-admin-sidebar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        bottom: 0;
+        height: 100vh;
+        z-index: 2000;
+        transform: translateX(-100%);
+        box-shadow: 4px 0 24px rgba(0, 0, 0, 0.5);
+    }
+
+    .cf-admin-sidebar.mobile-open {
+        transform: translateX(0);
+    }
+
+    .cf-admin-backdrop {
+        position: fixed;
+        inset: 0;
+        background: rgba(0, 0, 0, 0.6);
+        backdrop-filter: blur(4px);
+        z-index: 1999;
+        display: none;
+    }
+
+    .cf-admin-backdrop.active {
+        display: block;
+    }
+
+    .cf-admin-main {
+        padding: 16px 14px 32px 14px;
+    }
+}
+

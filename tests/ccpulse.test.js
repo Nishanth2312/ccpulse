@@ -738,6 +738,79 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         }
     });
 
+    // SCENARIO 30: Cloudflare-Style Left-Hand Sidebar Navigation & Layout Structure
+    test('Scenario 30: Cloudflare-Style Left-Hand Sidebar Navigation & Dedicated Menu Structure', () => {
+        const fs = require('fs');
+        const adminJs = fs.readFileSync(require('path').join(__dirname, '../frontend/js/views/admin.js'), 'utf8');
+        const stylesCss = fs.readFileSync(require('path').join(__dirname, '../frontend/css/styles.css'), 'utf8');
+
+        // Verify Cloudflare sidebar container & layout classes
+        assert.ok(stylesCss.includes('.cf-admin-container'), 'CSS must define .cf-admin-container');
+        assert.ok(stylesCss.includes('.cf-admin-sidebar'), 'CSS must define .cf-admin-sidebar');
+        assert.ok(stylesCss.includes('.cf-admin-backdrop'), 'CSS must define .cf-admin-backdrop for mobile off-canvas drawer');
+        assert.ok(stylesCss.includes('.cf-mobile-toggle-btn'), 'CSS must define mobile toggle button');
+        assert.ok(stylesCss.includes('.cf-nav-item'), 'CSS must define .cf-nav-item');
+        assert.ok(stylesCss.includes('.cf-toast-banner'), 'CSS must define .cf-toast-banner for live feedback without 405 alert');
+
+        // Verify admin view implements Cloudflare left-hand menu sections
+        assert.ok(adminJs.includes('cf-admin-sidebar'), 'AdminView must render Cloudflare-style sidebar');
+        assert.ok(adminJs.includes('data-tab="overview"'), 'AdminView must have overview tab in left menu');
+        assert.ok(adminJs.includes('data-tab="analytics"'), 'AdminView must have analytics tab in left menu');
+        assert.ok(adminJs.includes('data-tab="cryptos"'), 'AdminView must have cryptos tab in left menu');
+        assert.ok(adminJs.includes('data-tab="currencies"'), 'AdminView must have currencies tab in left menu');
+        assert.ok(adminJs.includes('data-tab="users"'), 'AdminView must have users tab in left menu');
+        assert.ok(adminJs.includes('data-tab="balances"'), 'AdminView must have balances tab in left menu');
+        assert.ok(adminJs.includes('data-tab="tickets"'), 'AdminView must have tickets tab in left menu');
+        assert.ok(adminJs.includes('data-tab="settings"'), 'AdminView must have settings tab in left menu');
+        assert.ok(adminJs.includes('data-tab="bonus"'), 'AdminView must have dedicated bonus & airdrop tab in left menu');
+        assert.ok(adminJs.includes('data-tab="swap"'), 'AdminView must have dedicated DEX swap policies tab in left menu');
+        assert.ok(adminJs.includes('data-tab="database"'), 'AdminView must have client database tab in left menu');
+        assert.ok(adminJs.includes('data-tab="audits"'), 'AdminView must have audits tab in left menu');
+    });
+
+    // SCENARIO 31: Welcome Bonus Configuration, 405 Resilience & Retroactive Community Airdrop
+    test('Scenario 31: Welcome Bonus Configuration, 405 Resilience & Retroactive Airdrop', () => {
+        const ClientDB = require('../frontend/js/clientDatabase');
+
+        // 1. Verify ClientDB.settings module
+        assert.ok(ClientDB.settings, 'ClientDB must expose settings manager');
+        assert.ok(typeof ClientDB.settings.get === 'function', 'ClientDB.settings.get must be a function');
+        assert.ok(typeof ClientDB.settings.update === 'function', 'ClientDB.settings.update must be a function');
+        assert.ok(typeof ClientDB.settings.airdropBonusToAllUsers === 'function', 'ClientDB.settings.airdropBonusToAllUsers must be a function');
+
+        // 2. Admin increases welcome bonus to $25,000 USD + 2.5 BTC
+        const updateRes = ClientDB.settings.update({
+            default_welcome_bonus: '25000.00',
+            default_btc_bonus: '2.5'
+        });
+        assert.strictEqual(updateRes.success, true, 'Settings update must succeed');
+        assert.strictEqual(updateRes.settings.default_welcome_bonus, '25000.00');
+        assert.strictEqual(updateRes.settings.default_btc_bonus, '2.5');
+
+        // 3. Register a new user and verify they receive the increased $25,000 USD + 2.5 BTC welcome bonus
+        const regRes = ClientDB.users.register({
+            fullName: 'HighBonus Trader',
+            email: 'highbonus@ccpulse.com',
+            username: 'highbonus',
+            password: 'BonusPass@2026!'
+        });
+        assert.strictEqual(regRes.success, true, 'Registration must succeed with new welcome bonus');
+        assert.strictEqual(regRes.wallet.balanceUsd, 25000.00, 'New user wallet must receive $25,000.00 USD cash bonus');
+        const btcHolding = regRes.wallet.holdings.find(h => h.symbol === 'BTC');
+        assert.ok(btcHolding, 'New user must receive BTC holding');
+        assert.strictEqual(btcHolding.quantity, 2.5, 'New user must receive 2.5 BTC gift');
+
+        // 4. Test retroactive community airdrop (e.g. +$5,000 USD and +0.5 BTC to all users)
+        const initialBal = regRes.wallet.balanceUsd;
+        const airdropRes = ClientDB.settings.airdropBonusToAllUsers(5000, 0.5);
+        assert.strictEqual(airdropRes.success, true, 'Airdrop must succeed');
+        assert.ok(airdropRes.creditedWallets >= 1, 'At least 1 wallet must be credited');
+
+        // Verify recipient's balance increased by airdrop amount
+        const updatedWallet = ClientDB.wallets.getByUserId(regRes.user.id);
+        assert.strictEqual(updatedWallet.balanceUsd, initialBal + 5000, 'Wallet balance must reflect retroactive airdrop');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);
