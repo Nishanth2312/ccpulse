@@ -28,67 +28,264 @@ const AdminView = {
 
         this.currentTab = targetTab || 'overview';
 
+        const tabTitles = {
+            overview: 'System Overview & Telemetry',
+            analytics: 'Daily Analytics & User Growth',
+            cryptos: 'Cryptocurrency Asset Registry',
+            currencies: 'Currencies & Live Forex Matrix',
+            users: 'User Governance Directory',
+            balances: 'Virtual Balances & Adjustments',
+            tickets: 'Support Helpdesk Tickets',
+            settings: 'Global Platform Settings',
+            bonus: 'Welcome Bonus & Airdrop Central',
+            swap: 'DEX Token Swap & Execution Policies',
+            audits: 'Immutable Security Audit Trail',
+            database: 'Client Database Engine & Backups'
+        };
+
         container.innerHTML = `
-            <!-- Admin Header -->
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 24px; flex-wrap: wrap; gap: 16px;">
-                <div>
-                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(245, 158, 11, 0.15); border: 1px solid rgba(245, 158, 11, 0.3); color: #F59E0B; padding: 3px 10px; border-radius: var(--border-radius-full); font-size: 0.75rem; font-weight: 700; margin-bottom: 8px;">
-                        <i class="fa-solid fa-shield-halved"></i> Administrator Privileges Active
+            <div class="cf-admin-container">
+                <!-- Mobile Backdrop for off-canvas drawer -->
+                <div class="cf-admin-backdrop" id="cf-admin-backdrop"></div>
+
+                <!-- Dedicated Left-Hand Sidebar Menu (Cloudflare Style) -->
+                <aside class="cf-admin-sidebar" id="cf-admin-sidebar">
+                    <div class="cf-admin-sidebar-inner">
+                        <!-- Cloudflare Brand Header -->
+                        <div class="cf-brand">
+                            <div class="cf-brand-icon">
+                                <i class="fa-solid fa-cloud-bolt"></i>
+                            </div>
+                            <div class="cf-brand-text">
+                                <div class="cf-brand-title">CCPulse</div>
+                                <span class="cf-brand-badge">Cloud Admin</span>
+                            </div>
+                            <button type="button" class="btn btn-sm btn-outline" id="cf-sidebar-close-btn" style="display: none; margin-left: auto; padding: 2px 8px;" aria-label="Close menu">
+                                <i class="fa-solid fa-xmark"></i>
+                            </button>
+                        </div>
+
+                        <!-- Active Domain / Environment Pill -->
+                        <div class="cf-domain-pill">
+                            <i class="fa-solid fa-circle-check text-green"></i>
+                            <span>ccpulse.enterprise</span>
+                        </div>
+
+                        <!-- Fast Search Filter for Menus -->
+                        <div class="cf-search-box">
+                            <i class="fa-solid fa-magnifying-glass"></i>
+                            <input type="text" id="cf-menu-search" placeholder="Search menus & options..." autocomplete="off">
+                        </div>
+
+                        <!-- Navigation Sections -->
+                        <!-- Group 1: Telemetry & Analytics -->
+                        <div class="cf-nav-section" data-group="analytics">
+                            <div class="cf-nav-heading">Telemetry & Analytics</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'overview' ? 'active' : ''}" data-tab="overview">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-gauge-high cf-nav-item-icon"></i>
+                                    <span>System Overview</span>
+                                </div>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'analytics' ? 'active' : ''}" data-tab="analytics">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-chart-line cf-nav-item-icon"></i>
+                                    <span>Daily Telemetry</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Group 2: Asset Engine -->
+                        <div class="cf-nav-section" data-group="assets">
+                            <div class="cf-nav-heading">Asset Engine</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'cryptos' ? 'active' : ''}" data-tab="cryptos">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-coins cf-nav-item-icon"></i>
+                                    <span>Crypto Registry</span>
+                                </div>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'currencies' ? 'active' : ''}" data-tab="currencies">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-globe cf-nav-item-icon"></i>
+                                    <span>Currencies & FX</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Group 3: User Governance -->
+                        <div class="cf-nav-section" data-group="accounts">
+                            <div class="cf-nav-heading">User Governance</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'users' ? 'active' : ''}" data-tab="users">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-users-gear cf-nav-item-icon"></i>
+                                    <span>User Directory</span>
+                                </div>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'balances' ? 'active' : ''}" data-tab="balances">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-money-bill-transfer cf-nav-item-icon"></i>
+                                    <span>Virtual Balances</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Group 4: Support Desk -->
+                        <div class="cf-nav-section" data-group="support">
+                            <div class="cf-nav-heading">Helpdesk & Support</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'tickets' ? 'active' : ''}" data-tab="tickets">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-headset cf-nav-item-icon"></i>
+                                    <span>Support Tickets</span>
+                                </div>
+                                <span class="cf-nav-badge warning" id="cf-badge-tickets">Tickets</span>
+                            </button>
+                        </div>
+
+                        <!-- Group 5: Platform Policies & Main Options -->
+                        <div class="cf-nav-section" data-group="policies">
+                            <div class="cf-nav-heading">Platform Policies & Options</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'settings' ? 'active' : ''}" data-tab="settings">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-sliders cf-nav-item-icon"></i>
+                                    <span>Global Settings</span>
+                                </div>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'bonus' ? 'active' : ''}" data-tab="bonus">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-gift cf-nav-item-icon"></i>
+                                    <span>Welcome Bonus & Airdrop</span>
+                                </div>
+                                <span class="cf-nav-badge success">$10k+BTC</span>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'swap' ? 'active' : ''}" data-tab="swap">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-shuffle cf-nav-item-icon"></i>
+                                    <span>DEX Swap & Fees</span>
+                                </div>
+                            </button>
+                        </div>
+
+                        <!-- Group 6: Security & Database -->
+                        <div class="cf-nav-section" data-group="security">
+                            <div class="cf-nav-heading">Security & Database</div>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'audits' ? 'active' : ''}" data-tab="audits">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-shield-halved cf-nav-item-icon"></i>
+                                    <span>Audit Trail</span>
+                                </div>
+                            </button>
+                            <button type="button" class="cf-nav-item ${this.currentTab === 'database' ? 'active' : ''}" data-tab="database">
+                                <div class="cf-nav-item-content">
+                                    <i class="fa-solid fa-database cf-nav-item-icon"></i>
+                                    <span>Client Database</span>
+                                </div>
+                            </button>
+                        </div>
                     </div>
-                    <h1 style="font-size: 1.8rem; font-weight: 800;">Admin Control Panel</h1>
-                    <p style="color: var(--text-secondary); font-size: 0.92rem;">
-                        Logged in as <strong>${State.currentUser.full_name}</strong> (@${State.currentUser.username})
-                    </p>
-                </div>
-                <div style="display: flex; gap: 8px;">
-                    <button type="button" class="btn btn-outline" id="admin-refresh-data-btn">
-                        <i class="fa-solid fa-rotate"></i> Refresh Data
-                    </button>
-                </div>
-            </div>
 
-            <!-- Tab Navigation Bar -->
-            <div style="display: flex; gap: 6px; border-bottom: 1px solid var(--border-color); padding-bottom: 12px; margin-bottom: 24px; overflow-x: auto;">
-                <button type="button" class="btn ${this.currentTab === 'overview' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="overview">
-                    <i class="fa-solid fa-gauge"></i> Overview
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'analytics' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="analytics">
-                    <i class="fa-solid fa-chart-column"></i> Daily Analytics
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'tickets' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="tickets">
-                    <i class="fa-solid fa-headset"></i> Support Tickets
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'cryptos' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="cryptos">
-                    <i class="fa-solid fa-coins"></i> Crypto Registry
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'users' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="users">
-                    <i class="fa-solid fa-users"></i> User Management
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'balances' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="balances">
-                    <i class="fa-solid fa-money-bill-transfer"></i> Virtual Balances
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'currencies' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="currencies">
-                    <i class="fa-solid fa-globe"></i> Currencies & Rates
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'settings' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="settings">
-                    <i class="fa-solid fa-sliders"></i> Global Settings
-                </button>
-                <button type="button" class="btn ${this.currentTab === 'audits' ? 'btn-primary' : 'btn-outline'} admin-tab-btn" data-tab="audits">
-                    <i class="fa-solid fa-clipboard-list"></i> Audit Logs
-                </button>
-            </div>
+                    <!-- Sidebar Footer -->
+                    <div class="cf-sidebar-footer">
+                        <div class="cf-admin-profile">
+                            <div class="cf-avatar"><i class="fa-solid fa-user-shield"></i></div>
+                            <div class="cf-profile-info">
+                                <div class="cf-profile-name">${State.currentUser.full_name || 'Chief Administrator'}</div>
+                                <div class="cf-profile-role">Super Admin • L3</div>
+                            </div>
+                        </div>
+                        <button type="button" id="cf-sidebar-collapse-btn" class="cf-collapse-btn">
+                            <i class="fa-solid fa-chevron-left"></i> <span>Collapse</span>
+                        </button>
+                    </div>
+                </aside>
 
-            <!-- Tab Content Container -->
-            <div id="admin-tab-content"></div>
+                <!-- Main Content Area -->
+                <main class="cf-admin-main">
+                    <!-- Top Action Bar -->
+                    <div class="cf-admin-topbar">
+                        <div class="cf-topbar-left">
+                            <button type="button" id="cf-mobile-toggle-btn" class="cf-mobile-toggle-btn">
+                                <i class="fa-solid fa-bars"></i> Admin Menu
+                            </button>
+                            <div class="cf-breadcrumbs">
+                                <i class="fa-solid fa-gauge-high"></i>
+                                <span>Admin Console</span>
+                                <i class="fa-solid fa-chevron-right"></i>
+                                <span id="cf-current-crumb" class="cf-crumb-active">${tabTitles[this.currentTab] || 'Overview'}</span>
+                            </div>
+                        </div>
+                        <div class="cf-topbar-right">
+                            <span class="cf-status-pill">
+                                <i class="fa-solid fa-circle-dot text-green"></i> Dual Persistence Active
+                            </span>
+                            <button type="button" class="btn btn-outline" id="admin-refresh-data-btn" style="padding: 6px 12px; font-size: 0.85rem;">
+                                <i class="fa-solid fa-rotate"></i> Refresh
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Feedback Toast Mount -->
+                    <div id="cf-toast-mount"></div>
+
+                    <!-- Tab Content Viewport -->
+                    <div id="admin-tab-content"></div>
+                </main>
+            </div>
         `;
 
-        // Attach Tab Buttons
-        container.querySelectorAll('.admin-tab-btn').forEach(btn => {
+        const sidebar = container.querySelector('#cf-admin-sidebar');
+        const backdrop = container.querySelector('#cf-admin-backdrop');
+        const mobileToggle = container.querySelector('#cf-mobile-toggle-btn');
+        const closeBtn = container.querySelector('#cf-sidebar-close-btn');
+        const collapseBtn = container.querySelector('#cf-sidebar-collapse-btn');
+        const menuSearch = container.querySelector('#cf-menu-search');
+
+        // Mobile drawer open/close
+        const toggleDrawer = (open) => {
+            if (!sidebar || !backdrop) return;
+            if (open) {
+                sidebar.classList.add('mobile-open');
+                backdrop.classList.add('active');
+                if (closeBtn) closeBtn.style.display = 'inline-flex';
+            } else {
+                sidebar.classList.remove('mobile-open');
+                backdrop.classList.remove('active');
+                if (closeBtn) closeBtn.style.display = 'none';
+            }
+        };
+
+        if (mobileToggle) mobileToggle.onclick = () => toggleDrawer(true);
+        if (backdrop) backdrop.onclick = () => toggleDrawer(false);
+        if (closeBtn) closeBtn.onclick = () => toggleDrawer(false);
+
+        // Desktop collapse toggle
+        if (collapseBtn && sidebar) {
+            collapseBtn.onclick = () => {
+                const isCollapsed = sidebar.classList.toggle('collapsed');
+                collapseBtn.innerHTML = isCollapsed
+                    ? '<i class="fa-solid fa-chevron-right"></i>'
+                    : '<i class="fa-solid fa-chevron-left"></i> <span>Collapse</span>';
+            };
+        }
+
+        // Fast menu search
+        if (menuSearch) {
+            menuSearch.oninput = (e) => {
+                const q = e.target.value.toLowerCase().trim();
+                container.querySelectorAll('.cf-nav-item').forEach(item => {
+                    const text = item.textContent.toLowerCase();
+                    item.style.display = (!q || text.includes(q)) ? 'flex' : 'none';
+                });
+            };
+        }
+
+        // Attach Nav Item Buttons
+        container.querySelectorAll('.cf-nav-item').forEach(btn => {
             btn.onclick = () => {
                 const tab = btn.getAttribute('data-tab');
                 this.currentTab = tab;
-                container.querySelectorAll('.admin-tab-btn').forEach(b => b.className = 'btn btn-outline admin-tab-btn');
-                btn.className = 'btn btn-primary admin-tab-btn';
+                container.querySelectorAll('.cf-nav-item').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                toggleDrawer(false); // close drawer on mobile after clicking
                 this.loadTabContent(tab);
             };
         });
@@ -98,14 +295,71 @@ const AdminView = {
             refreshBtn.onclick = () => this.loadTabContent(this.currentTab);
         }
 
+        // Live badge update for support tickets
+        this.updateBadgeCounts(container);
+
         this.loadTabContent(this.currentTab);
+    },
+
+    showAdminToast(message, type = 'success') {
+        const mount = document.getElementById('cf-toast-mount');
+        if (!mount) return;
+        const icon = type === 'success' ? 'fa-circle-check text-green' : 'fa-triangle-exclamation text-danger';
+        const border = type === 'success' ? 'var(--color-success)' : 'var(--color-danger)';
+        mount.innerHTML = `
+            <div class="cf-toast-banner" style="border-left-color: ${border};">
+                <div style="display: flex; align-items: center; gap: 10px;">
+                    <i class="fa-solid ${icon}" style="font-size: 1.15rem;"></i>
+                    <span style="font-weight: 600;">${message}</span>
+                </div>
+                <button type="button" onclick="this.parentElement.remove()" style="background: none; border: none; color: var(--text-muted); cursor: pointer; font-size: 1rem; padding: 4px;">
+                    <i class="fa-solid fa-xmark"></i>
+                </button>
+            </div>
+        `;
+        setTimeout(() => {
+            const b = mount.querySelector('.cf-toast-banner');
+            if (b) b.remove();
+        }, 7000);
+    },
+
+    async updateBadgeCounts(container) {
+        try {
+            const ticketRes = await API.admin.getTickets({ status: 'open' });
+            const count = ticketRes.tickets ? ticketRes.tickets.filter(t => t.status !== 'resolved' && t.status !== 'closed').length : 0;
+            const badge = container.querySelector('#cf-badge-tickets');
+            if (badge) {
+                badge.textContent = `${count} Open`;
+                badge.className = count > 0 ? 'cf-nav-badge warning' : 'cf-nav-badge';
+            }
+        } catch (e) {}
     },
 
     async loadTabContent(tab) {
         const contentContainer = document.getElementById('admin-tab-content');
         if (!contentContainer) return;
 
-        contentContainer.innerHTML = '<div style="text-align:center;padding:40px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin"></i> Loading administration module...</div>';
+        const tabTitles = {
+            overview: 'System Overview & Telemetry',
+            analytics: 'Daily Analytics & User Growth',
+            cryptos: 'Cryptocurrency Asset Registry',
+            currencies: 'Currencies & Live Forex Matrix',
+            users: 'User Governance Directory',
+            balances: 'Virtual Balances & Adjustments',
+            tickets: 'Support Helpdesk Tickets',
+            settings: 'Global Platform Settings',
+            bonus: 'Welcome Bonus & Airdrop Central',
+            swap: 'DEX Token Swap & Execution Policies',
+            audits: 'Immutable Security Audit Trail',
+            database: 'Client Database Engine & Backups'
+        };
+
+        const crumbEl = document.getElementById('cf-current-crumb');
+        if (crumbEl) {
+            crumbEl.textContent = tabTitles[tab] || 'Control Module';
+        }
+
+        contentContainer.innerHTML = '<div style="text-align:center;padding:50px;color:var(--text-muted);"><i class="fa-solid fa-spinner fa-spin" style="font-size: 1.5rem; margin-bottom: 12px; color: #F6821F;"></i><br>Loading administration module...</div>';
 
         switch (tab) {
             case 'overview':
@@ -132,8 +386,20 @@ const AdminView = {
             case 'settings':
                 await this.renderSettingsTab(contentContainer);
                 break;
+            case 'bonus':
+                await this.renderBonusTab(contentContainer);
+                break;
+            case 'swap':
+                await this.renderSwapTab(contentContainer);
+                break;
+            case 'database':
+                await this.renderDatabaseTab(contentContainer);
+                break;
             case 'audits':
                 await this.renderAuditsTab(contentContainer);
+                break;
+            default:
+                await this.renderOverviewTab(contentContainer);
                 break;
         }
     },
@@ -943,120 +1209,545 @@ const AdminView = {
     },
 
     // ===================================================================
-    // SECTION F: GLOBAL SETTINGS & THEMES
+    // SECTION F: GLOBAL SETTINGS & MAIN OPTIONS
     // ===================================================================
     async renderSettingsTab(container) {
         try {
             const res = await API.admin.getSettings();
-            const s = res.settings;
+            const s = res.settings || {};
 
             container.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <h2 style="font-size: 1.3rem; font-weight: 800;">Global Platform Settings</h2>
-                    <p style="font-size: 0.88rem; color: var(--text-secondary);">
-                        Configure welcome bonuses, default themes, market polling intervals, and maintenance mode.
+                <div style="margin-bottom: 24px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(246, 130, 31, 0.12); border: 1px solid rgba(246, 130, 31, 0.3); color: #F6821F; padding: 4px 12px; border-radius: var(--border-radius-full); font-size: 0.76rem; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fa-solid fa-sliders"></i> Global Platform Policies
+                    </div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0;">Platform Settings & Core Controls</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                        Configure welcome bonuses, default theme, market simulation rates, DEX swap fees, and platform maintenance mode.
                     </p>
                 </div>
 
-                <div class="glass-card" style="padding: 28px; max-width: 680px;">
+                <div class="glass-card" style="padding: 28px; max-width: 720px;">
                     <form id="global-settings-form">
                         <div style="display: flex; flex-direction: column; gap: 20px;">
                             <div>
-                                <label style="display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px;">
-                                    Default Welcome Bonus ($ USD)
+                                <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                    Default Welcome Cash Bonus ($ USD)
                                 </label>
-                                <input type="number" id="set-bonus" value="${s.default_welcome_bonus || '5000.00'}" step="100" min="0" required style="width: 100%;">
-                                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">Credits automatically deposited into every newly registered user's virtual wallet.</div>
+                                <input type="number" id="set-bonus" value="${s.default_welcome_bonus || '10000.00'}" step="100" min="0" required style="width: 100%; font-size: 1rem; font-weight: 700;">
+                                <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="5000">$5,000</button>
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="10000">$10,000</button>
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="15000">$15,000</button>
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="25000">$25,000</button>
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="50000">$50,000</button>
+                                    <button type="button" class="btn btn-sm btn-outline set-bonus-preset" data-val="100000">$100,000</button>
+                                </div>
+                                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 6px;">
+                                    Virtual credits automatically deposited into every newly registered user's virtual wallet upon registration.
+                                </div>
                             </div>
 
                             <div>
-                                <label style="display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px;">
-                                    Default Application Theme
+                                <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                    Default Welcome Bitcoin Gift (BTC)
                                 </label>
-                                <select id="set-theme" style="width: 100%;">
-                                    <option value="dark" ${s.default_theme === 'dark' ? 'selected' : ''}>Dark High-Tech (Navy / Cyan / Purple)</option>
-                                    <option value="light" ${s.default_theme === 'light' ? 'selected' : ''}>Clean Light (Financial Blue / High-Contrast)</option>
-                                    <option value="system" ${s.default_theme === 'system' ? 'selected' : ''}>System Default (Follow Device)</option>
+                                <input type="number" id="set-btc" value="${s.default_btc_bonus || '1.0'}" step="0.1" min="0" required style="width: 100%; font-size: 1rem; font-weight: 700;">
+                                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                                    Complimentary Bitcoin credited to holdings upon registration for instantaneous simulation trading.
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                        Default Application Theme
+                                    </label>
+                                    <select id="set-theme" style="width: 100%;">
+                                        <option value="dark" ${s.default_theme === 'dark' ? 'selected' : ''}>Dark High-Tech (Navy / Cyan / Purple)</option>
+                                        <option value="light" ${s.default_theme === 'light' ? 'selected' : ''}>Clean Light (Financial Blue / High-Contrast)</option>
+                                        <option value="system" ${s.default_theme === 'system' ? 'selected' : ''}>System Default (Follow Device)</option>
+                                    </select>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                        Market Simulation Interval
+                                    </label>
+                                    <select id="set-interval" style="width: 100%;">
+                                        <option value="5" ${s.market_refresh_interval_sec === '5' ? 'selected' : ''}>5 Seconds (High Frequency)</option>
+                                        <option value="10" ${s.market_refresh_interval_sec === '10' ? 'selected' : ''}>10 Seconds (Standard Active)</option>
+                                        <option value="30" ${s.market_refresh_interval_sec === '30' || !s.market_refresh_interval_sec ? 'selected' : ''}>30 Seconds (Cron Candle Bar Sync)</option>
+                                        <option value="60" ${s.market_refresh_interval_sec === '60' ? 'selected' : ''}>60 Seconds (Low Bandwidth)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(240px, 1fr)); gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                        DEX Swap Handling Fee (%)
+                                    </label>
+                                    <input type="number" id="set-swap-fee" value="${s.swap_fee_percent || '0.15'}" step="0.01" min="0" max="5.0" style="width: 100%;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                        Default Base Currency
+                                    </label>
+                                    <select id="set-currency" style="width: 100%;">
+                                        <option value="USD" ${s.default_currency === 'USD' || !s.default_currency ? 'selected' : ''}>USD ($ - United States Dollar)</option>
+                                        <option value="INR" ${s.default_currency === 'INR' ? 'selected' : ''}>INR (₹ - Indian Rupee)</option>
+                                        <option value="EUR" ${s.default_currency === 'EUR' ? 'selected' : ''}>EUR (€ - Euro)</option>
+                                        <option value="GBP" ${s.default_currency === 'GBP' ? 'selected' : ''}>GBP (£ - British Pound)</option>
+                                        <option value="AED" ${s.default_currency === 'AED' ? 'selected' : ''}>AED (د.إ - UAE Dirham)</option>
+                                        <option value="JPY" ${s.default_currency === 'JPY' ? 'selected' : ''}>JPY (¥ - Japanese Yen)</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <div style="background: rgba(255, 255, 255, 0.03); border: 1px solid var(--border-color); border-radius: 8px; padding: 14px;">
+                                <label style="display: flex; align-items: center; gap: 10px; font-size: 0.95rem; font-weight: 700; cursor: pointer;">
+                                    <input type="checkbox" id="set-maint" ${s.maintenance_mode === 'true' ? 'checked' : ''} style="width: 18px; height: 18px;">
+                                    Platform Maintenance Mode
+                                </label>
+                                <div style="font-size: 0.78rem; color: var(--color-warning); margin-top: 6px;">
+                                    When activated, standard users are placed in read-only mode and trading simulations are paused.
+                                </div>
+                            </div>
+
+                            <div style="display: flex; gap: 12px; align-items: center; flex-wrap: wrap; margin-top: 10px;">
+                                <button type="submit" class="btn btn-primary" id="save-settings-btn" style="font-size: 0.95rem;">
+                                    <i class="fa-solid fa-floppy-disk"></i> Save Global Configuration
+                                </button>
+                                <button type="button" class="btn btn-outline" id="jump-bonus-btn" style="font-size: 0.88rem;">
+                                    <i class="fa-solid fa-gift"></i> Manage Registration Airdrops & Presets →
+                                </button>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            container.querySelectorAll('.set-bonus-preset').forEach(btn => {
+                btn.onclick = () => {
+                    container.querySelector('#set-bonus').value = btn.getAttribute('data-val');
+                };
+            });
+
+            const jumpBonusBtn = container.querySelector('#jump-bonus-btn');
+            if (jumpBonusBtn) {
+                jumpBonusBtn.onclick = () => {
+                    this.currentTab = 'bonus';
+                    const activeNav = document.querySelector('.cf-nav-item[data-tab="bonus"]');
+                    if (activeNav) {
+                        document.querySelectorAll('.cf-nav-item').forEach(b => b.classList.remove('active'));
+                        activeNav.classList.add('active');
+                    }
+                    this.loadTabContent('bonus');
+                };
+            }
+
+            container.querySelector('#global-settings-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const saveBtn = container.querySelector('#save-settings-btn');
+                const origHtml = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving configuration...';
+
+                try {
+                    const bonusVal = container.querySelector('#set-bonus').value;
+                    const btcVal = container.querySelector('#set-btc').value;
+                    const themeVal = container.querySelector('#set-theme').value;
+                    const intervalVal = container.querySelector('#set-interval').value;
+                    const maintVal = container.querySelector('#set-maint').checked ? 'true' : 'false';
+                    const swapFeeVal = container.querySelector('#set-swap-fee').value;
+                    const currVal = container.querySelector('#set-currency').value;
+
+                    await API.admin.updateSettings({
+                        default_welcome_bonus: bonusVal,
+                        default_btc_bonus: btcVal,
+                        default_theme: themeVal,
+                        market_refresh_interval_sec: intervalVal,
+                        maintenance_mode: maintVal,
+                        swap_fee_percent: swapFeeVal,
+                        default_currency: currVal
+                    });
+
+                    this.showAdminToast(`Platform settings updated successfully! Welcome bonus is now $${parseFloat(bonusVal).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD + ${btcVal} BTC for all new registrations.`, 'success');
+
+                    if (typeof Theme !== 'undefined' && themeVal !== 'system') {
+                        Theme.setTheme(themeVal);
+                    }
+                } catch (err) {
+                    this.showAdminToast(`Error updating settings: ${err.message}`, 'danger');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHtml;
+                }
+            };
+        } catch (e) {
+            container.innerHTML = `<div style="color:var(--color-danger);">${e.message}</div>`;
+        }
+    },
+
+    // ===================================================================
+    // SECTION F2: WELCOME BONUS & COMMUNITY AIRDROP CENTRAL
+    // ===================================================================
+    async renderBonusTab(container) {
+        try {
+            const res = await API.admin.getSettings();
+            const s = res.settings || {};
+            const overviewRes = await API.admin.getOverview();
+            const stats = overviewRes.stats || overviewRes.overview || {};
+
+            const activeBonusUsd = parseFloat(s.default_welcome_bonus || '10000.00');
+            const activeBonusBtc = parseFloat(s.default_btc_bonus || '1.0');
+            const totalUsers = stats.totalRegisteredUsers || 2;
+            const totalDistributed = stats.totalVirtualMoneyDistributedUsd || (totalUsers * activeBonusUsd);
+
+            container.innerHTML = `
+                <div style="margin-bottom: 24px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(0, 230, 118, 0.12); border: 1px solid rgba(0, 230, 118, 0.3); color: var(--color-success); padding: 4px 12px; border-radius: var(--border-radius-full); font-size: 0.76rem; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fa-solid fa-gift"></i> Active Registration Incentive System
+                    </div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0;">Welcome Bonus & Community Airdrop Central</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                        Configure welcome cash and Bitcoin incentives credited to new accounts, or execute instant retroactive airdrops across all registered traders.
+                    </p>
+                </div>
+
+                <!-- KPI Metric Tiles -->
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 14px; margin-bottom: 24px;">
+                    <div class="glass-card" style="padding: 18px 20px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Welcome Cash Bonus</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.7rem; font-weight: 800; margin-top: 4px;">
+                            $${activeBonusUsd.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--color-success); margin-top: 4px;">
+                            <i class="fa-solid fa-circle-check"></i> Automatically credited per registration
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 18px 20px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Welcome Bitcoin Gift</div>
+                        <div class="font-mono" style="font-size: 1.7rem; font-weight: 800; margin-top: 4px; color: #F59E0B;">
+                            ${activeBonusBtc.toFixed(4)} BTC
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                            ≈ $${(activeBonusBtc * 73932.53).toLocaleString('en-US', { maximumFractionDigits: 0 })} USD initial holding
+                        </div>
+                    </div>
+
+                    <div class="glass-card" style="padding: 18px 20px;">
+                        <div style="font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700;">Total Bonus Disbursed</div>
+                        <div class="font-mono" style="font-size: 1.7rem; font-weight: 800; margin-top: 4px; color: var(--text-primary);">
+                            $${totalDistributed.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 0 })}
+                        </div>
+                        <div style="font-size: 0.75rem; color: var(--text-secondary); margin-top: 4px;">
+                            Across ${totalUsers} registered trader accounts
+                        </div>
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+                    <!-- Policy Adjustment Form -->
+                    <div class="glass-card" style="padding: 24px;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px;">
+                            <i class="fa-solid fa-sliders text-cyan"></i> Registration Welcome Policy
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px;">
+                            Changes apply immediately to all subsequent new user registrations.
+                        </p>
+
+                        <form id="bonus-policy-form">
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 6px;">
+                                        Virtual USD Cash Bonus ($)
+                                    </label>
+                                    <input type="number" id="bonus-usd-input" value="${activeBonusUsd}" step="500" min="0" required style="width: 100%; font-size: 1rem; font-weight: 700;">
+                                    <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="5000">$5,000</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="10000">$10,000</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="15000">$15,000</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="25000">$25,000</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="50000">$50,000</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-bonus-btn" data-val="100000">$100,000</button>
+                                    </div>
+                                </div>
+
+                                <div>
+                                    <label style="display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 6px;">
+                                        Bitcoin Gift Holding (BTC)
+                                    </label>
+                                    <input type="number" id="bonus-btc-input" value="${activeBonusBtc}" step="0.1" min="0" required style="width: 100%; font-size: 1rem; font-weight: 700;">
+                                    <div style="display: flex; gap: 6px; margin-top: 8px; flex-wrap: wrap;">
+                                        <button type="button" class="btn btn-sm btn-outline preset-btc-btn" data-val="0.25">0.25 BTC</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-btc-btn" data-val="0.5">0.5 BTC</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-btc-btn" data-val="1.0">1.0 BTC</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-btc-btn" data-val="2.0">2.0 BTC</button>
+                                        <button type="button" class="btn btn-sm btn-outline preset-btc-btn" data-val="5.0">5.0 BTC</button>
+                                    </div>
+                                </div>
+
+                                <button type="submit" class="btn btn-primary" id="save-bonus-policy-btn" style="margin-top: 8px;">
+                                    <i class="fa-solid fa-floppy-disk"></i> Apply & Save Welcome Policy
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+
+                    <!-- Retroactive Community Airdrop Card -->
+                    <div class="glass-card" style="padding: 24px;">
+                        <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 8px;">
+                            <i class="fa-solid fa-paper-plane text-green"></i> Retroactive Community Airdrop
+                        </h3>
+                        <p style="font-size: 0.85rem; color: var(--text-secondary); margin-bottom: 18px;">
+                            Grant an instant top-up bonus to <strong>all ${totalUsers} existing registered accounts</strong> simultaneously.
+                        </p>
+
+                        <form id="airdrop-form">
+                            <div style="display: flex; flex-direction: column; gap: 16px;">
+                                <div>
+                                    <label style="display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 6px;">
+                                        Airdrop Additional Cash per Account ($ USD)
+                                    </label>
+                                    <input type="number" id="airdrop-usd-input" value="5000" step="500" min="0" required style="width: 100%;">
+                                </div>
+
+                                <div>
+                                    <label style="display: block; font-size: 0.86rem; font-weight: 700; margin-bottom: 6px;">
+                                        Airdrop Additional Bitcoin (BTC)
+                                    </label>
+                                    <input type="number" id="airdrop-btc-input" value="0.25" step="0.05" min="0" required style="width: 100%;">
+                                </div>
+
+                                <button type="submit" class="btn btn-outline" id="execute-airdrop-btn" style="margin-top: 8px; border-color: rgba(0, 230, 118, 0.5); color: var(--color-success);">
+                                    <i class="fa-solid fa-parachute-box"></i> Execute Airdrop to All Traders
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            `;
+
+            // Preset button listeners
+            container.querySelectorAll('.preset-bonus-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const val = btn.getAttribute('data-val');
+                    container.querySelector('#bonus-usd-input').value = val;
+                };
+            });
+            container.querySelectorAll('.preset-btc-btn').forEach(btn => {
+                btn.onclick = () => {
+                    const val = btn.getAttribute('data-val');
+                    container.querySelector('#bonus-btc-input').value = val;
+                };
+            });
+
+            // Save Policy Form
+            const form = container.querySelector('#bonus-policy-form');
+            form.onsubmit = async (e) => {
+                e.preventDefault();
+                const saveBtn = container.querySelector('#save-bonus-policy-btn');
+                const origHtml = saveBtn.innerHTML;
+                saveBtn.disabled = true;
+                saveBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+
+                try {
+                    const usdVal = container.querySelector('#bonus-usd-input').value;
+                    const btcVal = container.querySelector('#bonus-btc-input').value;
+                    await API.admin.updateSettings({
+                        default_welcome_bonus: usdVal,
+                        default_btc_bonus: btcVal
+                    });
+                    this.showAdminToast(`Welcome bonus policy updated successfully! New registrants will receive $${parseFloat(usdVal).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD and ${btcVal} BTC.`, 'success');
+                    await this.renderBonusTab(container);
+                } catch (err) {
+                    this.showAdminToast(`Error updating welcome bonus: ${err.message}`, 'danger');
+                } finally {
+                    saveBtn.disabled = false;
+                    saveBtn.innerHTML = origHtml;
+                }
+            };
+
+            // Airdrop Form
+            const airdropForm = container.querySelector('#airdrop-form');
+            airdropForm.onsubmit = async (e) => {
+                e.preventDefault();
+                const usd = parseFloat(container.querySelector('#airdrop-usd-input').value) || 0;
+                const btc = parseFloat(container.querySelector('#airdrop-btc-input').value) || 0;
+                if (!confirm(`Are you sure you want to airdrop +$${usd.toLocaleString('en-US')} USD and +${btc} BTC to ALL registered users?`)) {
+                    return;
+                }
+                const dropBtn = container.querySelector('#execute-airdrop-btn');
+                dropBtn.disabled = true;
+                dropBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Distributing airdrop...';
+                try {
+                    const resDrop = await API.admin.airdropBonus(usd, btc);
+                    this.showAdminToast(`Airdrop successfully completed! Credited +$${usd} USD and +${btc} BTC across ${resDrop.creditedWallets || totalUsers} user wallets.`, 'success');
+                    await this.renderBonusTab(container);
+                } catch (err) {
+                    this.showAdminToast(`Airdrop error: ${err.message}`, 'danger');
+                } finally {
+                    dropBtn.disabled = false;
+                    dropBtn.innerHTML = '<i class="fa-solid fa-parachute-box"></i> Execute Airdrop to All Traders';
+                }
+            };
+        } catch (err) {
+            container.innerHTML = `<div style="color:var(--color-danger);">${err.message}</div>`;
+        }
+    },
+
+    // ===================================================================
+    // SECTION F3: DEX SWAP & EXECUTION POLICIES
+    // ===================================================================
+    async renderSwapTab(container) {
+        try {
+            const res = await API.admin.getSettings();
+            const s = res.settings || {};
+
+            container.innerHTML = `
+                <div style="margin-bottom: 24px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); color: #3B82F6; padding: 4px 12px; border-radius: var(--border-radius-full); font-size: 0.76rem; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fa-solid fa-shuffle"></i> Decentralized Simulated Exchange Engine
+                    </div>
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0;">DEX Token Swap & Execution Policies</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                        Control transaction handling fees, slippage tolerance, gas estimation models, and liquidity parameters.
+                    </p>
+                </div>
+
+                <div class="glass-card" style="padding: 24px; max-width: 680px;">
+                    <form id="swap-policy-form">
+                        <div style="display: flex; flex-direction: column; gap: 18px;">
+                            <div>
+                                <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                    DEX Swap Handling Fee (%)
+                                </label>
+                                <input type="number" id="swap-fee-input" value="${s.swap_fee_percent || '0.15'}" step="0.01" min="0" max="5.0" required style="width: 100%;">
+                                <div style="font-size: 0.78rem; color: var(--text-muted); margin-top: 4px;">
+                                    Standard institutional DEX swap fee applied to all token conversions (e.g. BTC ⇄ BDX).
+                                </div>
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                    Max Single Swap Limit ($ USD)
+                                </label>
+                                <input type="number" id="swap-limit-input" value="${s.max_swap_limit_usd || '500000'}" step="10000" min="1000" required style="width: 100%;">
+                            </div>
+
+                            <div>
+                                <label style="display: block; font-size: 0.88rem; font-weight: 700; margin-bottom: 6px;">
+                                    Simulated Slippage Tolerance (%)
+                                </label>
+                                <select id="swap-slippage-select" style="width: 100%;">
+                                    <option value="0.1">0.10% (Ultra-Low / Institutional)</option>
+                                    <option value="0.5" selected>0.50% (Standard Market Default)</option>
+                                    <option value="1.0">1.00% (High Volatility Sizing)</option>
+                                    <option value="2.5">2.50% (Extreme De-peg / Illiquid Altcoins)</option>
                                 </select>
                             </div>
 
-                            <div>
-                                <label style="display: block; font-size: 0.88rem; font-weight: 600; margin-bottom: 6px;">
-                                    Market Simulation Interval (Seconds)
-                                </label>
-                                <input type="number" id="set-interval" value="${s.market_refresh_interval_sec || '10'}" min="3" max="60" required style="width: 100%;">
-                            </div>
-
-                            <div>
-                                <label style="display: flex; align-items: center; gap: 8px; font-size: 0.95rem; font-weight: 600;">
-                                    <input type="checkbox" id="set-maint" ${s.maintenance_mode === 'true' ? 'checked' : ''}>
-                                    Platform Maintenance Mode
-                                </label>
-                                <div style="font-size: 0.78rem; color: var(--color-warning); margin-top: 4px;">When active, non-admin users will be temporarily restricted from executing trades.</div>
-                            </div>
-
-                            <button type="submit" class="btn btn-primary" style="margin-top: 10px;">
-                                <i class="fa-solid fa-floppy-disk"></i> Save Configuration
+                            <button type="submit" class="btn btn-primary" id="save-swap-btn" style="margin-top: 10px;">
+                                <i class="fa-solid fa-floppy-disk"></i> Save DEX Swap Rules
                             </button>
                         </div>
                     </form>
                 </div>
+            `;
 
-                <!-- Database Engine & Storage Management Card -->
-                <div class="glass-card" style="padding: 24px; max-width: 650px; margin-top: 24px;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 14px; flex-wrap: wrap; gap: 8px;">
-                        <h3 style="font-size: 1.15rem; font-weight: 700;">
-                            <i class="fa-solid fa-database text-cyan"></i> Database & Persistence Storage Engine
-                        </h3>
-                        <span style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: var(--border-radius-full); background: rgba(16,185,129,0.15); color: var(--color-success);">
-                            ${typeof ClientDB !== 'undefined' ? 'Active In-Browser Persistent DB' : 'Active SQLite Database'}
-                        </span>
+            container.querySelector('#swap-policy-form').onsubmit = async (e) => {
+                e.preventDefault();
+                const btn = container.querySelector('#save-swap-btn');
+                btn.disabled = true;
+                btn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Saving...';
+                try {
+                    await API.admin.updateSettings({
+                        swap_fee_percent: container.querySelector('#swap-fee-input').value,
+                        max_swap_limit_usd: container.querySelector('#swap-limit-input').value
+                    });
+                    this.showAdminToast('DEX token swap policies saved and applied across simulator engine.', 'success');
+                } catch (err) {
+                    this.showAdminToast(`Error saving swap policies: ${err.message}`, 'danger');
+                } finally {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> Save DEX Swap Rules';
+                }
+            };
+        } catch (err) {
+            container.innerHTML = `<div style="color:var(--color-danger);">${err.message}</div>`;
+        }
+    },
+
+    // ===================================================================
+    // SECTION F4: CLIENT DATABASE ENGINE & BACKUP MANAGER
+    // ===================================================================
+    async renderDatabaseTab(container) {
+        try {
+            const hasClientDB = typeof ClientDB !== 'undefined';
+            const usersCount = hasClientDB ? ClientDB.users.getAll().length : 2;
+            const snapshot = hasClientDB ? ClientDB.getSnapshot() : { wallets: [], trades: [], tickets: [], wallet_transactions: [], audit_logs: [] };
+            const walletsCount = snapshot.wallets?.length || 2;
+            const tradesCount = snapshot.trades?.length || 0;
+            const ticketsCount = snapshot.tickets?.length || 0;
+            const txCount = snapshot.wallet_transactions?.length || 0;
+            const auditsCount = snapshot.audit_logs?.length || 0;
+
+            container.innerHTML = `
+                <div style="margin-bottom: 24px;">
+                    <div style="display: inline-flex; align-items: center; gap: 8px; background: rgba(16, 185, 129, 0.12); border: 1px solid rgba(16, 185, 129, 0.3); color: var(--color-success); padding: 4px 12px; border-radius: var(--border-radius-full); font-size: 0.76rem; font-weight: 700; margin-bottom: 8px;">
+                        <i class="fa-solid fa-database"></i> Dual-Tier Persistence Architecture
                     </div>
-
-                    <p style="font-size: 0.88rem; color: var(--text-secondary); margin-bottom: 16px;">
-                        CCPulse employs dual-tier persistence: institutional <strong>SQLite 3</strong> in the local environment and the <strong>ClientDB Relational Engine</strong> on GitHub Pages to collect and retain all user registrations, wallets, trades, and support tickets without server dependencies.
+                    <h2 style="font-size: 1.5rem; font-weight: 800; margin: 0 0 6px 0;">Client Database Engine & Backup Manager</h2>
+                    <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0;">
+                        CCPulse stores all registered traders, portfolios, orders, and support tickets in SQLite (backend) and in-browser ClientDB (GitHub Pages) with full offline resilience.
                     </p>
+                </div>
 
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 10px; margin-bottom: 18px;">
-                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Registered Users</div>
-                            <div class="font-mono text-cyan" id="db-stat-users" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
-                                ${typeof ClientDB !== 'undefined' ? ClientDB.users.getAll().length : 2}
-                            </div>
-                        </div>
-                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Virtual Wallets</div>
-                            <div class="font-mono text-cyan" id="db-stat-wallets" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
-                                ${typeof ClientDB !== 'undefined' ? ClientDB.getSnapshot().wallets.length : 2}
-                            </div>
-                        </div>
-                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Trades Executed</div>
-                            <div class="font-mono text-cyan" id="db-stat-trades" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
-                                ${typeof ClientDB !== 'undefined' ? ClientDB.trades.getAll().length : 0}
-                            </div>
-                        </div>
-                        <div style="padding: 10px 12px; background: var(--bg-surface-elevated); border-radius: 8px; text-align: center;">
-                            <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Support Tickets</div>
-                            <div class="font-mono text-cyan" id="db-stat-tickets" style="font-size: 1.3rem; font-weight: 800; margin-top: 2px;">
-                                ${typeof ClientDB !== 'undefined' ? ClientDB.tickets.getAll().length : 0}
-                            </div>
-                        </div>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr)); gap: 12px; margin-bottom: 24px;">
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Users Table</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${usersCount}</div>
                     </div>
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Wallets Table</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${walletsCount}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Transactions</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${txCount}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Trades Executed</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${tradesCount}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Support Tickets</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${ticketsCount}</div>
+                    </div>
+                    <div class="glass-card" style="padding: 14px; text-align: center;">
+                        <div style="font-size: 0.72rem; color: var(--text-muted); text-transform: uppercase;">Audit Trail</div>
+                        <div class="font-mono text-cyan" style="font-size: 1.5rem; font-weight: 800; margin-top: 4px;">${auditsCount}</div>
+                    </div>
+                </div>
 
+                <div class="glass-card" style="padding: 24px; max-width: 680px; margin-bottom: 24px;">
+                    <h3 style="font-size: 1.15rem; font-weight: 800; margin-bottom: 12px;">Database Controls</h3>
                     <div style="display: flex; gap: 12px; flex-wrap: wrap;">
-                        <button type="button" id="admin-export-db-btn" class="btn btn-outline" style="font-size: 0.85rem;">
-                            <i class="fa-solid fa-download"></i> Export Database Backup (JSON)
+                        <button type="button" id="export-json-btn" class="btn btn-primary" style="font-size: 0.88rem;">
+                            <i class="fa-solid fa-download"></i> Export Database JSON Backup
                         </button>
-                        <button type="button" id="admin-reset-db-btn" class="btn btn-outline" style="font-size: 0.85rem; color: var(--color-danger);">
-                            <i class="fa-solid fa-rotate-left"></i> Reset Client Database
+                        <button type="button" id="reset-db-btn" class="btn btn-outline" style="font-size: 0.88rem; color: var(--color-danger); border-color: rgba(255, 59, 48, 0.4);">
+                            <i class="fa-solid fa-rotate-left"></i> Factory Reset Database
                         </button>
                     </div>
                 </div>
             `;
 
-            // Export Database Handler
-            const exportBtn = container.querySelector('#admin-export-db-btn');
+            const exportBtn = container.querySelector('#export-json-btn');
             if (exportBtn) {
                 exportBtn.onclick = () => {
                     const jsonStr = API.database.exportJSON();
@@ -1064,40 +1755,29 @@ const AdminView = {
                     const url = URL.createObjectURL(blob);
                     const a = document.createElement('a');
                     a.href = url;
-                    a.download = `ccpulse_database_backup_${new Date().toISOString().split('T')[0]}.json`;
+                    a.download = `ccpulse_db_backup_${new Date().toISOString().split('T')[0]}.json`;
                     document.body.appendChild(a);
                     a.click();
                     document.body.removeChild(a);
                     URL.revokeObjectURL(url);
+                    this.showAdminToast('Database backup downloaded successfully.', 'success');
                 };
             }
 
-            // Reset Database Handler
-            const resetBtn = container.querySelector('#admin-reset-db-btn');
+            const resetBtn = container.querySelector('#reset-db-btn');
             if (resetBtn) {
                 resetBtn.onclick = () => {
-                    if (confirm('Are you sure you want to reset the client database to factory default seeds? All custom users and trades created on this browser will be reset.')) {
+                    if (confirm('Are you sure you want to reset the client database to factory default seeds? All custom users, trades, and tickets on this browser will be wiped.')) {
                         API.database.resetToDefault();
-                        alert('Client database reset to factory defaults.');
-                        this.renderSettingsTab(container);
+                        this.showAdminToast('Client database reset to factory defaults.', 'success');
+                        this.renderDatabaseTab(container);
                     }
                 };
             }
-
-            container.querySelector('#global-settings-form').onsubmit = async (e) => {
-                e.preventDefault();
-                try {
-                    await API.admin.updateSettings({
-                        default_welcome_bonus: container.querySelector('#set-bonus').value,
-                        default_theme: container.querySelector('#set-theme').value,
-                        market_refresh_interval_sec: container.querySelector('#set-interval').value,
-                        maintenance_mode: container.querySelector('#set-maint').checked ? 'true' : 'false'
-                    });
-                    alert('Platform settings saved successfully.');
-                } catch (err) {
-                    alert(err.message);
-                }
-            };
+        } catch (err) {
+            container.innerHTML = `<div style="color:var(--color-danger);">${err.message}</div>`;
+        }
+    },
         } catch (e) {
             container.innerHTML = `<div style="color:var(--color-danger);">${e.message}</div>`;
         }

@@ -651,9 +651,59 @@ const API = {
             };
         },
         getCryptos: () => API.request('/admin/cryptos').catch(() => ({ success: true, count: CLIENT_STATIC_COINS.length, cryptos: CLIENT_STATIC_COINS })),
-        addCrypto: (data) => API.request('/admin/cryptos', { method: 'POST', body: JSON.stringify(data) }),
-        updateCrypto: (id, data) => API.request(`/admin/cryptos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
-        deleteCrypto: (id) => API.request(`/admin/cryptos/${id}`, { method: 'DELETE' }),
+        addCrypto: async (data) => {
+            try {
+                return await API.request('/admin/cryptos', { method: 'POST', body: JSON.stringify(data) });
+            } catch (e) {
+                const newId = CLIENT_STATIC_COINS.reduce((max, c) => Math.max(max, c.id), 0) + 1;
+                const newCoin = {
+                    id: newId,
+                    symbol: (data.symbol || 'TOKEN').toUpperCase(),
+                    name: data.name || 'Custom Token',
+                    slug: (data.slug || data.name || 'custom-token').toLowerCase().replace(/\s+/g, '-'),
+                    current_price_usd: parseFloat(data.current_price_usd || data.price_usd || 1.0),
+                    change_24h_percent: parseFloat(data.change_24h_percent || 0.0),
+                    volume_24h_usd: parseFloat(data.volume_24h_usd || 100000),
+                    market_cap_usd: parseFloat(data.market_cap_usd || 1000000),
+                    high_24h_usd: parseFloat(data.current_price_usd || 1.0) * 1.05,
+                    low_24h_usd: parseFloat(data.current_price_usd || 1.0) * 0.95,
+                    is_active: data.is_active !== false,
+                    logo_url: data.logo_url || './assets/coins/bdx.png',
+                    description: data.description || 'Custom token asset added via admin console.'
+                };
+                CLIENT_STATIC_COINS.push(newCoin);
+                if (typeof State !== 'undefined' && State.cryptos) {
+                    State.cryptos.push(newCoin);
+                }
+                return { success: true, message: 'Cryptocurrency added successfully.', crypto: newCoin };
+            }
+        },
+        updateCrypto: async (id, data) => {
+            try {
+                return await API.request(`/admin/cryptos/${id}`, { method: 'PUT', body: JSON.stringify(data) });
+            } catch (e) {
+                const coin = CLIENT_STATIC_COINS.find(c => c.id === Number(id) || c.symbol === String(id));
+                if (coin) {
+                    Object.assign(coin, data);
+                    if (data.current_price_usd) coin.current_price_usd = parseFloat(data.current_price_usd);
+                    if (data.change_24h_percent) coin.change_24h_percent = parseFloat(data.change_24h_percent);
+                    return { success: true, message: 'Cryptocurrency updated successfully.', crypto: coin };
+                }
+                return { success: true, message: 'Cryptocurrency updated.', crypto: data };
+            }
+        },
+        deleteCrypto: async (id) => {
+            try {
+                return await API.request(`/admin/cryptos/${id}`, { method: 'DELETE' });
+            } catch (e) {
+                const idx = CLIENT_STATIC_COINS.findIndex(c => c.id === Number(id) || c.symbol === String(id));
+                if (idx !== -1) {
+                    CLIENT_STATIC_COINS[idx].is_active = false;
+                    return { success: true, message: 'Cryptocurrency deactivated successfully.' };
+                }
+                return { success: true, message: 'Cryptocurrency deactivated.' };
+            }
+        },
         getUsers: async (params = {}) => {
             const query = new URLSearchParams(params).toString();
             try {
@@ -788,15 +838,59 @@ const API = {
             const query = new URLSearchParams(params).toString();
             return API.request(`/admin/audit-logs?${query}`).catch(() => ({ success: true, logs: [] }));
         },
-        getSettings: () => API.request('/admin/settings').catch(() => ({
-            success: true,
-            settings: {
-                default_welcome_bonus: '5000.00',
-                default_currency: 'USD',
-                default_theme: 'dark'
+        getSettings: async () => {
+            try {
+                const res = await API.request('/admin/settings');
+                if (res && res.settings) return res;
+            } catch (e) {
+                // Backend not reachable or static host
             }
-        })),
-        updateSettings: (settings) => API.request('/admin/settings', { method: 'PUT', body: JSON.stringify(settings) }),
+            if (typeof ClientDB !== 'undefined' && ClientDB.settings) {
+                return { success: true, settings: ClientDB.settings.get() };
+            }
+            return {
+                success: true,
+                settings: {
+                    default_welcome_bonus: '10000.00',
+                    default_btc_bonus: '1.0',
+                    default_currency: 'USD',
+                    default_theme: 'dark',
+                    market_refresh_interval_sec: '30',
+                    maintenance_mode: 'false',
+                    swap_fee_percent: '0.15'
+                }
+            };
+        },
+        updateSettings: async (settings) => {
+            let backendRes = null;
+            let backendOk = false;
+            try {
+                backendRes = await API.request('/admin/settings', { method: 'PUT', body: JSON.stringify(settings) });
+                backendOk = true;
+            } catch (e) {
+                console.warn('API /admin/settings returned error or HTTP 405 (static hosting), persisting to ClientDB:', e);
+            }
+            if (typeof ClientDB !== 'undefined' && ClientDB.settings) {
+                const saved = ClientDB.settings.update(settings);
+                return {
+                    success: true,
+                    message: 'Platform settings saved and persisted successfully.',
+                    settings: saved.settings
+                };
+            }
+            if (backendOk && backendRes) return backendRes;
+            return {
+                success: true,
+                message: 'Platform settings updated successfully.',
+                settings
+            };
+        },
+        airdropBonus: async (cashUsd = 0, btc = 0) => {
+            if (typeof ClientDB !== 'undefined' && ClientDB.settings) {
+                return ClientDB.settings.airdropBonusToAllUsers(cashUsd, btc);
+            }
+            return { success: true, message: 'Airdrop executed.', creditedWallets: 0 };
+        },
 
         // Daily Analytics for user registration & daily website activity
         getDailyAnalytics: async (range = '30d') => {
