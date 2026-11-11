@@ -1778,10 +1778,6 @@ const AdminView = {
             container.innerHTML = `<div style="color:var(--color-danger);">${err.message}</div>`;
         }
     },
-        } catch (e) {
-            container.innerHTML = `<div style="color:var(--color-danger);">${e.message}</div>`;
-        }
-    },
 
     // ===================================================================
     // SECTION G: AUDIT LOGS
