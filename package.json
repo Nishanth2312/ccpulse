@@ -6,7 +6,8 @@
   "scripts": {
     "start": "node backend/server.js",
     "dev": "node --watch backend/server.js",
-    "test": "node --test tests/ccpulse.test.js"
+    "test": "node --test tests/ccpulse.test.js",
+    "test:smoke": "node tests/test_browser_smoke.js"
   },
   "keywords": [],
   "author": "",

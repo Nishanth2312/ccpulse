@@ -298,7 +298,7 @@ const AdminView = {
         // Live badge update for support tickets
         this.updateBadgeCounts(container);
 
-        this.loadTabContent(this.currentTab);
+        await this.loadTabContent(this.currentTab);
     },
 
     showAdminToast(message, type = 'success') {
@@ -842,6 +842,19 @@ const AdminView = {
         dialog.showModal();
     },
 
+    formatTimeAgo(dateInput) {
+        if (!dateInput) return 'Never';
+        const date = new Date(dateInput);
+        if (isNaN(date.getTime())) return 'Never';
+        const now = Date.now();
+        const diffSec = Math.max(0, Math.floor((now - date.getTime()) / 1000));
+        if (diffSec < 45) return 'Just now';
+        if (diffSec < 3600) return `${Math.floor(diffSec / 60)}m ago`;
+        if (diffSec < 86400) return `${Math.floor(diffSec / 3600)}h ago`;
+        if (diffSec < 604800) return `${Math.floor(diffSec / 86400)}d ago`;
+        return date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    },
+
     // ===================================================================
     // SECTION C: USER MANAGEMENT
     // ===================================================================
@@ -854,9 +867,9 @@ const AdminView = {
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
                     <div>
-                        <h2 style="font-size: 1.3rem; font-weight: 800;">Registered User Management</h2>
+                        <h2 style="font-size: 1.3rem; font-weight: 800;">Registered User Governance Directory</h2>
                         <p style="font-size: 0.88rem; color: var(--text-secondary);">
-                            Manage platform traders, monitor virtual balances, reset passwords, or suspend accounts.
+                            Manage platform traders, monitor virtual balances, increase credits, freeze/block spammed accounts, and audit timing.
                         </p>
                     </div>
                 </div>
@@ -871,8 +884,8 @@ const AdminView = {
                                 <th>Virtual Balance</th>
                                 <th>Holdings</th>
                                 <th>Created</th>
-                                <th>Last Login</th>
-                                <th style="text-align: right;">Actions</th>
+                                <th>Last Usage & Timing</th>
+                                <th style="text-align: right; min-width: 240px;">Admin Governance Controls</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -883,8 +896,11 @@ const AdminView = {
                                 return `
                                 <tr>
                                     <td>
-                                        <div style="font-weight: 700; color: var(--text-primary);">${u.fullName || u.username}</div>
-                                        <div style="font-size: 0.8rem; color: var(--text-muted);">@${u.username} &bull; ${u.email}</div>
+                                        <div style="font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                                            ${u.fullName || u.username}
+                                            ${u.isSpam ? `<span style="font-size: 0.65rem; background: rgba(239, 68, 68, 0.2); color: #EF4444; border: 1px solid rgba(239, 68, 68, 0.35); padding: 1px 6px; border-radius: 4px; font-weight: 800;"><i class="fa-solid fa-triangle-exclamation"></i> SPAM</span>` : ''}
+                                        </div>
+                                        <div style="font-size: 0.78rem; color: var(--text-muted);">@${u.username} &bull; ${u.email}</div>
                                     </td>
                                     <td>
                                         <span style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: var(--border-radius-full); background: ${u.role === 'admin' ? 'rgba(245,158,11,0.15)' : 'rgba(255,255,255,0.05)'}; color: ${u.role === 'admin' ? '#F59E0B' : 'var(--text-secondary)'};">
@@ -892,26 +908,70 @@ const AdminView = {
                                         </span>
                                     </td>
                                     <td>
-                                        <span style="font-size: 0.75rem; font-weight: 700; padding: 2px 8px; border-radius: var(--border-radius-full); background: ${u.isSuspended ? 'rgba(239,68,68,0.15)' : (u.isActive ? 'rgba(16,185,129,0.15)' : 'rgba(100,116,139,0.15)')}; color: ${u.isSuspended ? 'var(--color-danger)' : (u.isActive ? 'var(--color-success)' : 'var(--text-muted)')};">
-                                            ${u.isSuspended ? 'Suspended' : (u.isActive ? 'Active' : 'Deactivated')}
-                                        </span>
+                                        <div style="display: flex; flex-direction: column; gap: 4px;">
+                                            ${u.isSuspended ? `
+                                                <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; background: rgba(239,68,68,0.18); color: #EF4444; display: inline-flex; align-items: center; gap: 4px; width: fit-content;">
+                                                    <i class="fa-solid fa-ban"></i> Blocked
+                                                </span>
+                                            ` : ''}
+                                            ${u.isFrozen ? `
+                                                <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; background: rgba(59,130,246,0.18); color: #3B82F6; display: inline-flex; align-items: center; gap: 4px; width: fit-content;">
+                                                    <i class="fa-solid fa-snowflake"></i> Frozen
+                                                </span>
+                                            ` : ''}
+                                            ${u.isSpam ? `
+                                                <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; background: rgba(245,158,11,0.18); color: #F59E0B; display: inline-flex; align-items: center; gap: 4px; width: fit-content;">
+                                                    <i class="fa-solid fa-triangle-exclamation"></i> Spammed
+                                                </span>
+                                            ` : ''}
+                                            ${!u.isSuspended && !u.isFrozen && !u.isSpam ? `
+                                                <span style="font-size: 0.72rem; font-weight: 700; padding: 2px 7px; border-radius: 12px; background: rgba(16,185,129,0.15); color: #10B981; display: inline-flex; align-items: center; gap: 4px; width: fit-content;">
+                                                    <i class="fa-solid fa-circle-check"></i> Active
+                                                </span>
+                                            ` : ''}
+                                        </div>
                                     </td>
-                                    <td class="font-mono" style="font-weight: 700;">
-                                        ${Currency.format(balance)}
+                                    <td>
+                                        <div class="font-mono" style="font-weight: 700; color: var(--color-success); font-size: 0.95rem;">
+                                            ${Currency.format(balance)}
+                                        </div>
+                                        <button type="button" class="btn btn-outline quick-increase-btn" data-id="${u.id}" data-name="${u.username}" style="font-size: 0.7rem; padding: 2px 6px; margin-top: 4px; border-radius: 8px; color: #10B981; border-color: rgba(16,185,129,0.4);" title="Quick Add Virtual Funds">
+                                            <i class="fa-solid fa-plus"></i> Increase
+                                        </button>
                                     </td>
                                     <td>${holdingsCount} assets</td>
                                     <td style="font-size: 0.8rem; color: var(--text-muted);">${u.createdAt ? new Date(u.createdAt).toLocaleDateString() : 'Recent'}</td>
-                                    <td style="font-size: 0.8rem; color: var(--text-muted);">${u.lastLoginAt ? new Date(u.lastLoginAt).toLocaleDateString() : 'Never'}</td>
+                                    <td>
+                                        <div style="font-size: 0.78rem; line-height: 1.4;">
+                                            <div style="color: var(--text-primary); font-weight: 600;">
+                                                <i class="fa-regular fa-clock" style="color: var(--color-primary); font-size: 0.75rem;"></i> Active: <span class="font-mono">${this.formatTimeAgo(u.lastActiveAt || u.lastLoginAt || u.createdAt)}</span>
+                                            </div>
+                                            <div style="color: var(--text-muted); font-size: 0.74rem;">
+                                                <i class="fa-solid fa-arrow-right-arrow-left" style="font-size: 0.7rem;"></i> ${u.lastTradeAt ? ('Trade: ' + this.formatTimeAgo(u.lastTradeAt)) : 'No trades yet'}
+                                            </div>
+                                        </div>
+                                    </td>
                                     <td style="text-align: right;">
-                                        <div style="display: inline-flex; gap: 6px;">
-                                            <button type="button" class="btn btn-outline user-balance-btn" data-id="${u.id}" data-name="${u.username}" title="Adjust Virtual Balance" style="font-size: 0.78rem; padding: 4px 8px;">
+                                        <div style="display: inline-flex; gap: 5px; flex-wrap: wrap; justify-content: flex-end;">
+                                            <!-- Increase / Adjust Balance -->
+                                            <button type="button" class="btn btn-outline user-balance-btn" data-id="${u.id}" data-name="${u.username}" title="Adjust Virtual Balance" style="font-size: 0.74rem; padding: 3px 7px; color: #10B981; border-color: rgba(16,185,129,0.35);">
                                                 <i class="fa-solid fa-dollar-sign"></i> Balance
                                             </button>
-                                            <button type="button" class="btn btn-outline user-reset-btn" data-id="${u.id}" data-name="${u.username}" title="Reset Password" style="font-size: 0.78rem; padding: 4px 8px;">
-                                                <i class="fa-solid fa-key"></i>
+                                            <!-- Freeze / Unfreeze -->
+                                            <button type="button" class="btn btn-outline user-freeze-btn" data-id="${u.id}" data-name="${u.username}" data-frozen="${Boolean(u.isFrozen)}" title="${u.isFrozen ? 'Unfreeze Account (Allow Trades)' : 'Freeze Account (Block Trades/Swaps)'}" style="font-size: 0.74rem; padding: 3px 7px; color: ${u.isFrozen ? '#3B82F6' : '#94A3B8'}; border-color: ${u.isFrozen ? '#3B82F6' : 'var(--border-color)'};">
+                                                <i class="fa-solid ${u.isFrozen ? 'fa-snowflake' : 'fa-lock'}"></i> ${u.isFrozen ? 'Unfreeze' : 'Freeze'}
                                             </button>
-                                            <button type="button" class="btn btn-outline user-status-btn" data-id="${u.id}" data-active="${u.isActive}" data-suspended="${u.isSuspended}" title="Toggle Account Status" style="font-size: 0.78rem; padding: 4px 8px; color: ${u.isSuspended ? 'var(--color-success)' : 'var(--color-danger)'};">
-                                                <i class="fa-solid ${u.isSuspended ? 'fa-user-check' : 'fa-user-slash'}"></i>
+                                            <!-- Block / Unblock -->
+                                            <button type="button" class="btn btn-outline user-block-btn" data-id="${u.id}" data-name="${u.username}" data-suspended="${Boolean(u.isSuspended)}" title="${u.isSuspended ? 'Unblock Account' : 'Block & Suspend Account'}" style="font-size: 0.74rem; padding: 3px 7px; color: ${u.isSuspended ? '#10B981' : '#EF4444'}; border-color: ${u.isSuspended ? 'rgba(16,185,129,0.4)' : 'rgba(239,68,68,0.4)'};">
+                                                <i class="fa-solid ${u.isSuspended ? 'fa-user-check' : 'fa-ban'}"></i> ${u.isSuspended ? 'Unblock' : 'Block'}
+                                            </button>
+                                            <!-- Mark Spam / Unmark Spam -->
+                                            <button type="button" class="btn btn-outline user-spam-btn" data-id="${u.id}" data-name="${u.username}" data-spam="${Boolean(u.isSpam)}" title="${u.isSpam ? 'Remove Spam Flag' : 'Flag as Spammed Account'}" style="font-size: 0.74rem; padding: 3px 7px; color: ${u.isSpam ? '#F59E0B' : '#64748B'}; border-color: ${u.isSpam ? 'rgba(245,158,11,0.4)' : 'var(--border-color)'};">
+                                                <i class="fa-solid fa-triangle-exclamation"></i> ${u.isSpam ? 'Unspam' : 'Spam'}
+                                            </button>
+                                            <!-- Reset Password -->
+                                            <button type="button" class="btn btn-outline user-reset-btn" data-id="${u.id}" data-name="${u.username}" title="Reset Password" style="font-size: 0.74rem; padding: 3px 7px;">
+                                                <i class="fa-solid fa-key"></i>
                                             </button>
                                         </div>
                                     </td>
@@ -923,7 +983,32 @@ const AdminView = {
                 </div>
             `;
 
-            // Attach user actions
+            // Quick Increase Balance (+) Button
+            container.querySelectorAll('.quick-increase-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.getAttribute('data-id'), 10);
+                    const name = btn.getAttribute('data-name');
+                    const promptAmount = prompt(`Enter virtual USD balance to ADD for @${name}:`, '1000');
+                    if (!promptAmount) return;
+                    const amount = parseFloat(promptAmount);
+                    if (isNaN(amount) || amount <= 0) {
+                        alert('Please enter a valid positive dollar amount.');
+                        return;
+                    }
+                    try {
+                        await API.admin.adjustUserBalance(id, amount, 'Administrative quick balance increase');
+                        if (window.Toast) {
+                            Toast.success(`Successfully increased @${name}'s virtual balance by $${amount.toLocaleString()} USD`, 'Balance Increased', `TX-BAL-${id}`);
+                        }
+                        this.loadTabContent('users');
+                    } catch (e) {
+                        if (window.Toast) Toast.error(e.message, 'Adjustment Failed');
+                        else alert(e.message);
+                    }
+                };
+            });
+
+            // Adjust Balance Modal
             container.querySelectorAll('.user-balance-btn').forEach(btn => {
                 btn.onclick = () => {
                     const id = parseInt(btn.getAttribute('data-id'), 10);
@@ -932,31 +1017,81 @@ const AdminView = {
                 };
             });
 
+            // Freeze / Unfreeze
+            container.querySelectorAll('.user-freeze-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.getAttribute('data-id'), 10);
+                    const name = btn.getAttribute('data-name');
+                    const isFrozen = btn.getAttribute('data-frozen') === 'true';
+                    const targetFrozen = !isFrozen;
+                    const actionLabel = targetFrozen ? 'FREEZE' : 'UNFREEZE';
+
+                    if (confirm(`Are you sure you want to ${actionLabel} account @${name}? ${targetFrozen ? 'This locks all simulated trading & swaps for this user.' : 'This unlocks trading access.'}`)) {
+                        try {
+                            await API.admin.freezeUser(id, targetFrozen, 'Admin security policy');
+                            if (window.Toast) {
+                                Toast.warning(`User @${name} is now ${targetFrozen ? 'FROZEN (Trading locked)' : 'UNFROZEN (Trading unlocked)'}.`, targetFrozen ? 'Account Frozen' : 'Account Unfrozen', `SEC-FRZ-${id}`);
+                            }
+                            this.loadTabContent('users');
+                        } catch (e) {
+                            if (window.Toast) Toast.error(e.message, 'Freeze Action Failed');
+                            else alert(e.message);
+                        }
+                    }
+                };
+            });
+
+            // Block / Unblock
+            container.querySelectorAll('.user-block-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.getAttribute('data-id'), 10);
+                    const name = btn.getAttribute('data-name');
+                    const isSuspended = btn.getAttribute('data-suspended') === 'true';
+                    const targetSuspended = !isSuspended;
+                    const actionLabel = targetSuspended ? 'BLOCK and SUSPEND' : 'UNBLOCK and ACTIVATE';
+
+                    if (confirm(`Are you sure you want to ${actionLabel} user @${name}?`)) {
+                        try {
+                            await API.admin.blockUser(id, targetSuspended, 'Administrative suspension policy');
+                            if (window.Toast) {
+                                Toast.error(`User @${name} is now ${targetSuspended ? 'BLOCKED & SUSPENDED' : 'UNBLOCKED'}.`, targetSuspended ? 'Account Blocked' : 'Account Unblocked', `SEC-BLK-${id}`);
+                            }
+                            this.loadTabContent('users');
+                        } catch (e) {
+                            if (window.Toast) Toast.error(e.message, 'Block Action Failed');
+                            else alert(e.message);
+                        }
+                    }
+                };
+            });
+
+            // Mark Spam / Unmark Spam
+            container.querySelectorAll('.user-spam-btn').forEach(btn => {
+                btn.onclick = async () => {
+                    const id = parseInt(btn.getAttribute('data-id'), 10);
+                    const name = btn.getAttribute('data-name');
+                    const isSpam = btn.getAttribute('data-spam') === 'true';
+                    const targetSpam = !isSpam;
+
+                    try {
+                        await API.admin.markSpamUser(id, targetSpam, 'Flagged as spammed account');
+                        if (window.Toast) {
+                            Toast.info(`User @${name} is now ${targetSpam ? 'FLAGGED AS SPAM' : 'UNMARKED AS SPAM'}.`, 'Spam Status Updated', `SEC-SPAM-${id}`);
+                        }
+                        this.loadTabContent('users');
+                    } catch (e) {
+                        if (window.Toast) Toast.error(e.message, 'Spam Flag Failed');
+                        else alert(e.message);
+                    }
+                };
+            });
+
+            // Reset Password
             container.querySelectorAll('.user-reset-btn').forEach(btn => {
                 btn.onclick = () => {
                     const id = parseInt(btn.getAttribute('data-id'), 10);
                     const name = btn.getAttribute('data-name');
                     this.showResetPasswordModal(id, name);
-                };
-            });
-
-            container.querySelectorAll('.user-status-btn').forEach(btn => {
-                btn.onclick = async () => {
-                    const id = parseInt(btn.getAttribute('data-id'), 10);
-                    const isSuspended = btn.getAttribute('data-suspended') === 'true';
-                    const action = isSuspended ? 'un-suspend and activate' : 'suspend';
-                    if (confirm(`Are you sure you want to ${action} this account?`)) {
-                        try {
-                            await API.admin.updateUserStatus(id, {
-                                is_suspended: !isSuspended,
-                                is_active: isSuspended ? 1 : 1,
-                                reason: 'Administrative status update from admin panel'
-                            });
-                            this.loadTabContent('users');
-                        } catch (e) {
-                            alert(e.message);
-                        }
-                    }
                 };
             });
 
@@ -1009,11 +1144,20 @@ const AdminView = {
                 } else {
                     await API.admin.deductBalance({ target_user_id: userId, amount, audit_reason: reason });
                 }
-                alert(`Successfully applied ${action} of $${amount} USD.`);
+                const msg = `Successfully applied ${action} of $${parseFloat(amount).toLocaleString()} USD for @${username}.`;
+                if (window.Toast) {
+                    Toast.success(msg, 'Balance Adjusted', `TX-ADJ-${userId}`);
+                } else {
+                    alert(msg);
+                }
                 dialog.close();
                 this.loadTabContent('users');
             } catch (err) {
-                alert(err.message);
+                if (window.Toast) {
+                    Toast.error(err.message, 'Adjustment Failed');
+                } else {
+                    alert(err.message);
+                }
             }
         };
 
@@ -1053,10 +1197,18 @@ const AdminView = {
                     temporary_password: dialog.querySelector('#admin-temp-pw').value,
                     reason: dialog.querySelector('#admin-reset-reason').value
                 });
-                alert(res.message);
+                if (window.Toast) {
+                    Toast.success(res.message || `Password reset for @${username}`, 'Password Reset', `SEC-PW-${userId}`);
+                } else {
+                    alert(res.message);
+                }
                 dialog.close();
             } catch (err) {
-                alert(err.message);
+                if (window.Toast) {
+                    Toast.error(err.message, 'Reset Failed');
+                } else {
+                    alert(err.message);
+                }
             }
         };
 

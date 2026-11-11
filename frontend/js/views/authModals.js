@@ -114,6 +114,9 @@ const AuthModals = {
                 const res = await API.auth.login({ email, password, remember_me });
                 State.setAuth(res.user, res.token, res.wallet);
                 dialog.close();
+                if (window.Toast) {
+                    Toast.success(`Signed in as @${res.user.username} (${res.user.role === 'admin' ? 'Administrator' : 'Trader'})`, 'Sign In Successful');
+                }
                 window.location.hash = res.user.role === 'admin' ? '#admin' : '#portfolio';
             } catch (err) {
                 errorBox.textContent = err.message;
@@ -203,6 +206,18 @@ const AuthModals = {
                         </div>
                     </div>
 
+                    <!-- Unique Transaction Security PIN / Password -->
+                    <div style="display: flex; flex-direction: column; gap: 4px; background: rgba(0, 240, 255, 0.04); border: 1px solid rgba(0, 240, 255, 0.2); border-radius: 8px; padding: 10px 12px;">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <label for="reg-tx-password" style="font-size: 0.85rem; font-weight: 700; color: var(--text-primary); display: flex; align-items: center; gap: 6px;">
+                                <i class="fa-solid fa-shield-halved text-cyan"></i> Transaction Security PIN
+                            </label>
+                            <span style="font-size: 0.72rem; color: var(--text-muted);">Default: 123456</span>
+                        </div>
+                        <input type="password" id="reg-tx-password" placeholder="Unique 6-digit PIN / password (e.g. 123456)" autocomplete="new-password" style="font-family: monospace; letter-spacing: 2px;">
+                        <small style="font-size: 0.74rem; color: var(--text-secondary);">Mandatory second-factor security step required to authorize all future Buy, Sell, and Swap transactions.</small>
+                    </div>
+
                     <div style="display: flex; align-items: flex-start; gap: 8px; margin-top: 4px;">
                         <input type="checkbox" id="reg-terms" required style="margin-top: 3px;">
                         <label for="reg-terms" style="font-size: 0.82rem; color: var(--text-secondary); line-height: 1.4;">
@@ -234,6 +249,7 @@ const AuthModals = {
             const email = dialog.querySelector('#reg-email').value;
             const password = dialog.querySelector('#reg-password').value;
             const confirm_password = dialog.querySelector('#reg-confirm-password').value;
+            const transaction_password = dialog.querySelector('#reg-tx-password')?.value?.trim() || '123456';
             const terms_accepted = dialog.querySelector('#reg-terms').checked;
 
             try {
@@ -243,14 +259,20 @@ const AuthModals = {
                     email,
                     password,
                     confirm_password,
+                    transaction_password,
+                    transactionPassword: transaction_password,
                     terms_accepted
                 });
 
                 State.setAuth(res.user, res.token, res.wallet);
                 dialog.close();
 
+                if (window.Toast) {
+                    Toast.success(`Welcome @${username}! $10,000 USD + 1 BTC bonus credited. Security PIN active.`, 'Account Created', `AUTH-${res.user?.id || 'NEW'}`);
+                }
+
                 // Immediately display celebratory Welcome Bonus Modal!
-                this.showWelcomeBonusCelebration(res.welcomeBonusAmount || 5000);
+                this.showWelcomeBonusCelebration(res.welcomeBonusAmount || 10000);
             } catch (err) {
                 errorBox.textContent = err.message;
                 errorBox.classList.remove('hidden');

@@ -410,6 +410,14 @@ const App = {
         }
     },
 
+    showTransactionToast(options) {
+        return Toast.show(options);
+    },
+
+    async promptTransactionSecurity(options) {
+        return SecurityModal.promptTransactionPassword(options);
+    },
+
     async route() {
         const hash = window.location.hash.slice(1) || 'cryptocurrencies';
         const parts = hash.split('?');
@@ -461,6 +469,196 @@ const App = {
         }
     }
 };
+
+// =========================================================================
+// GLOBAL RIGHT-SIDE CORNER TRANSACTION TOAST NOTIFICATION SYSTEM
+// =========================================================================
+const Toast = {
+    show({ title, message, type = 'success', txRef = null, details = null, duration = 6500 }) {
+        let container = document.getElementById('tx-toast-container');
+        if (!container) {
+            container = document.createElement('div');
+            container.id = 'tx-toast-container';
+            container.setAttribute('aria-live', 'polite');
+            document.body.appendChild(container);
+        }
+
+        const toast = document.createElement('div');
+        toast.className = `tx-toast-card tx-toast-${type}`;
+
+        const iconClass = type === 'success' 
+            ? 'fa-circle-check' 
+            : (type === 'error' ? 'fa-circle-xmark' : (type === 'warning' ? 'fa-triangle-exclamation' : 'fa-circle-info'));
+        const now = new Date();
+        const timeStr = now.toLocaleTimeString('en-US', { hour12: false });
+
+        toast.innerHTML = `
+            <div class="tx-toast-header">
+                <div class="tx-toast-title-row">
+                    <span class="tx-toast-icon"><i class="fa-solid ${iconClass}"></i></span>
+                    <strong class="tx-toast-title">${title || (type === 'success' ? 'Transaction Success' : 'Transaction Alert')}</strong>
+                </div>
+                <button type="button" class="tx-toast-close" aria-label="Close notification">&times;</button>
+            </div>
+            <div class="tx-toast-body">${message}</div>
+            <div class="tx-toast-meta">
+                <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
+                ${txRef ? `<span class="tx-toast-badge">${txRef}</span>` : `<span>CCPulse Engine</span>`}
+            </div>
+        `;
+
+        const closeBtn = toast.querySelector('.tx-toast-close');
+        const dismiss = () => {
+            toast.style.opacity = '0';
+            toast.style.transform = 'translateX(60px)';
+            setTimeout(() => toast.remove(), 320);
+        };
+
+        if (closeBtn) closeBtn.onclick = dismiss;
+
+        container.appendChild(toast);
+
+        if (duration > 0) {
+            setTimeout(dismiss, duration);
+        }
+
+        return toast;
+    },
+
+    success(message, title = 'Transaction Successful', txRef = null) {
+        return this.show({ title, message, type: 'success', txRef });
+    },
+
+    error(message, title = 'Transaction Failed', txRef = null) {
+        return this.show({ title, message, type: 'error', txRef });
+    },
+
+    warning(message, title = 'Security Alert', txRef = null) {
+        return this.show({ title, message, type: 'warning', txRef });
+    },
+
+    info(message, title = 'Transaction Notice', txRef = null) {
+        return this.show({ title, message, type: 'info', txRef });
+    }
+};
+
+// =========================================================================
+// TRANSACTION SECURITY PASSWORD CONFIRMATION MODAL
+// =========================================================================
+const SecurityModal = {
+    async promptTransactionPassword({ title, actionDescription, expectedPassword = null }) {
+        return new Promise((resolve) => {
+            const host = document.getElementById('modals-host') || document.body;
+
+            const dialog = document.createElement('dialog');
+            dialog.className = 'tx-security-dialog';
+
+            const user = State.currentUser;
+            const validPassword = expectedPassword || (user && user.transactionPassword) || '123456';
+
+            dialog.innerHTML = `
+                <div class="tx-security-card">
+                    <div class="tx-security-icon-circle">
+                        <i class="fa-solid fa-shield-halved"></i>
+                    </div>
+                    <div style="text-align: center; margin-bottom: 20px;">
+                        <h3 style="font-size: 1.35rem; font-weight: 800; margin-bottom: 6px;">${title || 'Authorize Transaction'}</h3>
+                        <p style="font-size: 0.88rem; color: var(--text-secondary); margin: 0;">
+                            ${actionDescription || 'Please confirm your security transaction password to authorize this execution.'}
+                        </p>
+                    </div>
+
+                    <form id="tx-security-form" style="display: flex; flex-direction: column; gap: 16px;">
+                        <div class="form-group" style="margin: 0;">
+                            <label for="tx-security-pwd" style="display: block; font-size: 0.84rem; font-weight: 700; margin-bottom: 6px;">
+                                Transaction Password / PIN
+                            </label>
+                            <div style="position: relative;">
+                                <input type="password" id="tx-security-pwd" required placeholder="Enter transaction password (e.g. 123456)" 
+                                    class="form-control" style="width: 100%; padding-right: 40px; font-family: monospace; letter-spacing: 2px;" autofocus autocomplete="off" />
+                                <button type="button" id="tx-toggle-pwd-btn" style="position: absolute; right: 10px; top: 50%; transform: translateY(-50%); background: none; border: none; color: var(--text-muted); cursor: pointer;">
+                                    <i class="fa-regular fa-eye"></i>
+                                </button>
+                            </div>
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 6px; font-size: 0.76rem; color: var(--text-muted);">
+                                <span>Default Demo PIN: <strong>123456</strong></span>
+                                <button type="button" id="tx-quick-fill-pin" style="background: none; border: none; color: var(--color-primary); cursor: pointer; text-decoration: underline; padding: 0;">
+                                    Auto-Fill PIN
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="tx-security-error" style="display: none; padding: 8px 12px; background: rgba(239, 68, 68, 0.15); border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 8px; color: #EF4444; font-size: 0.82rem;">
+                            <i class="fa-solid fa-circle-exclamation"></i> <span id="tx-error-msg">Incorrect transaction password.</span>
+                        </div>
+
+                        <div style="display: flex; gap: 10px; margin-top: 4px;">
+                            <button type="button" id="tx-cancel-btn" class="btn btn-outline" style="flex: 1; padding: 10px;">
+                                Cancel
+                            </button>
+                            <button type="submit" id="tx-confirm-btn" class="btn btn-primary" style="flex: 2; padding: 10px; font-weight: 800;">
+                                <i class="fa-solid fa-lock-open"></i> Authorize & Execute
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+
+            host.appendChild(dialog);
+            dialog.showModal();
+
+            const pwdInput = dialog.querySelector('#tx-security-pwd');
+            const toggleBtn = dialog.querySelector('#tx-toggle-pwd-btn');
+            const quickFillBtn = dialog.querySelector('#tx-quick-fill-pin');
+            const cancelBtn = dialog.querySelector('#tx-cancel-btn');
+            const form = dialog.querySelector('#tx-security-form');
+            const errorBox = dialog.querySelector('#tx-security-error');
+            const errorMsg = dialog.querySelector('#tx-error-msg');
+
+            if (toggleBtn) {
+                toggleBtn.onclick = () => {
+                    const isPwd = pwdInput.type === 'password';
+                    pwdInput.type = isPwd ? 'text' : 'password';
+                    toggleBtn.innerHTML = isPwd ? '<i class="fa-regular fa-eye-slash"></i>' : '<i class="fa-regular fa-eye"></i>';
+                };
+            }
+
+            if (quickFillBtn) {
+                quickFillBtn.onclick = () => {
+                    pwdInput.value = validPassword;
+                };
+            }
+
+            const cleanClose = (result) => {
+                dialog.close();
+                dialog.remove();
+                resolve(result);
+            };
+
+            cancelBtn.onclick = () => cleanClose({ authorized: false, reason: 'Cancelled by user.' });
+            dialog.oncancel = () => cleanClose({ authorized: false, reason: 'Cancelled by user.' });
+
+            form.onsubmit = (e) => {
+                e.preventDefault();
+                const entered = pwdInput.value.trim();
+
+                if (entered !== validPassword) {
+                    errorBox.style.display = 'block';
+                    errorMsg.textContent = 'Incorrect transaction password. Please enter the valid PIN.';
+                    pwdInput.value = '';
+                    pwdInput.focus();
+                    Toast.error('Transaction security PIN verification failed.', 'Verification Failed');
+                    return;
+                }
+
+                cleanClose({ authorized: true, password: entered });
+            };
+        });
+    }
+};
+
+window.Toast = Toast;
+window.SecurityModal = SecurityModal;
 
 // Bootstrap application on DOM ready
 document.addEventListener('DOMContentLoaded', () => {

@@ -79,7 +79,11 @@ app.use(express.static(FRONTEND_DIR));
 // Fallback to index.html for Single Page Application navigation
 app.use((req, res, next) => {
     if (req.method === 'GET' && !req.path.startsWith('/api')) {
-        return res.sendFile(path.join(FRONTEND_DIR, 'index.html'));
+        return res.sendFile(path.resolve(FRONTEND_DIR, 'index.html'), (err) => {
+            if (err && !res.headersSent) {
+                res.status(404).end();
+            }
+        });
     }
     next();
 });

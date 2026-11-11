@@ -889,6 +889,110 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(marketsJs.includes('4. Repeat & Master'), 'MarketsView must include Repeat step');
     });
 
+    test('Scenario 34: Transaction Toast Notification System & Right-Side Corner Popups', () => {
+        const stylesCss = fs.readFileSync(path.join(__dirname, '../frontend/css/styles.css'), 'utf8');
+        const indexHtml = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
+        const appJs = fs.readFileSync(path.join(__dirname, '../frontend/js/app.js'), 'utf8');
+        const simJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/simulator.js'), 'utf8');
+        const swapJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/swap.js'), 'utf8');
+
+        // 1. Toast Container in HTML and CSS
+        assert.ok(indexHtml.includes('id="tx-toast-container"'), 'index.html must have #tx-toast-container for corner popups');
+        assert.ok(stylesCss.includes('#tx-toast-container'), 'CSS must position #tx-toast-container in the top-right corner');
+        assert.ok(stylesCss.includes('position: fixed;'), 'Toast container must be fixed');
+        assert.ok(stylesCss.includes('z-index: 999999;'), 'Toast container must overlay all modal backdrops');
+        assert.ok(stylesCss.includes('.tx-toast-card'), 'CSS must define .tx-toast-card with animations');
+
+        // 2. Global Toast Dispatcher in app.js
+        assert.ok(appJs.includes('const Toast = {'), 'app.js must define Toast notification system');
+        assert.ok(appJs.includes('success('), 'Toast must support success toasts');
+        assert.ok(appJs.includes('error('), 'Toast must support error toasts');
+        assert.ok(appJs.includes('warning('), 'Toast must support warning toasts');
+        assert.ok(appJs.includes('window.Toast = Toast;'), 'Toast must be exported to window.Toast');
+
+        // 3. Simulator and Swap Views hook into Toast notifications
+        assert.ok(simJs.includes('Toast.success'), 'SimulatorView must trigger Toast.success on executed order');
+        assert.ok(simJs.includes('Toast.error'), 'SimulatorView must trigger Toast.error on failure');
+        assert.ok(swapJs.includes('Toast.success'), 'SwapView must trigger Toast.success on executed swap');
+        assert.ok(swapJs.includes('Toast.error'), 'SwapView must trigger Toast.error on failure');
+    });
+
+    test('Scenario 35: Transaction Password / PIN Security Verification & Trade Protection', () => {
+        const appJs = fs.readFileSync(path.join(__dirname, '../frontend/js/app.js'), 'utf8');
+        const clientDbJs = fs.readFileSync(path.join(__dirname, '../frontend/js/clientDatabase.js'), 'utf8');
+        const simJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/simulator.js'), 'utf8');
+        const swapJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/swap.js'), 'utf8');
+        const authModalsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/authModals.js'), 'utf8');
+
+        // 1. Security modal in app.js
+        assert.ok(appJs.includes('SecurityModal'), 'app.js must provide SecurityModal');
+        assert.ok(appJs.includes('promptTransactionPassword'), 'app.js must implement promptTransactionPassword');
+        assert.ok(appJs.includes('promptTransactionSecurity'), 'App must expose promptTransactionSecurity');
+
+        // 2. Transaction password support in clientDatabase.js
+        assert.ok(clientDbJs.includes('transactionPassword'), 'ClientDB must store transactionPassword');
+        assert.ok(clientDbJs.includes('verifyTransactionPassword'), 'ClientDB must verify transaction passwords');
+        assert.ok(clientDbJs.includes('setTransactionPassword'), 'ClientDB must allow updating transaction password');
+
+        // 3. Trade and Swap views enforce transaction security prompt
+        assert.ok(simJs.includes('promptTransactionSecurity'), 'SimulatorView must call promptTransactionSecurity before dispatch');
+        assert.ok(swapJs.includes('promptTransactionSecurity'), 'SwapView must call promptTransactionSecurity before dispatch');
+
+        // 4. Registration modal allows specifying transaction password
+        assert.ok(authModalsJs.includes('reg-tx-password'), 'Registration modal must include transaction password input');
+        assert.ok(authModalsJs.includes('transaction_password'), 'Registration handler must pass transaction password');
+    });
+
+    test('Scenario 36: Admin Governance: Balance Increase, Account Freeze/Unfreeze, Block & Spam Flagging', () => {
+        const clientDbJs = fs.readFileSync(path.join(__dirname, '../frontend/js/clientDatabase.js'), 'utf8');
+        const adminJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/admin.js'), 'utf8');
+        const apiJs = fs.readFileSync(path.join(__dirname, '../frontend/js/api.js'), 'utf8');
+
+        // 1. ClientDB methods for admin controls
+        assert.ok(clientDbJs.includes('freezeUser'), 'ClientDB must support freezeUser');
+        assert.ok(clientDbJs.includes('blockUser'), 'ClientDB must support blockUser');
+        assert.ok(clientDbJs.includes('markSpamUser'), 'ClientDB must support markSpamUser');
+        assert.ok(clientDbJs.includes('adjustBalance'), 'ClientDB must support adjustBalance');
+
+        // 2. Enforce freeze and suspension locks on trades & swaps
+        assert.ok(clientDbJs.includes('Account is frozen'), 'ClientDB trades must block execution when account is frozen');
+        assert.ok(clientDbJs.includes('Account is suspended'), 'ClientDB trades must block execution when account is suspended');
+
+        // 3. API admin helpers
+        assert.ok(apiJs.includes('freezeUser:'), 'API.admin must provide freezeUser');
+        assert.ok(apiJs.includes('blockUser:'), 'API.admin must provide blockUser');
+        assert.ok(apiJs.includes('markSpamUser:'), 'API.admin must provide markSpamUser');
+        assert.ok(apiJs.includes('adjustUserBalance:'), 'API.admin must provide adjustUserBalance');
+
+        // 4. Admin UI buttons and badges in admin.js
+        assert.ok(adminJs.includes('quick-increase-btn'), 'admin.js must provide quick increase balance button');
+        assert.ok(adminJs.includes('user-freeze-btn'), 'admin.js must provide freeze/unfreeze button');
+        assert.ok(adminJs.includes('user-block-btn'), 'admin.js must provide block/unblock button');
+        assert.ok(adminJs.includes('user-spam-btn'), 'admin.js must provide spam moderation button');
+        assert.ok(adminJs.includes('Frozen'), 'admin.js must display Frozen status badge');
+        assert.ok(adminJs.includes('Spammed'), 'admin.js must display Spammed status badge');
+        assert.ok(adminJs.includes('formatTimeAgo'), 'admin.js must display last activity timing');
+    });
+
+    test('Scenario 37: Homepage Table View Switcher (Smooth Cubic Bezier Curve vs 7-Day Candlestick Bar View)', () => {
+        const marketsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/markets.js'), 'utf8');
+
+        // 1. Chart view mode switcher buttons
+        assert.ok(marketsJs.includes('btn-chart-curve'), 'MarketsView must provide Curve view button');
+        assert.ok(marketsJs.includes('btn-chart-candle'), 'MarketsView must provide Candle view button');
+        assert.ok(marketsJs.includes('th-toggle-chart-mode'), 'MarketsView must provide column header toggle');
+
+        // 2. Smooth Cubic Bezier Curve implementation
+        assert.ok(marketsJs.includes('renderSmoothCurve'), 'MarketsView must implement renderSmoothCurve');
+        assert.ok(marketsJs.includes('Catmull-Rom') || marketsJs.includes('cp1x'), 'renderSmoothCurve must use cubic bezier control points for flexible smooth curve');
+        assert.ok(marketsJs.includes('linearGradient'), 'renderSmoothCurve must include subtle gradient fill area');
+
+        // 3. 7-Day Candlestick Bars implementation
+        assert.ok(marketsJs.includes('renderCandleBars'), 'MarketsView must implement renderCandleBars');
+        assert.ok(marketsJs.includes('line'), 'renderCandleBars must render high/low wicks');
+        assert.ok(marketsJs.includes('rect'), 'renderCandleBars must render open/close candle bodies');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);
