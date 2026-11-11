@@ -835,6 +835,60 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(apiJs.includes('FOREX_CACHE_TTL_MS = 30 * 60 * 1000'), '30-minute forex cache TTL must be defined');
     });
 
+    // SCENARIO 33: CoinGecko Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus
+    test('Scenario 33: CoinGecko Authentic Theme, Telemetry Bar, High-Density Table & Dedicated Menus', () => {
+        const fs = require('fs');
+        const path = require('path');
+        const indexHtml = fs.readFileSync(path.join(__dirname, '../frontend/index.html'), 'utf8');
+        const stylesCss = fs.readFileSync(path.join(__dirname, '../frontend/css/styles.css'), 'utf8');
+        const appJs = fs.readFileSync(path.join(__dirname, '../frontend/js/app.js'), 'utf8');
+        const marketsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/markets.js'), 'utf8');
+
+        // 1. Verify CoinGecko Theme Tokens in styles.css
+        assert.ok(stylesCss.includes('--bg-page: #0C0E14;'), 'Dark mode must use CoinGecko dark slate #0C0E14');
+        assert.ok(stylesCss.includes('--bg-surface: #141722;'), 'Dark mode surface must use CoinGecko #141722');
+        assert.ok(stylesCss.includes('--color-primary: #16C784;'), 'Primary color must use CoinGecko green #16C784');
+        assert.ok(stylesCss.includes('--color-danger: #EA3943;'), 'Danger color must use CoinGecko red #EA3943');
+        assert.ok(stylesCss.includes('.cg-top-bar'), 'CSS must define CoinGecko top telemetry bar');
+        assert.ok(stylesCss.includes('.cg-highlights-grid'), 'CSS must define CoinGecko highlights 3-card grid');
+        assert.ok(stylesCss.includes('.cg-table'), 'CSS must define CoinGecko high-density table');
+        assert.ok(stylesCss.includes('.cg-sparkline-svg'), 'CSS must define SVG sparkline chart');
+        assert.ok(stylesCss.includes('.nexus-features-grid'), 'CSS must define nexus features process grid');
+
+        // 2. Verify Top Telemetry Bar in index.html
+        assert.ok(indexHtml.includes('id="cg-top-bar"'), 'index.html must have CoinGecko global telemetry bar');
+        assert.ok(indexHtml.includes('Coins:'), 'Telemetry bar must display Coins count');
+        assert.ok(indexHtml.includes('Exchanges:'), 'Telemetry bar must display Exchanges count');
+        assert.ok(indexHtml.includes('Market Cap:'), 'Telemetry bar must display Market Cap');
+        assert.ok(indexHtml.includes('24h Vol:'), 'Telemetry bar must display 24h Volume');
+        assert.ok(indexHtml.includes('Dominance:'), 'Telemetry bar must display Dominance');
+        assert.ok(indexHtml.includes('ETH Gas:'), 'Telemetry bar must display Gas');
+        assert.ok(indexHtml.includes('30m Quota Shield Active'), 'Telemetry bar must indicate active quota shield');
+
+        // 3. Verify Dedicated CoinGecko Menus in app.js
+        assert.ok(appJs.includes('Cryptocurrencies'), 'app.js must define Cryptocurrencies menu');
+        assert.ok(appJs.includes('Exchanges'), 'app.js must define Exchanges menu');
+        assert.ok(appJs.includes('Learn'), 'app.js must define Learn menu');
+        assert.ok(appJs.includes('Portfolio'), 'app.js must define Portfolio menu');
+        assert.ok(appJs.includes('#cryptocurrencies'), 'app.js must route #cryptocurrencies');
+        assert.ok(appJs.includes('#exchanges'), 'app.js must route #exchanges');
+        assert.ok(appJs.includes('#learn'), 'app.js must route #learn');
+        assert.ok(appJs.includes('#portfolio'), 'app.js must route #portfolio');
+
+        // 4. Verify MarketsView features in markets.js
+        assert.ok(marketsJs.includes('Cryptocurrency Prices by Market Cap'), 'MarketsView must display CoinGecko heading');
+        assert.ok(marketsJs.includes('cg-highlights-grid'), 'MarketsView must render top 3 highlights cards');
+        assert.ok(marketsJs.includes('Market Cap Overview'), 'MarketsView must render Market Cap chart card');
+        assert.ok(marketsJs.includes('Trending Coins'), 'MarketsView must render Trending coins card');
+        assert.ok(marketsJs.includes('Largest 24h Movers'), 'MarketsView must render Movers card');
+        assert.ok(marketsJs.includes('renderSparkline'), 'MarketsView must render SVG sparkline mini charts');
+        assert.ok(marketsJs.includes('How Does CCPulse Work?'), 'MarketsView must render process cards');
+        assert.ok(marketsJs.includes('1. Register'), 'MarketsView must include Register step');
+        assert.ok(marketsJs.includes('2. Simulate & Trade'), 'MarketsView must include Simulate step');
+        assert.ok(marketsJs.includes('3. Rewards & P&L'), 'MarketsView must include Rewards step');
+        assert.ok(marketsJs.includes('4. Repeat & Master'), 'MarketsView must include Repeat step');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

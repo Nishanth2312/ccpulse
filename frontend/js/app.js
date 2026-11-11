@@ -61,54 +61,75 @@ const App = {
         const mobileNav = document.getElementById('mobile-nav-links');
         const isAuth = State.currentUser && !State.isGuest;
         const isAdmin = isAuth && State.currentUser.role === 'admin';
-        const currentHash = window.location.hash.slice(1).split('?')[0].split('/')[0] || 'dashboard';
+        const currentHash = window.location.hash.slice(1).split('?')[0].split('/')[0] || 'cryptocurrencies';
 
-        const isTradeActive = ['simulator', 'portfolio', 'swap', 'simulation-lab'].includes(currentHash);
-        const isLearnActive = ['learning', 'safety-center'].includes(currentHash);
+        const isCryptosActive = ['cryptocurrencies', 'markets', 'dashboard'].includes(currentHash) || currentHash.startsWith('crypto');
+        const isExchangesActive = ['exchanges', 'swap', 'simulator', 'simulation-lab'].includes(currentHash);
+        const isLearnActive = ['learn', 'learning', 'safety-center', 'support', 'help'].includes(currentHash);
+        const isPortfolioActive = currentHash === 'portfolio';
 
-        // Desktop Navigation: Clean, spacious with hover dropdown menus
+        // Desktop Navigation: Dedicated CoinGecko-Style Structure
+        // Cryptocurrencies | Exchanges | Learn | Portfolio | (Admin)
         const desktopHtml = `
-            <div class="nav-item">
-                <a href="#dashboard" class="nav-link ${currentHash === 'dashboard' ? 'active' : ''}">
-                    <i class="fa-solid fa-house"></i>
-                    <span>Dashboard</span>
-                </a>
-            </div>
-
-            <div class="nav-item">
-                <a href="#markets" class="nav-link ${currentHash === 'markets' ? 'active' : ''}">
-                    <i class="fa-solid fa-chart-line"></i>
-                    <span>Markets</span>
-                </a>
-            </div>
-
-            <!-- Trade & Simulation Hover Dropdown -->
-            <div class="nav-item nav-dropdown" id="nav-dropdown-trade">
-                <a href="#simulator" class="nav-link nav-dropdown-trigger ${isTradeActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
-                    <i class="fa-solid fa-bolt"></i>
-                    <span>Trade</span>
+            <!-- Cryptocurrencies Menu with Hover Dropdown -->
+            <div class="nav-item nav-dropdown" id="nav-dropdown-cryptos">
+                <a href="#cryptocurrencies" class="nav-link nav-dropdown-trigger ${isCryptosActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-coins"></i>
+                    <span>Cryptocurrencies</span>
                     <i class="fa-solid fa-chevron-down nav-arrow"></i>
                 </a>
                 <div class="nav-dropdown-menu" role="menu">
+                    <a href="#cryptocurrencies" class="dropdown-item ${currentHash === 'cryptocurrencies' || currentHash === 'markets' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(22, 199, 132, 0.15); color: #16C784;"><i class="fa-solid fa-ranking-star"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">By Market Cap</span>
+                            <span class="dropdown-sub">Live ranking, prices, 1h/24h/7d metrics & 7d sparkline charts</span>
+                        </div>
+                    </a>
+                    <a href="#cryptocurrencies?tab=trending" class="dropdown-item" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(245, 158, 11, 0.15); color: #F59E0B;"><i class="fa-solid fa-fire"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Highlights & Trending</span>
+                            <span class="dropdown-sub">Most active and trending cryptocurrencies in last 24h</span>
+                        </div>
+                    </a>
+                    <a href="#cryptocurrencies?filter=PRIVACY" class="dropdown-item" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;"><i class="fa-solid fa-shield-cat"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Privacy Blockchains</span>
+                            <span class="dropdown-sub">Beldex (BDX), Monero (XMR) & confidential transaction assets</span>
+                        </div>
+                    </a>
+                    <a href="#cryptocurrencies?tab=gainers" class="dropdown-item" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(16, 185, 129, 0.15); color: #10B981;"><i class="fa-solid fa-rocket"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Top Gainers & Movers</span>
+                            <span class="dropdown-sub">Highest 24h volatility and percentage growth leaders</span>
+                        </div>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Exchanges Menu with Hover Dropdown -->
+            <div class="nav-item nav-dropdown" id="nav-dropdown-exchanges">
+                <a href="#exchanges" class="nav-link nav-dropdown-trigger ${isExchangesActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
+                    <i class="fa-solid fa-repeat"></i>
+                    <span>Exchanges</span>
+                    <i class="fa-solid fa-chevron-down nav-arrow"></i>
+                </a>
+                <div class="nav-dropdown-menu" role="menu">
+                    <a href="#swap" class="dropdown-item ${currentHash === 'swap' || currentHash === 'exchanges' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(22, 199, 132, 0.15); color: #16C784;"><i class="fa-solid fa-repeat"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Instant DEX Token Swap</span>
+                            <span class="dropdown-sub">Convert coin to coin with network gas & handling fees</span>
+                        </div>
+                    </a>
                     <a href="#simulator" class="dropdown-item ${currentHash === 'simulator' ? 'active' : ''}" role="menuitem">
                         <div class="dropdown-icon trade-icon"><i class="fa-solid fa-chart-candlestick"></i></div>
                         <div class="dropdown-text">
-                            <span class="dropdown-title">Virtual Simulator</span>
+                            <span class="dropdown-title">Spot Trading Simulator</span>
                             <span class="dropdown-sub">Real-time order books, buy/sell limit & market execution</span>
-                        </div>
-                    </a>
-                    <a href="#swap" class="dropdown-item ${currentHash === 'swap' ? 'active' : ''}" role="menuitem">
-                        <div class="dropdown-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;"><i class="fa-solid fa-repeat"></i></div>
-                        <div class="dropdown-text">
-                            <span class="dropdown-title">Instant Token Swap</span>
-                            <span class="dropdown-sub">Convert coin to coin with network & handling fees</span>
-                        </div>
-                    </a>
-                    <a href="#portfolio" class="dropdown-item ${currentHash === 'portfolio' ? 'active' : ''}" role="menuitem">
-                        <div class="dropdown-icon portfolio-icon"><i class="fa-solid fa-wallet"></i></div>
-                        <div class="dropdown-text">
-                            <span class="dropdown-title">My Portfolio</span>
-                            <span class="dropdown-sub">Asset allocation, virtual equity & live P&L</span>
                         </div>
                     </a>
                     <a href="#simulation-lab" class="dropdown-item ${currentHash === 'simulation-lab' ? 'active' : ''}" role="menuitem">
@@ -121,19 +142,19 @@ const App = {
                 </div>
             </div>
 
-            <!-- Learn & Safety Hover Dropdown -->
+            <!-- Learn Menu with Hover Dropdown -->
             <div class="nav-item nav-dropdown" id="nav-dropdown-learn">
-                <a href="#learning" class="nav-link nav-dropdown-trigger ${isLearnActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
+                <a href="#learn" class="nav-link nav-dropdown-trigger ${isLearnActive ? 'active' : ''}" aria-haspopup="true" aria-expanded="false">
                     <i class="fa-solid fa-graduation-cap"></i>
-                    <span>Academy & Safety</span>
+                    <span>Learn</span>
                     <i class="fa-solid fa-chevron-down nav-arrow"></i>
                 </a>
                 <div class="nav-dropdown-menu" role="menu">
-                    <a href="#learning" class="dropdown-item ${currentHash === 'learning' ? 'active' : ''}" role="menuitem">
+                    <a href="#learn" class="dropdown-item ${currentHash === 'learn' || currentHash === 'learning' ? 'active' : ''}" role="menuitem">
                         <div class="dropdown-icon academy-icon"><i class="fa-solid fa-book-open-reader"></i></div>
                         <div class="dropdown-text">
-                            <span class="dropdown-title">Learning Academy</span>
-                            <span class="dropdown-sub">Step-by-step interactive cryptocurrency & blockchain modules</span>
+                            <span class="dropdown-title">Crypto Academy</span>
+                            <span class="dropdown-sub">Step-by-step interactive courses, guides & analysis</span>
                         </div>
                     </a>
                     <a href="#safety-center" class="dropdown-item ${currentHash === 'safety-center' ? 'active' : ''}" role="menuitem">
@@ -144,7 +165,7 @@ const App = {
                         </div>
                     </a>
                     <a href="#support" class="dropdown-item ${currentHash === 'support' ? 'active' : ''}" role="menuitem">
-                        <div class="dropdown-icon" style="background: rgba(58, 134, 255, 0.12); color: var(--color-primary);"><i class="fa-solid fa-headset"></i></div>
+                        <div class="dropdown-icon" style="background: rgba(22, 199, 132, 0.12); color: #16C784;"><i class="fa-solid fa-headset"></i></div>
                         <div class="dropdown-text">
                             <span class="dropdown-title">Help & Support Desk</span>
                             <span class="dropdown-sub">Raise tickets, report bugs, ask simulator questions</span>
@@ -152,9 +173,17 @@ const App = {
                     </a>
                     <div class="dropdown-compliance-badge">
                         <i class="fa-solid fa-shield-check text-success"></i>
-                        <span>Play Store & iOS App Store Compliant &bull; 100% Risk-Free Sim</span>
+                        <span>100% Risk-Free Simulation &bull; CoinGecko Data Integration</span>
                     </div>
                 </div>
+            </div>
+
+            <!-- Portfolio Menu Link (Logged-in users & guest simulator) -->
+            <div class="nav-item">
+                <a href="#portfolio" class="nav-link ${isPortfolioActive ? 'active' : ''}">
+                    <i class="fa-solid fa-wallet"></i>
+                    <span>Portfolio</span>
+                </a>
             </div>
 
             ${isAdmin ? `
@@ -172,76 +201,37 @@ const App = {
         // Mobile Drawer: Categorized, touch-friendly, high contrast
         const mobileHtml = `
             <div class="drawer-nav-group">
-                <div class="drawer-section-label">Core Navigation</div>
-                <a href="#dashboard" class="mobile-nav-link ${currentHash === 'dashboard' ? 'active' : ''}">
-                    <div class="mobile-nav-icon"><i class="fa-solid fa-house"></i></div>
+                <div class="drawer-section-label">CoinGecko Market Hub</div>
+                <a href="#cryptocurrencies" class="mobile-nav-link ${isCryptosActive ? 'active' : ''}">
+                    <div class="mobile-nav-icon"><i class="fa-solid fa-coins"></i></div>
                     <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Dashboard</span>
-                        <span class="mobile-nav-desc">Market summary & live showcase</span>
+                        <span class="mobile-nav-title">Cryptocurrencies</span>
+                        <span class="mobile-nav-desc">Prices, rankings, 1h/24h/7d & sparklines</span>
                     </div>
                 </a>
-                <a href="#markets" class="mobile-nav-link ${currentHash === 'markets' ? 'active' : ''}">
-                    <div class="mobile-nav-icon"><i class="fa-solid fa-chart-line"></i></div>
+                <a href="#exchanges" class="mobile-nav-link ${isExchangesActive ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(22, 199, 132, 0.15); color: #16C784;"><i class="fa-solid fa-repeat"></i></div>
                     <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Cryptocurrency Markets</span>
-                        <span class="mobile-nav-desc">Live rates, market cap & filters</span>
+                        <span class="mobile-nav-title">Exchanges & Swaps</span>
+                        <span class="mobile-nav-desc">Instant token swap & spot simulator</span>
                     </div>
                 </a>
             </div>
 
             <div class="drawer-nav-group">
-                <div class="drawer-section-label">Simulated Trading</div>
-                <a href="#simulator" class="mobile-nav-link ${currentHash === 'simulator' ? 'active' : ''}">
-                    <div class="mobile-nav-icon trade-icon"><i class="fa-solid fa-bolt"></i></div>
-                    <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Virtual Simulator</span>
-                        <span class="mobile-nav-desc">Order books, buy/sell simulation</span>
-                    </div>
-                </a>
-                <a href="#swap" class="mobile-nav-link ${currentHash === 'swap' ? 'active' : ''}">
-                    <div class="mobile-nav-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;"><i class="fa-solid fa-repeat"></i></div>
-                    <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Instant Token Swap</span>
-                        <span class="mobile-nav-desc">Convert coin to coin with fees</span>
-                    </div>
-                </a>
-                <a href="#portfolio" class="mobile-nav-link ${currentHash === 'portfolio' ? 'active' : ''}">
+                <div class="drawer-section-label">Portfolio & Education</div>
+                <a href="#portfolio" class="mobile-nav-link ${isPortfolioActive ? 'active' : ''}">
                     <div class="mobile-nav-icon portfolio-icon"><i class="fa-solid fa-wallet"></i></div>
                     <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Virtual Portfolio</span>
-                        <span class="mobile-nav-desc">Holdings, performance & P&L</span>
+                        <span class="mobile-nav-title">Portfolio</span>
+                        <span class="mobile-nav-desc">Virtual holdings, 30s cron charts & P&L</span>
                     </div>
                 </a>
-                <a href="#simulation-lab" class="mobile-nav-link ${currentHash === 'simulation-lab' ? 'active' : ''}">
-                    <div class="mobile-nav-icon lab-icon"><i class="fa-solid fa-flask-vial"></i></div>
-                    <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Simulation Stress Lab</span>
-                        <span class="mobile-nav-desc">Scenario generator & stress test</span>
-                    </div>
-                </a>
-            </div>
-
-            <div class="drawer-nav-group">
-                <div class="drawer-section-label">Education & Safety</div>
-                <a href="#learning" class="mobile-nav-link ${currentHash === 'learning' ? 'active' : ''}">
+                <a href="#learn" class="mobile-nav-link ${isLearnActive ? 'active' : ''}">
                     <div class="mobile-nav-icon academy-icon"><i class="fa-solid fa-graduation-cap"></i></div>
                     <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Learning Academy</span>
-                        <span class="mobile-nav-desc">Interactive blockchain courses</span>
-                    </div>
-                </a>
-                <a href="#safety-center" class="mobile-nav-link ${currentHash === 'safety-center' ? 'active' : ''}">
-                    <div class="mobile-nav-icon safety-icon"><i class="fa-solid fa-shield-halved"></i></div>
-                    <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Safety & Risk Center</span>
-                        <span class="mobile-nav-desc">Scam defense & security scores</span>
-                    </div>
-                </a>
-                <a href="#support" class="mobile-nav-link ${currentHash === 'support' ? 'active' : ''}">
-                    <div class="mobile-nav-icon" style="color: var(--color-primary);"><i class="fa-solid fa-headset"></i></div>
-                    <div class="mobile-nav-meta">
-                        <span class="mobile-nav-title">Help & Support Desk</span>
-                        <span class="mobile-nav-desc">Raise tickets & browse FAQs</span>
+                        <span class="mobile-nav-title">Learn & Academy</span>
+                        <span class="mobile-nav-desc">Crypto guides, safety & support</span>
                     </div>
                 </a>
             </div>
@@ -253,7 +243,7 @@ const App = {
                     <div class="mobile-nav-icon admin-icon"><i class="fa-solid fa-shield-crown"></i></div>
                     <div class="mobile-nav-meta">
                         <span class="mobile-nav-title">Admin Control Panel</span>
-                        <span class="mobile-nav-desc">Coin manager, audit & metrics</span>
+                        <span class="mobile-nav-desc">Cloudflare navigation, bonus & audit</span>
                     </div>
                 </a>
             </div>
@@ -420,7 +410,7 @@ const App = {
     },
 
     async route() {
-        const hash = window.location.hash.slice(1) || 'dashboard';
+        const hash = window.location.hash.slice(1) || 'cryptocurrencies';
         const parts = hash.split('?');
         const routePath = parts[0];
         const queryParams = new URLSearchParams(parts[1] || '');
@@ -437,25 +427,23 @@ const App = {
             PortfolioView.stopCron();
         }
 
-        if (routePath === 'dashboard' || routePath === '') {
-            await DashboardView.render(container);
-        } else if (routePath === 'markets') {
-            await MarketsView.render(container);
+        if (routePath === 'cryptocurrencies' || routePath === 'markets' || routePath === 'dashboard' || routePath === '') {
+            await MarketsView.render(container, queryParams);
         } else if (routePath.startsWith('crypto/')) {
             const symbol = routePath.split('/')[1];
             await CryptoDetailView.render(container, symbol);
+        } else if (routePath === 'exchanges') {
+            await SwapView.render(container, { fromCoin: queryParams.get('from'), toCoin: queryParams.get('to') });
+        } else if (routePath === 'swap') {
+            await SwapView.render(container, { fromCoin: queryParams.get('from'), toCoin: queryParams.get('to') });
         } else if (routePath === 'simulator') {
             const preselectedCoin = queryParams.get('coin');
             await SimulatorView.render(container, preselectedCoin);
-        } else if (routePath === 'swap') {
-            const fromCoin = queryParams.get('from');
-            const toCoin = queryParams.get('to');
-            await SwapView.render(container, { fromCoin, toCoin });
         } else if (routePath === 'portfolio') {
             await PortfolioView.render(container);
-        } else if (routePath === 'learning') {
+        } else if (routePath === 'learn' || routePath === 'learning') {
             await LearningView.render(container);
-        } else if (routePath.startsWith('learning/')) {
+        } else if (routePath.startsWith('learn/') || routePath.startsWith('learning/')) {
             const courseSlug = routePath.split('/')[1];
             await LearningView.render(container, courseSlug);
         } else if (routePath === 'simulation-lab') {
@@ -467,8 +455,8 @@ const App = {
         } else if (routePath === 'admin') {
             await AdminView.render(container, queryParams.get('tab') || 'overview');
         } else {
-            // Default fallback to dashboard
-            await DashboardView.render(container);
+            // Default fallback to CoinGecko Cryptocurrencies list
+            await MarketsView.render(container, queryParams);
         }
     }
 };
