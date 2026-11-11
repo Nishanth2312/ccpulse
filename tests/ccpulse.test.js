@@ -501,6 +501,119 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(parsed.users && parsed.wallets && parsed.trades, 'Exported JSON must contain all core tables');
     });
 
+    // SCENARIO 24: High-Volume Altcoin Purchase (50,000 Beldex BDX) Calculation & Persistence
+    test('Scenario 24: High-Volume Altcoin Purchase (50,000 Beldex BDX) Calculation & Persistence', () => {
+        const ClientDB = require('../frontend/js/clientDatabase.js');
+        ClientDB.resetToDefault();
+
+        const bdxCoin = { id: 4, symbol: 'BDX', name: 'Beldex', current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' };
+        const user = ClientDB.users.getAll().find(u => u.role === 'user');
+        const initialCash = ClientDB.wallets.getByUserId(user.id).availableCashUsd;
+
+        // Purchase exactly 50,000 BDX
+        const qty = 50000;
+        const expectedCostUsd = Number((qty * bdxCoin.current_price_usd).toFixed(2)); // 50,000 * 0.0722 = 3,610.00 USD
+        assert.equal(expectedCostUsd, 3610.00, '50,000 BDX at $0.0722 must equal exactly $3,610.00 USD');
+
+        const buyResult = ClientDB.trades.execute({
+            userId: user.id,
+            crypto: bdxCoin,
+            type: 'BUY',
+            quantity: qty,
+            priceUsd: bdxCoin.current_price_usd
+        });
+
+        assert.ok(buyResult.success, 'Buy order for 50,000 BDX must succeed');
+        assert.equal(buyResult.trade.totalCostUsd, 3610.00, 'Trade record must record $3,610.00 total cost');
+        assert.equal(buyResult.wallet.availableCashUsd, Number((initialCash - expectedCostUsd).toFixed(2)), 'Cash must be deducted by $3,610.00');
+
+        const holding = buyResult.wallet.holdings.find(h => h.symbol === 'BDX');
+        assert.ok(holding, 'BDX holding must exist');
+        assert.ok(holding.quantity >= 50000, 'BDX holding quantity must include the purchased 50,000');
+
+        // Subsequent partial sell of 20,000 BDX
+        const sellQty = 20000;
+        const sellProceedsUsd = Number((sellQty * bdxCoin.current_price_usd).toFixed(2)); // 20,000 * 0.0722 = 1,444.00 USD
+        const sellResult = ClientDB.trades.execute({
+            userId: user.id,
+            crypto: bdxCoin,
+            type: 'SELL',
+            quantity: sellQty,
+            priceUsd: bdxCoin.current_price_usd
+        });
+
+        assert.ok(sellResult.success, 'Sell order for 20,000 BDX must succeed');
+        assert.equal(sellResult.trade.totalCostUsd, 1444.00, 'Sell proceeds must equal $1,444.00 USD');
+        const afterSellCash = buyResult.wallet.availableCashUsd + sellProceedsUsd;
+        assert.equal(sellResult.wallet.availableCashUsd, Number(afterSellCash.toFixed(2)), 'Wallet cash must be credited with sell proceeds');
+    });
+
+    // SCENARIO 25: Trading Sizing, Edge Cases & Error Validations
+    test('Scenario 25: Trading Sizing, Edge Cases & Error Validations', () => {
+        const ClientDB = require('../frontend/js/clientDatabase.js');
+        const bdxCoin = { id: 4, symbol: 'BDX', name: 'Beldex', current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' };
+        const user = ClientDB.users.getAll().find(u => u.role === 'user');
+
+        // 1. Rejection of purchase exceeding available cash
+        // Trying to buy 1,000,000 BDX ($72,200 USD) with a < $5,000 balance
+        assert.throws(() => {
+            ClientDB.trades.execute({
+                userId: user.id,
+                crypto: bdxCoin,
+                type: 'BUY',
+                quantity: 1000000,
+                priceUsd: bdxCoin.current_price_usd
+            });
+        }, /Insufficient virtual cash/, 'Must reject buy order exceeding available virtual balance');
+
+        // 2. Rejection of selling more than held
+        assert.throws(() => {
+            ClientDB.trades.execute({
+                userId: user.id,
+                crypto: bdxCoin,
+                type: 'SELL',
+                quantity: 9999999,
+                priceUsd: bdxCoin.current_price_usd
+            });
+        }, /Insufficient BDX balance/, 'Must reject sell order exceeding current holdings');
+
+        // 3. Rejection of invalid order types
+        assert.throws(() => {
+            ClientDB.trades.execute({
+                userId: user.id,
+                crypto: bdxCoin,
+                type: 'INVALID_TYPE',
+                quantity: 10,
+                priceUsd: bdxCoin.current_price_usd
+            });
+        }, /Invalid trade type/, 'Must reject unsupported order types');
+    });
+
+    // SCENARIO 26: Multi-Currency Valuation & Precision for Beldex (BDX) Trades
+    test('Scenario 26: Multi-Currency Valuation & Precision for Beldex (BDX) Trades', () => {
+        const bdxUsdPrice = 0.0722;
+        const bdxTradeQty = 50000;
+        const totalTradeUsd = bdxTradeQty * bdxUsdPrice; // $3,610.00 USD
+
+        // Test INR conversion (e.g. at 85.25 rate)
+        const inrConv = convertFromUsd(totalTradeUsd, 'INR');
+        const expectedInr = Number((totalTradeUsd * inrConv.exchangeRate).toFixed(2));
+        assert.equal(inrConv.convertedAmount, expectedInr, '50,000 BDX trade must convert accurately to INR');
+        assert.ok(inrConv.formatted.includes('₹') || inrConv.formatted.includes('INR'));
+        assert.ok(inrConv.convertedAmount > 300000, 'INR amount should be > ₹3,00,000');
+
+        // Test EUR conversion (e.g. at 0.92 rate)
+        const eurConv = convertFromUsd(totalTradeUsd, 'EUR');
+        const expectedEur = Number((totalTradeUsd * eurConv.exchangeRate).toFixed(2));
+        assert.equal(eurConv.convertedAmount, expectedEur, '50,000 BDX trade must convert accurately to EUR');
+        assert.ok(eurConv.formatted.includes('€') || eurConv.formatted.includes('EUR'));
+
+        // Test GBP conversion (e.g. at 0.79 rate)
+        const gbpConv = convertFromUsd(totalTradeUsd, 'GBP');
+        const expectedGbp = Number((totalTradeUsd * gbpConv.exchangeRate).toFixed(2));
+        assert.equal(gbpConv.convertedAmount, expectedGbp, '50,000 BDX trade must convert accurately to GBP');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

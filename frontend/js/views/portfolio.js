@@ -195,7 +195,9 @@ const PortfolioView = {
                                                 </div>
                                             </div>
                                         </td>
-                                        <td class="font-mono" style="font-weight: 700;">${h.quantity.toFixed(4)} ${h.symbol}</td>
+                                        <td class="font-mono" style="font-weight: 700;">
+                                            ${h.quantity >= 100 ? Number(h.quantity.toFixed(4)).toLocaleString('en-US', { maximumFractionDigits: 4 }) : h.quantity.toFixed(4)} ${h.symbol}
+                                        </td>
                                         <td class="font-mono" style="color: var(--text-secondary);">${avgPrice}</td>
                                         <td class="font-mono" style="font-weight: 700;">${curPrice}</td>
                                         <td class="font-mono" style="font-weight: 700; color: var(--text-primary);">${posVal}</td>

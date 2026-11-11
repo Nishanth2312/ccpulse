@@ -125,7 +125,7 @@ const SimulatorView = {
                         <div style="text-align: right;">
                             <div style="font-size: 0.8rem; color: var(--text-muted);">Your Current Position</div>
                             <div id="sim-current-holding" class="font-mono" style="font-size: 1.05rem; font-weight: 700; color: var(--color-primary); margin-top: 2px;">
-                                ${currentHoldingQty.toFixed(4)} ${this.selectedCrypto?.symbol}
+                                ${currentHoldingQty >= 100 ? Number(currentHoldingQty.toFixed(4)).toLocaleString('en-US', { maximumFractionDigits: 4 }) : currentHoldingQty.toFixed(4)} ${this.selectedCrypto?.symbol}
                             </div>
                         </div>
                     </div>
@@ -135,7 +135,7 @@ const SimulatorView = {
                         <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px;">
                             <label for="sim-quantity-input" style="font-size: 0.88rem; font-weight: 600;">Order Quantity (${this.selectedCrypto?.symbol})</label>
                             <span style="font-size: 0.8rem; color: var(--text-muted);">
-                                Available: ${this.orderType === 'BUY' ? availableCashFormatted : `${currentHoldingQty.toFixed(4)} ${this.selectedCrypto?.symbol}`}
+                                Available: ${this.orderType === 'BUY' ? availableCashFormatted : `${currentHoldingQty >= 100 ? Number(currentHoldingQty.toFixed(4)).toLocaleString('en-US', { maximumFractionDigits: 4 }) : currentHoldingQty.toFixed(4)} ${this.selectedCrypto?.symbol}`}
                             </span>
                         </div>
                         <input type="number" id="sim-quantity-input" placeholder="0.00" step="any" min="0" style="width: 100%; padding: 12px; font-size: 1.1rem; font-weight: 700; font-family: var(--font-mono);">
