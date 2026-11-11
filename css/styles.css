@@ -19,96 +19,98 @@
     --transition-normal: 0.25s ease;
     --header-height: 72px;
 
-    /* Universal Functional Colors */
-    --color-success: #00E676;
-    --color-danger: #FF3B30;
-    --color-warning: #FFB703;
-    --color-buy-green: linear-gradient(135deg, #00E676 0%, #00C853 100%);
-    --color-sell-red: linear-gradient(135deg, #FF5252 0%, #FF1744 100%);
-    --color-gold-gradient: linear-gradient(135deg, #FFB703 0%, #FB8500 100%);
-    --color-blue-gradient: linear-gradient(135deg, #3A86FF 0%, #4361EE 100%);
+    /* Universal Functional Colors - CoinGecko Authentic Palette */
+    --color-success: #16C784;
+    --color-danger: #EA3943;
+    --color-warning: #F5A623;
+    --color-gecko-brand: #8DC647;
+    --color-gecko-market: #16C784;
+    --color-buy-green: linear-gradient(135deg, #16C784 0%, #10B981 100%);
+    --color-sell-red: linear-gradient(135deg, #EA3943 0%, #DC2626 100%);
+    --color-gold-gradient: linear-gradient(135deg, #16C784 0%, #8DC647 100%);
+    --color-blue-gradient: linear-gradient(135deg, #16C784 0%, #10B981 100%);
 }
 
 /* ===================================================================
    THEME TOKENS: DARK MODE (Default & [data-theme="dark"])
-   Rich Midnight Indigo Navy background (#0E1438), Elevated Navy cards (#161F4E),
-   Golden Amber accents (#FFB703), Neon Green Buy & Crimson Red Sell
+   CoinGecko Signature Charcoal Slate (#0C0E14), Surface (#141722),
+   Elevated Card (#1E2332), Gecko Market Green (#16C784), Brand (#8DC647)
    =================================================================== */
 :root[data-theme="dark"],
 :root:not([data-theme="light"]) {
-    --bg-page: #0E1438;
-    --bg-surface: #161F4E;
-    --bg-surface-elevated: #1E2863;
-    --bg-surface-glass: rgba(22, 31, 78, 0.88);
-    --bg-trading-panel: #121942;
-    --bg-input: #1A2356;
-    --border-color: rgba(255, 255, 255, 0.12);
-    --border-color-glow: rgba(255, 183, 3, 0.4);
+    --bg-page: #0C0E14;
+    --bg-surface: #141722;
+    --bg-surface-elevated: #1E2332;
+    --bg-surface-glass: rgba(20, 23, 34, 0.92);
+    --bg-trading-panel: #11131A;
+    --bg-input: #1A1D27;
+    --border-color: rgba(255, 255, 255, 0.08);
+    --border-color-glow: rgba(22, 199, 132, 0.35);
 
-    --color-primary: #FFB703;
-    --color-primary-hover: #FFA200;
-    --color-secondary: #FB8500;
-    --color-cyan-gradient: var(--color-gold-gradient);
+    --color-primary: #16C784;
+    --color-primary-hover: #13B275;
+    --color-secondary: #8DC647;
+    --color-cyan-gradient: linear-gradient(135deg, #16C784 0%, #8DC647 100%);
 
-    --chart-line-color: #FFB703;
-    --chart-tooltip-bg: #FFB703;
-    --chart-tooltip-text: #0E1438;
+    --chart-line-color: #16C784;
+    --chart-tooltip-bg: #141722;
+    --chart-tooltip-text: #FFFFFF;
 
     --text-primary: #FFFFFF;
-    --text-secondary: #94A3C8;
-    --text-muted: #6B7A99;
-    --text-link: #FFB703;
+    --text-secondary: #9FA6B2;
+    --text-muted: #687385;
+    --text-link: #8DC647;
 
-    --badge-bg: rgba(255, 183, 3, 0.15);
-    --badge-text: #FFB703;
+    --badge-bg: rgba(22, 199, 132, 0.12);
+    --badge-text: #16C784;
 
-    --shadow-sm: 0 2px 6px rgba(0, 0, 0, 0.25);
-    --shadow-md: 0 6px 16px rgba(0, 0, 0, 0.35);
-    --shadow-lg: 0 12px 30px rgba(0, 0, 0, 0.45);
-    --shadow-glow: 0 0 25px rgba(255, 183, 3, 0.25);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.3);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.4);
+    --shadow-lg: 0 10px 25px rgba(0, 0, 0, 0.5);
+    --shadow-glow: 0 0 20px rgba(22, 199, 132, 0.25);
 
-    --scrollbar-track: #0B0E17;
-    --scrollbar-thumb: #1E2863;
+    --scrollbar-track: #0C0E14;
+    --scrollbar-thumb: #1E2332;
 }
 
 /* ===================================================================
    THEME TOKENS: LIGHT MODE ([data-theme="light"])
-   Clean crisp white background (#F8FAFC), Card surfaces (#FFFFFF),
-   Electric Blue accents (#3A86FF), Neon Green Buy & Vibrant Red Sell
+   CoinGecko Crisp Clean White (#FFFFFF), Surface (#F8FAFD),
+   Borders (#EFF2F5), Gecko Market Green (#16C784), Brand (#8DC647)
    =================================================================== */
 :root[data-theme="light"] {
-    --bg-page: #F8FAFC;
+    --bg-page: #FFFFFF;
     --bg-surface: #FFFFFF;
-    --bg-surface-elevated: #F1F5F9;
-    --bg-surface-glass: rgba(255, 255, 255, 0.95);
+    --bg-surface-elevated: #F8FAFD;
+    --bg-surface-glass: rgba(255, 255, 255, 0.96);
     --bg-trading-panel: #FFFFFF;
-    --bg-input: #FFFFFF;
-    --border-color: #E2E8F0;
-    --border-color-glow: rgba(58, 134, 255, 0.3);
+    --bg-input: #F8FAFD;
+    --border-color: #EFF2F5;
+    --border-color-glow: rgba(22, 199, 132, 0.25);
 
-    --color-primary: #3A86FF;
-    --color-primary-hover: #2563EB;
-    --color-secondary: #4361EE;
-    --color-cyan-gradient: var(--color-blue-gradient);
+    --color-primary: #16C784;
+    --color-primary-hover: #13B275;
+    --color-secondary: #8DC647;
+    --color-cyan-gradient: linear-gradient(135deg, #16C784 0%, #8DC647 100%);
 
-    --chart-line-color: #3A86FF;
-    --chart-tooltip-bg: #3A86FF;
-    --chart-tooltip-text: #FFFFFF;
+    --chart-line-color: #16C784;
+    --chart-tooltip-bg: #FFFFFF;
+    --chart-tooltip-text: #111827;
 
-    --text-primary: #0F172A;
-    --text-secondary: #475569;
-    --text-muted: #64748B;
-    --text-link: #3A86FF;
+    --text-primary: #111827;
+    --text-secondary: #58667E;
+    --text-muted: #808A9D;
+    --text-link: #16C784;
 
-    --badge-bg: rgba(58, 134, 255, 0.12);
-    --badge-text: #3A86FF;
+    --badge-bg: rgba(22, 199, 132, 0.12);
+    --badge-text: #16C784;
 
-    --shadow-sm: 0 2px 5px rgba(0, 0, 0, 0.04);
-    --shadow-md: 0 6px 18px rgba(0, 0, 0, 0.06);
-    --shadow-lg: 0 12px 28px rgba(0, 0, 0, 0.09);
-    --shadow-glow: 0 0 20px rgba(58, 134, 255, 0.2);
+    --shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.05);
+    --shadow-md: 0 4px 12px rgba(0, 0, 0, 0.07);
+    --shadow-lg: 0 10px 24px rgba(0, 0, 0, 0.1);
+    --shadow-glow: 0 0 20px rgba(22, 199, 132, 0.2);
 
-    --scrollbar-track: #F1F5F9;
+    --scrollbar-track: #F8FAFD;
     --scrollbar-thumb: #CBD5E1;
 }
 
@@ -218,6 +220,371 @@ input:focus, select:focus, textarea:focus {
 .banner-close-btn {
     color: var(--text-muted);
     font-size: 0.9rem;
+}
+
+/* ===================================================================
+   COINGECKO GLOBAL TELEMETRY BAR & HEADER ACCENTS
+   =================================================================== */
+.cg-top-bar {
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--border-color);
+    font-size: 0.76rem;
+    color: var(--text-secondary);
+    padding: 6px 0;
+    overflow-x: auto;
+    white-space: nowrap;
+    z-index: 95;
+    position: relative;
+}
+
+.cg-top-container {
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: 0 28px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+}
+
+.cg-stats-scroll {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    overflow-x: auto;
+    scrollbar-width: none;
+}
+
+.cg-stats-scroll::-webkit-scrollbar {
+    display: none;
+}
+
+.cg-stat-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    color: var(--text-secondary);
+}
+
+.cg-stat-val {
+    color: var(--text-primary);
+    font-weight: 700;
+}
+
+.cg-stat-divider {
+    color: var(--border-color);
+    opacity: 0.6;
+}
+
+.cg-badge {
+    background: rgba(141, 198, 71, 0.15);
+    color: #8DC647;
+    border: 1px solid rgba(141, 198, 71, 0.3);
+    font-size: 0.68rem;
+    font-weight: 800;
+    padding: 2px 7px;
+    border-radius: 6px;
+    letter-spacing: 0.5px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.badge-quota-shield {
+    background: rgba(22, 199, 132, 0.15);
+    color: #16C784;
+    border: 1px solid rgba(22, 199, 132, 0.3);
+    padding: 2px 7px;
+    border-radius: 12px;
+    font-size: 0.72rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* CoinGecko Highlights Grid (Market Cap Chart, Trending, Top Movers) */
+.cg-highlights-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 18px;
+    margin-bottom: 24px;
+}
+
+@media (max-width: 1024px) {
+    .cg-highlights-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.cg-highlight-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 16px 18px;
+    box-shadow: var(--shadow-sm);
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.cg-highlight-card:hover {
+    border-color: rgba(22, 199, 132, 0.3);
+}
+
+.cg-highlight-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 12px;
+}
+
+.cg-highlight-title {
+    font-size: 0.88rem;
+    font-weight: 700;
+    color: var(--text-primary);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cg-highlight-sub {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+}
+
+.cg-highlight-val {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    font-family: var(--font-mono);
+}
+
+.cg-trend-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.cg-trend-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    text-decoration: none;
+    padding: 4px 6px;
+    border-radius: var(--border-radius-sm);
+    transition: background var(--transition-fast);
+}
+
+.cg-trend-item:hover {
+    background: var(--bg-surface-elevated);
+}
+
+.cg-trend-item-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.cg-trend-rank {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    width: 14px;
+}
+
+.cg-trend-logo {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+}
+
+.cg-trend-name {
+    font-size: 0.84rem;
+    font-weight: 700;
+    color: var(--text-primary);
+}
+
+.cg-trend-symbol {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    text-transform: uppercase;
+}
+
+.cg-trend-price {
+    font-size: 0.84rem;
+    font-weight: 700;
+    font-family: var(--font-mono);
+    color: var(--text-primary);
+}
+
+/* CoinGecko High-Density Table */
+.cg-table-wrapper {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    overflow-x: auto;
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 30px;
+}
+
+.cg-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.86rem;
+    white-space: nowrap;
+}
+
+.cg-table thead th {
+    background: var(--bg-surface);
+    color: var(--text-muted);
+    font-size: 0.74rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--border-color);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+    text-align: left;
+}
+
+.cg-table tbody tr {
+    border-bottom: 1px solid var(--border-color);
+    transition: background-color var(--transition-fast);
+}
+
+.cg-table tbody tr:hover {
+    background-color: var(--bg-surface-elevated);
+}
+
+.cg-table tbody td {
+    padding: 12px 14px;
+    vertical-align: middle;
+}
+
+.cg-pct-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 3px;
+    font-weight: 700;
+    font-size: 0.84rem;
+    font-family: var(--font-mono);
+}
+
+.cg-pct-badge.up {
+    color: #16C784;
+}
+
+.cg-pct-badge.down {
+    color: #EA3943;
+}
+
+.cg-coin-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.cg-coin-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 50%;
+    object-fit: contain;
+    flex-shrink: 0;
+}
+
+.cg-coin-info {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.cg-coin-name {
+    font-weight: 700;
+    color: var(--text-primary);
+    text-decoration: none;
+    font-size: 0.88rem;
+}
+
+.cg-coin-name:hover {
+    color: #16C784;
+}
+
+.cg-coin-symbol {
+    font-size: 0.72rem;
+    color: var(--text-muted);
+    font-weight: 700;
+    background: var(--bg-surface-elevated);
+    padding: 2px 6px;
+    border-radius: 4px;
+    border: 1px solid var(--border-color);
+}
+
+.cg-sparkline-svg {
+    display: block;
+    overflow: visible;
+}
+
+/* Nexus Feature & Modern Process Cards */
+.nexus-features-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 18px;
+    margin: 28px 0;
+}
+
+@media (max-width: 900px) {
+    .nexus-features-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (max-width: 540px) {
+    .nexus-features-grid {
+        grid-template-columns: 1fr;
+    }
+}
+
+.nexus-step-card {
+    background: var(--bg-surface);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-md);
+    padding: 22px 18px;
+    text-align: center;
+    transition: transform var(--transition-fast), border-color var(--transition-fast);
+}
+
+.nexus-step-card:hover {
+    transform: translateY(-3px);
+    border-color: #16C784;
+}
+
+.nexus-step-icon {
+    width: 48px;
+    height: 48px;
+    margin: 0 auto 14px;
+    border-radius: 12px;
+    background: rgba(22, 199, 132, 0.12);
+    color: #16C784;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.35rem;
+}
+
+.nexus-step-title {
+    font-size: 1.05rem;
+    font-weight: 800;
+    margin-bottom: 6px;
+    color: var(--text-primary);
+}
+
+.nexus-step-desc {
+    font-size: 0.82rem;
+    color: var(--text-secondary);
+    line-height: 1.45;
 }
 
 .app-header {

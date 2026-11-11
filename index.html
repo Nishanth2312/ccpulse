@@ -44,6 +44,32 @@
             <button id="banner-close" class="banner-close-btn" aria-label="Close notification"><i class="fa-solid fa-xmark"></i></button>
         </div>
 
+        <!-- CoinGecko Top Global Market Telemetry Bar -->
+        <div id="cg-top-bar" class="cg-top-bar">
+            <div class="cg-top-container">
+                <div class="cg-stats-scroll">
+                    <span class="cg-stat-item">Coins: <strong class="cg-stat-val" id="cg-stat-coins">15,240</strong></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item">Exchanges: <strong class="cg-stat-val">1,120</strong></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item">Market Cap: <strong class="cg-stat-val" id="cg-stat-mcap">$2.68T</strong> <span class="cg-pct-badge up" id="cg-stat-mcap-change"><i class="fa-solid fa-caret-up"></i> 1.8%</span></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item">24h Vol: <strong class="cg-stat-val" id="cg-stat-vol">$84.2B</strong></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item">Dominance: <span class="cg-stat-val">BTC 58.2% &bull; ETH 14.1%</span></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item">ETH Gas: <span class="cg-stat-val">12 Gwei</span></span>
+                    <span class="cg-stat-divider">&bull;</span>
+                    <span class="cg-stat-item"><span class="badge-quota-shield"><i class="fa-solid fa-shield-halved"></i> 30m Quota Shield Active</span></span>
+                </div>
+                <div class="cg-top-right" style="display: flex; align-items: center; gap: 8px;">
+                    <span style="font-size: 0.72rem; color: #8DC647; font-weight: 700; display: inline-flex; align-items: center; gap: 4px;">
+                        <i class="fa-solid fa-signal"></i> CoinGecko Feed
+                    </span>
+                </div>
+            </div>
+        </div>
+
         <!-- Navigation Header -->
         <header class="app-header">
             <div class="header-container">
@@ -51,10 +77,10 @@
                     <button id="mobile-menu-toggle" class="mobile-menu-btn" aria-label="Toggle navigation menu" title="Open Menu">
                         <i class="fa-solid fa-bars"></i>
                     </button>
-                    <a href="#dashboard" class="brand-logo" id="brand-link" title="CCPulse Home">
-                        <div class="logo-icon"><i class="fa-solid fa-bolt-lightning"></i></div>
-                        <span class="logo-title">CC<span class="pulse-text">Pulse</span></span>
-                        <span class="sim-badge"><i class="fa-solid fa-shield-halved"></i> SIMULATOR</span>
+                    <a href="#cryptocurrencies" class="brand-logo" id="brand-link" title="CCPulse - CoinGecko Cryptocurrency Simulator">
+                        <div class="logo-icon" style="background: linear-gradient(135deg, #16C784 0%, #8DC647 100%); color: #0C0E14;"><i class="fa-solid fa-coins"></i></div>
+                        <span class="logo-title">CC<span class="pulse-text" style="color: #8DC647;">Pulse</span></span>
+                        <span class="cg-badge"><i class="fa-solid fa-shield-halved"></i> GECKO SIM</span>
                     </a>
                 </div>
 
@@ -160,20 +186,21 @@
                 <div class="footer-col">
                     <h4>Navigation</h4>
                     <ul class="footer-links">
-                        <li><a href="#dashboard">Public Dashboard</a></li>
-                        <li><a href="#markets">Cryptocurrency Markets</a></li>
+                        <li><a href="#cryptocurrencies">Cryptocurrency Prices</a></li>
+                        <li><a href="#exchanges">Exchanges & Swaps</a></li>
                         <li><a href="#simulator">Trading Simulator</a></li>
                         <li><a href="#portfolio">Virtual Portfolio</a></li>
-                        <li><a href="#learning">Learning Academy</a></li>
+                        <li><a href="#learn">Crypto Academy</a></li>
                     </ul>
                 </div>
 
                 <div class="footer-col">
                     <h4>Simulation Tools</h4>
                     <ul class="footer-links">
+                        <li><a href="#swap">Instant DEX Token Swap</a></li>
                         <li><a href="#simulation-lab">Market Simulation Lab</a></li>
                         <li><a href="#safety-center">Safety & Security Center</a></li>
-                        <li><a href="#watchlist">Monitored Watchlist</a></li>
+                        <li><a href="#support">Help & Support Desk</a></li>
                         <li><a href="#admin">Administrator Panel</a></li>
                     </ul>
                 </div>
@@ -195,13 +222,13 @@
 
         <!-- Mobile Bottom Navigation Bar (Google Play Store & Apple iOS App Store Standard) -->
         <nav class="mobile-bottom-nav" id="mobile-bottom-nav" aria-label="Mobile Navigation">
-            <a href="#dashboard" class="bottom-nav-item active" data-nav="dashboard" aria-label="Home Dashboard">
-                <i class="fa-solid fa-house"></i>
-                <span>Home</span>
+            <a href="#cryptocurrencies" class="bottom-nav-item active" data-nav="cryptocurrencies" aria-label="Cryptocurrencies">
+                <i class="fa-solid fa-coins"></i>
+                <span>Cryptos</span>
             </a>
-            <a href="#markets" class="bottom-nav-item" data-nav="markets" aria-label="Cryptocurrency Markets">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>Markets</span>
+            <a href="#exchanges" class="bottom-nav-item" data-nav="exchanges" aria-label="Exchanges & Swaps">
+                <i class="fa-solid fa-repeat"></i>
+                <span>Exchanges</span>
             </a>
             <a href="#simulator" class="bottom-nav-item bottom-nav-trade-tab" data-nav="simulator" aria-label="Virtual Simulator">
                 <div class="trade-pill-icon">
@@ -209,11 +236,11 @@
                 </div>
                 <span>Trade</span>
             </a>
-            <a href="#simulation-lab" class="bottom-nav-item" data-nav="simulation-lab" aria-label="Simulation Stress Lab">
-                <i class="fa-solid fa-flask-vial"></i>
-                <span>Lab</span>
+            <a href="#portfolio" class="bottom-nav-item" data-nav="portfolio" aria-label="Virtual Portfolio">
+                <i class="fa-solid fa-wallet"></i>
+                <span>Portfolio</span>
             </a>
-            <a href="#learning" class="bottom-nav-item" data-nav="learning" aria-label="Learning Academy">
+            <a href="#learn" class="bottom-nav-item" data-nav="learn" aria-label="Crypto Academy">
                 <i class="fa-solid fa-graduation-cap"></i>
                 <span>Learn</span>
             </a>
