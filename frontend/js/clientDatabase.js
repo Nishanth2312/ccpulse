@@ -20,7 +20,7 @@ const ClientDB = (function() {
     // Default Seed Data (Preserved across sessions)
     const DEFAULT_DATA = {
         meta: {
-            version: '2.0.0',
+            version: '2.5.0',
             engine: 'CCPulse In-Browser Client Database Engine',
             initializedAt: '2026-11-01T00:00:00.000Z',
             lastUpdated: new Date().toISOString()
@@ -58,33 +58,43 @@ const ClientDB = (function() {
                 id: 1,
                 userId: 1,
                 balanceUsd: 15000.00,
-                investedUsd: 0.00,
-                welcomeBonusCredited: true,
-                holdings: []
-            },
-            {
-                id: 2,
-                userId: 2,
-                balanceUsd: 3850.50,
-                investedUsd: 1149.50,
+                investedUsd: 73932.53,
                 welcomeBonusCredited: true,
                 holdings: [
                     {
                         crypto_id: 1,
                         symbol: 'BTC',
                         name: 'Bitcoin',
-                        quantity: 0.0125,
-                        avg_buy_price_usd: 68500.00,
-                        total_invested_usd: 856.25,
+                        quantity: 1.0,
+                        avg_buy_price_usd: 73932.53,
+                        total_invested_usd: 73932.53,
+                        logo_url: './assets/coins/btc.svg'
+                    }
+                ]
+            },
+            {
+                id: 2,
+                userId: 2,
+                balanceUsd: 6390.00,
+                investedUsd: 77542.53,
+                welcomeBonusCredited: true,
+                holdings: [
+                    {
+                        crypto_id: 1,
+                        symbol: 'BTC',
+                        name: 'Bitcoin',
+                        quantity: 1.0,
+                        avg_buy_price_usd: 73932.53,
+                        total_invested_usd: 73932.53,
                         logo_url: './assets/coins/btc.svg'
                     },
                     {
                         crypto_id: 4,
                         symbol: 'BDX',
                         name: 'Beldex',
-                        quantity: 4500,
-                        avg_buy_price_usd: 0.065,
-                        total_invested_usd: 293.25,
+                        quantity: 50000,
+                        avg_buy_price_usd: 0.0722,
+                        total_invested_usd: 3610.00,
                         logo_url: './assets/coins/bdx.png'
                     }
                 ]
@@ -96,10 +106,10 @@ const ClientDB = (function() {
                 walletId: 1,
                 userId: 1,
                 type: 'WELCOME_BONUS',
-                amountUsd: 5000.00,
+                amountUsd: 10000.00,
                 balanceBeforeUsd: 0,
-                balanceAfterUsd: 5000.00,
-                description: 'Guaranteed Welcome Bonus credited upon registration',
+                balanceAfterUsd: 10000.00,
+                description: 'Guaranteed Welcome Bonus credited upon registration ($10,000.00 USD + 1.0 BTC)',
                 createdAt: '2026-11-01T08:00:00.000Z'
             },
             {
@@ -107,11 +117,33 @@ const ClientDB = (function() {
                 walletId: 2,
                 userId: 2,
                 type: 'WELCOME_BONUS',
-                amountUsd: 5000.00,
+                amountUsd: 10000.00,
                 balanceBeforeUsd: 0,
-                balanceAfterUsd: 5000.00,
-                description: 'Guaranteed Welcome Bonus credited upon registration',
+                balanceAfterUsd: 10000.00,
+                description: 'Guaranteed Welcome Bonus credited upon registration ($10,000.00 USD + 1.0 BTC)',
                 createdAt: '2026-11-02T10:15:00.000Z'
+            },
+            {
+                id: 3,
+                walletId: 2,
+                userId: 2,
+                type: 'WELCOME_BONUS',
+                amountUsd: 73932.53,
+                balanceBeforeUsd: 10000.00,
+                balanceAfterUsd: 10000.00,
+                description: 'Welcome Bonus: 1.00000000 BTC Gift Credited to Holdings',
+                createdAt: '2026-11-02T10:15:01.000Z'
+            },
+            {
+                id: 4,
+                walletId: 2,
+                userId: 2,
+                type: 'BUY_ORDER',
+                amountUsd: 3610.00,
+                balanceBeforeUsd: 10000.00,
+                balanceAfterUsd: 6390.00,
+                description: 'Simulated BUY 50,000 BDX @ $0.0722 USD',
+                createdAt: '2026-11-04T15:45:00.000Z'
             }
         ],
         trades: [
@@ -122,10 +154,10 @@ const ClientDB = (function() {
                 symbol: 'BTC',
                 name: 'Bitcoin',
                 type: 'BUY',
-                quantity: 0.0125,
-                executionPriceUsd: 68500.00,
-                totalCostUsd: 856.25,
-                timestamp: '2026-11-03T11:20:00.000Z'
+                quantity: 1.0,
+                executionPriceUsd: 73932.53,
+                totalCostUsd: 73932.53,
+                timestamp: '2026-11-02T10:15:00.000Z'
             },
             {
                 id: 2,
@@ -134,9 +166,9 @@ const ClientDB = (function() {
                 symbol: 'BDX',
                 name: 'Beldex',
                 type: 'BUY',
-                quantity: 4500,
-                executionPriceUsd: 0.065,
-                totalCostUsd: 293.25,
+                quantity: 50000,
+                executionPriceUsd: 0.0722,
+                totalCostUsd: 3610.00,
                 timestamp: '2026-11-04T15:45:00.000Z'
             }
         ],
@@ -196,7 +228,7 @@ const ClientDB = (function() {
             }
         ],
         system_settings: {
-            default_welcome_bonus: '5000.00',
+            default_welcome_bonus: '10000.00',
             default_currency: 'USD',
             default_theme: 'dark',
             maintenance_mode: false,
@@ -231,6 +263,40 @@ const ClientDB = (function() {
                 const raw = storage.getItem(STORAGE_KEY);
                 if (raw) {
                     cache = JSON.parse(raw);
+                    // Ensure v2.5.0 upgrade for $10,000 + 1.0 BTC welcome bonus & Beldex
+                    if (!cache.meta || cache.meta.version !== '2.5.0') {
+                        if (!cache.system_settings) cache.system_settings = {};
+                        cache.system_settings.default_welcome_bonus = '10000.00';
+                        if (Array.isArray(cache.wallets)) {
+                            for (const w of cache.wallets) {
+                                if (!w.holdings) w.holdings = [];
+                                if (!w.holdings.some(h => h.symbol === 'BTC')) {
+                                    w.holdings.push({
+                                        crypto_id: 1,
+                                        symbol: 'BTC',
+                                        name: 'Bitcoin',
+                                        quantity: 1.0,
+                                        avg_buy_price_usd: 73932.53,
+                                        total_invested_usd: 73932.53,
+                                        logo_url: './assets/coins/btc.svg'
+                                    });
+                                }
+                                if (w.userId === 2 && !w.holdings.some(h => h.symbol === 'BDX')) {
+                                    w.holdings.push({
+                                        crypto_id: 4,
+                                        symbol: 'BDX',
+                                        name: 'Beldex',
+                                        quantity: 50000,
+                                        avg_buy_price_usd: 0.0722,
+                                        total_invested_usd: 3610.00,
+                                        logo_url: './assets/coins/bdx.png'
+                                    });
+                                }
+                            }
+                        }
+                        if (cache.meta) cache.meta.version = '2.5.0';
+                        saveDatabase();
+                    }
                     // Migrate legacy support tickets if they exist
                     const legacyTicketsRaw = storage.getItem('ccpulse_support_tickets_v1');
                     if (legacyTicketsRaw) {
@@ -321,20 +387,32 @@ const ClientDB = (function() {
 
                 db.users.push(newUser);
 
-                // Create Virtual Wallet with guaranteed $5,000 USD
-                const bonusAmount = parseFloat(db.system_settings.default_welcome_bonus || '5000.00');
+                // Create Virtual Wallet with guaranteed $10,000 USD + 1.0 Bitcoin
+                const bonusAmount = parseFloat(db.system_settings.default_welcome_bonus || '10000.00');
+                const btcBonusPrice = 73932.53;
                 const nextWalletId = db.wallets.reduce((max, w) => Math.max(max, w.id), 0) + 1;
+                const initialHoldings = [
+                    {
+                        crypto_id: 1,
+                        symbol: 'BTC',
+                        name: 'Bitcoin',
+                        quantity: 1.0,
+                        avg_buy_price_usd: btcBonusPrice,
+                        total_invested_usd: btcBonusPrice,
+                        logo_url: './assets/coins/btc.svg'
+                    }
+                ];
                 const newWallet = {
                     id: nextWalletId,
                     userId: newUser.id,
                     balanceUsd: bonusAmount,
-                    investedUsd: 0.00,
+                    investedUsd: btcBonusPrice,
                     welcomeBonusCredited: true,
-                    holdings: []
+                    holdings: initialHoldings
                 };
                 db.wallets.push(newWallet);
 
-                // Log wallet bonus transaction
+                // Log wallet cash bonus transaction
                 const nextTxId = db.wallet_transactions.reduce((max, tx) => Math.max(max, tx.id), 0) + 1;
                 db.wallet_transactions.push({
                     id: nextTxId,
@@ -344,8 +422,21 @@ const ClientDB = (function() {
                     amountUsd: bonusAmount,
                     balanceBeforeUsd: 0,
                     balanceAfterUsd: bonusAmount,
-                    description: 'Guaranteed Welcome Bonus credited upon registration',
+                    description: 'Guaranteed Welcome Bonus credited upon registration ($10,000.00 USD + 1.0 BTC)',
                     createdAt: new Date().toISOString()
+                });
+
+                // Log wallet 1.0 BTC gift bonus transaction
+                db.wallet_transactions.push({
+                    id: nextTxId + 1,
+                    walletId: newWallet.id,
+                    userId: newUser.id,
+                    type: 'WELCOME_BONUS',
+                    amountUsd: btcBonusPrice,
+                    balanceBeforeUsd: bonusAmount,
+                    balanceAfterUsd: bonusAmount,
+                    description: 'Welcome Bonus: 1.00000000 BTC Gift Credited to Holdings',
+                    createdAt: new Date(Date.now() + 1000).toISOString()
                 });
 
                 saveDatabase();
@@ -357,9 +448,9 @@ const ClientDB = (function() {
                     token,
                     wallet: {
                         availableCashUsd: newWallet.balanceUsd,
-                        totalInvestedUsd: 0,
-                        totalPortfolioValueUsd: newWallet.balanceUsd,
-                        holdings: []
+                        totalInvestedUsd: btcBonusPrice,
+                        totalPortfolioValueUsd: newWallet.balanceUsd + btcBonusPrice,
+                        holdings: initialHoldings
                     },
                     welcomeBonusCredited: true
                 };
@@ -492,13 +583,51 @@ const ClientDB = (function() {
                 const db = loadDatabase();
                 const wallet = db.wallets.find(w => w.userId === Number(userId));
                 if (!wallet) return null;
+
+                let totalInvestedUsd = 0;
+                const enrichedHoldings = (wallet.holdings || []).map(h => {
+                    let livePrice = h.avg_buy_price_usd;
+                    if (typeof State !== 'undefined' && State.cryptos && State.cryptos.length) {
+                        const liveCoin = State.cryptos.find(c => c.symbol === h.symbol || c.id === h.crypto_id);
+                        if (liveCoin && liveCoin.current_price_usd) {
+                            livePrice = liveCoin.current_price_usd;
+                        }
+                    } else if (typeof CLIENT_STATIC_COINS !== 'undefined') {
+                        const staticCoin = CLIENT_STATIC_COINS.find(c => c.symbol === h.symbol || c.id === h.crypto_id);
+                        if (staticCoin && staticCoin.current_price_usd) {
+                            livePrice = staticCoin.current_price_usd;
+                        }
+                    }
+
+                    const currentVal = h.quantity * livePrice;
+                    totalInvestedUsd += currentVal;
+                    const pnl = currentVal - (h.total_invested_usd || (h.quantity * h.avg_buy_price_usd));
+                    const pnlPct = (h.total_invested_usd > 0) ? (pnl / h.total_invested_usd) * 100 : 0;
+
+                    return {
+                        ...h,
+                        current_price_usd: livePrice,
+                        current_value_usd: currentVal,
+                        pnl_usd: pnl,
+                        pnl_percent: pnlPct
+                    };
+                });
+
+                const totalPortfolio = wallet.balanceUsd + totalInvestedUsd;
+                const deposited = wallet.totalDepositedUsd || 10000.00;
+                const totalPnl = totalPortfolio - deposited;
+                const totalPnlPct = deposited > 0 ? (totalPnl / deposited) * 100 : 0;
+
                 return {
                     id: wallet.id,
                     userId: wallet.userId,
                     availableCashUsd: wallet.balanceUsd,
-                    totalInvestedUsd: wallet.investedUsd,
-                    totalPortfolioValueUsd: wallet.balanceUsd + wallet.investedUsd,
-                    holdings: wallet.holdings || []
+                    investedUsd: totalInvestedUsd,
+                    totalPortfolioValueUsd: totalPortfolio,
+                    totalDepositedUsd: deposited,
+                    totalProfitLossUsd: totalPnl,
+                    totalProfitLossPercent: totalPnlPct,
+                    holdings: enrichedHoldings
                 };
             },
 
@@ -541,10 +670,20 @@ const ClientDB = (function() {
                     wallet = {
                         id: db.wallets.length + 1,
                         userId: uid,
-                        balanceUsd: 5000.00,
-                        investedUsd: 0.00,
+                        balanceUsd: 10000.00,
+                        investedUsd: 73932.53,
                         welcomeBonusCredited: true,
-                        holdings: []
+                        holdings: [
+                            {
+                                crypto_id: 1,
+                                symbol: 'BTC',
+                                name: 'Bitcoin',
+                                quantity: 1.0,
+                                avg_buy_price_usd: 73932.53,
+                                total_invested_usd: 73932.53,
+                                logo_url: './assets/coins/btc.svg'
+                            }
+                        ]
                     };
                     db.wallets.push(wallet);
                 }
@@ -614,6 +753,21 @@ const ClientDB = (function() {
                 };
                 db.trades.push(newTrade);
 
+                // Add to wallet_transactions ledger for auditability
+                db.wallet_transactions.push({
+                    id: db.wallet_transactions.length + 1,
+                    walletId: wallet.id,
+                    userId: uid,
+                    transactionRef: `TR-${type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    type: type === 'BUY' ? 'BUY_ORDER' : 'SELL_ORDER',
+                    amountUsd: totalCostUsd,
+                    balanceBeforeUsd: type === 'BUY' ? wallet.balanceUsd + totalCostUsd : wallet.balanceUsd - totalCostUsd,
+                    balanceAfterUsd: wallet.balanceUsd,
+                    description: `Simulated ${type} ${qty.toLocaleString()} ${crypto.symbol}`,
+                    auditReason: `Simulated ${type} Order at $${price.toFixed(4)} USD`,
+                    createdAt: new Date().toISOString()
+                });
+
                 saveDatabase();
 
                 return {
@@ -621,7 +775,117 @@ const ClientDB = (function() {
                     trade: newTrade,
                     wallet: {
                         availableCashUsd: wallet.balanceUsd,
-                        totalInvestedUsd: wallet.investedUsd,
+                        investedUsd: wallet.investedUsd,
+                        totalPortfolioValueUsd: wallet.balanceUsd + wallet.investedUsd,
+                        holdings: wallet.holdings
+                    }
+                };
+            },
+
+            executeSwap({ userId, fromCrypto, toCrypto, fromSymbol, toSymbol, fromQuantity, fromPriceUsd, toPriceUsd, slippageTolerance = 0.005, networkFeePct = 0.0015, handlingFeePct = 0.0025 }) {
+                const db = loadDatabase();
+                const uid = Number(userId);
+                let wallet = db.wallets.find(w => w.userId === uid);
+                if (!wallet) throw new Error('Virtual wallet not found.');
+
+                const fromQty = parseFloat(fromQuantity);
+                if (isNaN(fromQty) || fromQty <= 0) throw new Error('Please enter a valid swap quantity.');
+
+                const fromSym = (typeof fromCrypto === 'string' ? fromCrypto : (fromCrypto?.symbol || fromSymbol || '')).toUpperCase();
+                const toSym = (typeof toCrypto === 'string' ? toCrypto : (toCrypto?.symbol || toSymbol || '')).toUpperCase();
+                if (!fromSym || !toSym) throw new Error('Source and target cryptocurrencies are required.');
+
+                if (!wallet.holdings) wallet.holdings = [];
+                const existingFrom = wallet.holdings.find(h => h.symbol === fromSym);
+                if (!existingFrom || existingFrom.quantity < fromQty) {
+                    const avail = existingFrom ? existingFrom.quantity : 0;
+                    throw new Error(`Insufficient ${fromSym} balance. Trying to swap ${fromQty}, Available: ${avail}.`);
+                }
+
+                const fromPrice = parseFloat(fromCrypto?.current_price_usd || fromPriceUsd || (fromSym === 'BTC' ? 73932.53 : 1.0));
+                const toPrice = parseFloat(toCrypto?.current_price_usd || toPriceUsd || (toSym === 'BDX' ? 0.0722 : 1.0));
+                if (!fromPrice || !toPrice) throw new Error('Invalid market pricing for selected swap pair.');
+
+                const grossValueUsd = fromQty * fromPrice;
+                const networkFeeUsd = grossValueUsd * networkFeePct;
+                const handlingFeeUsd = grossValueUsd * handlingFeePct;
+                const netValueUsd = Math.max(0, grossValueUsd - networkFeeUsd - handlingFeeUsd);
+                const toQuantityReceived = netValueUsd / toPrice;
+
+                // Deduct from source coin holding
+                existingFrom.quantity -= fromQty;
+                existingFrom.total_invested_usd = Math.max(0, existingFrom.quantity * existingFrom.avg_buy_price_usd);
+                if (existingFrom.quantity <= 0.00000001) {
+                    wallet.holdings = wallet.holdings.filter(h => h.symbol !== fromSym);
+                }
+
+                // Add to target coin holding
+                const existingTo = wallet.holdings.find(h => h.symbol === toSym);
+                if (existingTo) {
+                    const newTotalQty = existingTo.quantity + toQuantityReceived;
+                    const newTotalCost = existingTo.total_invested_usd + netValueUsd;
+                    existingTo.quantity = newTotalQty;
+                    existingTo.avg_buy_price_usd = newTotalCost / newTotalQty;
+                    existingTo.total_invested_usd = newTotalCost;
+                } else {
+                    wallet.holdings.push({
+                        crypto_id: toCrypto?.id || (toSym === 'BDX' ? 14 : 2),
+                        symbol: toSym,
+                        name: toCrypto?.name || toSym,
+                        quantity: toQuantityReceived,
+                        avg_buy_price_usd: toPrice,
+                        total_invested_usd: netValueUsd,
+                        logo_url: toCrypto?.logo_url || `./assets/coins/${toSym.toLowerCase()}.svg`
+                    });
+                }
+
+                // Recalculate total invested
+                wallet.investedUsd = wallet.holdings.reduce((sum, h) => sum + (h.total_invested_usd || 0), 0);
+
+                const swapRef = `SWAP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+                const newTrade = {
+                    id: db.trades.length + 1,
+                    userId: uid,
+                    cryptoId: toCrypto?.id || (toSym === 'BDX' ? 14 : 2),
+                    symbol: `${fromSym} → ${toSym}`,
+                    name: `Swap ${fromSym} to ${toSym}`,
+                    type: 'SWAP',
+                    quantity: toQuantityReceived,
+                    fromQuantity: fromQty,
+                    fromSymbol: fromSym,
+                    toSymbol: toSym,
+                    executionPriceUsd: toPrice,
+                    totalCostUsd: netValueUsd,
+                    networkFeeUsd,
+                    handlingFeeUsd,
+                    timestamp: new Date().toISOString()
+                };
+                db.trades.push(newTrade);
+
+                // Record in transactions ledger
+                db.wallet_transactions.push({
+                    id: db.wallet_transactions.length + 1,
+                    walletId: wallet.id,
+                    userId: uid,
+                    transactionRef: swapRef,
+                    type: 'SWAP',
+                    amountUsd: netValueUsd,
+                    balanceBeforeUsd: wallet.balanceUsd,
+                    balanceAfterUsd: wallet.balanceUsd,
+                    description: `Instant Swap ${fromQty.toLocaleString()} ${fromSym} → ${toQuantityReceived.toFixed(6)} ${toSym}`,
+                    auditReason: `DEX Swap: Network Gas Fee $${networkFeeUsd.toFixed(2)}, Liquidity Fee $${handlingFeeUsd.toFixed(2)} USD`,
+                    createdAt: new Date().toISOString()
+                });
+
+                saveDatabase();
+
+                return {
+                    success: true,
+                    trade: newTrade,
+                    swap: newTrade,
+                    wallet: {
+                        availableCashUsd: wallet.balanceUsd,
+                        investedUsd: wallet.investedUsd,
                         totalPortfolioValueUsd: wallet.balanceUsd + wallet.investedUsd,
                         holdings: wallet.holdings
                     }
@@ -636,6 +900,32 @@ const ClientDB = (function() {
             getAll() {
                 const db = loadDatabase();
                 return [...db.trades].sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+            }
+        },
+
+        // =====================================================================
+        // AUDITABLE TRANSACTIONS TABLE
+        // =====================================================================
+        transactions: {
+            getByUserId(userId) {
+                const db = loadDatabase();
+                return (db.wallet_transactions || [])
+                    .filter(tx => tx.userId === Number(userId))
+                    .sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt))
+                    .map(tx => ({
+                        transaction_ref: tx.transactionRef || `TX-${tx.id}`,
+                        type: tx.type,
+                        amount_usd: tx.amountUsd,
+                        balance_after_usd: tx.balanceAfterUsd,
+                        description: tx.description,
+                        audit_reason: tx.auditReason,
+                        created_at: tx.createdAt
+                    }));
+            },
+
+            getAll() {
+                const db = loadDatabase();
+                return (db.wallet_transactions || []).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
             }
         },
 

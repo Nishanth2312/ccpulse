@@ -143,8 +143,8 @@ const AuthModals = {
                     <div style="background: rgba(16, 185, 129, 0.1); border: 1px dashed var(--color-success); border-radius: 8px; padding: 12px; display: flex; align-items: center; gap: 12px;">
                         <i class="fa-solid fa-gift" style="font-size: 1.5rem; color: var(--color-success);"></i>
                         <div>
-                            <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-success);">$5,000 USD Welcome Bonus</div>
-                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Receive $5,000 virtual trading credits instantly upon registration!</div>
+                            <div style="font-weight: 700; font-size: 0.95rem; color: var(--color-success);">$10,000 USD + 1.0 Bitcoin Welcome Bonus</div>
+                            <div style="font-size: 0.8rem; color: var(--text-secondary);">Receive $10,000 virtual cash and 1 full Bitcoin credited upon registration!</div>
                         </div>
                     </div>
 
@@ -185,7 +185,7 @@ const AuthModals = {
                     </div>
 
                     <button type="submit" class="btn btn-primary" style="width: 100%; margin-top: 8px;">
-                        <i class="fa-solid fa-gift"></i> Create Account & Claim $5,000 Bonus
+                        <i class="fa-solid fa-gift"></i> Create Account & Claim $10,000 + 1 BTC Bonus
                     </button>
                 </div>
                 <div class="modal-footer" style="justify-content: center;">
@@ -253,7 +253,7 @@ const AuthModals = {
                     Base Equivalent: $${Number(amountUsd).toLocaleString('en-US', { minimumFractionDigits: 2 })} USD
                 </div>
                 <p style="font-size: 0.95rem; line-height: 1.6; color: var(--text-secondary); max-width: 440px; margin: 0 auto 24px;">
-                    Your $5,000 virtual trading balance is ready. Start learning, explore the markets, and practice trading without risking real money.
+                    Your $10,000 virtual trading cash and 1.0 Bitcoin bonus are ready in your wallet! Start learning, explore the markets, and practice trading without risking real money.
                 </p>
                 <div style="display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;">
                     <button type="button" id="welcome-trade-btn" class="btn btn-primary">

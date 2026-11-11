@@ -63,7 +63,7 @@ const App = {
         const isAdmin = isAuth && State.currentUser.role === 'admin';
         const currentHash = window.location.hash.slice(1).split('?')[0].split('/')[0] || 'dashboard';
 
-        const isTradeActive = ['simulator', 'portfolio', 'simulation-lab'].includes(currentHash);
+        const isTradeActive = ['simulator', 'portfolio', 'swap', 'simulation-lab'].includes(currentHash);
         const isLearnActive = ['learning', 'safety-center'].includes(currentHash);
 
         // Desktop Navigation: Clean, spacious with hover dropdown menus
@@ -95,6 +95,13 @@ const App = {
                         <div class="dropdown-text">
                             <span class="dropdown-title">Virtual Simulator</span>
                             <span class="dropdown-sub">Real-time order books, buy/sell limit & market execution</span>
+                        </div>
+                    </a>
+                    <a href="#swap" class="dropdown-item ${currentHash === 'swap' ? 'active' : ''}" role="menuitem">
+                        <div class="dropdown-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;"><i class="fa-solid fa-repeat"></i></div>
+                        <div class="dropdown-text">
+                            <span class="dropdown-title">Instant Token Swap</span>
+                            <span class="dropdown-sub">Convert coin to coin with network & handling fees</span>
                         </div>
                     </a>
                     <a href="#portfolio" class="dropdown-item ${currentHash === 'portfolio' ? 'active' : ''}" role="menuitem">
@@ -189,6 +196,13 @@ const App = {
                     <div class="mobile-nav-meta">
                         <span class="mobile-nav-title">Virtual Simulator</span>
                         <span class="mobile-nav-desc">Order books, buy/sell simulation</span>
+                    </div>
+                </a>
+                <a href="#swap" class="mobile-nav-link ${currentHash === 'swap' ? 'active' : ''}">
+                    <div class="mobile-nav-icon" style="background: rgba(139, 92, 246, 0.15); color: #8B5CF6;"><i class="fa-solid fa-repeat"></i></div>
+                    <div class="mobile-nav-meta">
+                        <span class="mobile-nav-title">Instant Token Swap</span>
+                        <span class="mobile-nav-desc">Convert coin to coin with fees</span>
                     </div>
                 </a>
                 <a href="#portfolio" class="mobile-nav-link ${currentHash === 'portfolio' ? 'active' : ''}">
@@ -332,7 +346,7 @@ const App = {
             if (notifMenu) notifMenu.classList.add('hidden');
 
             container.innerHTML = `
-                <button type="button" class="btn-guest-pill" id="header-guest-btn" title="Quick Simulation Mode ($5,000 Balance)">
+                <button type="button" class="btn-guest-pill" id="header-guest-btn" title="Quick Simulation Mode ($10,000 + 1 BTC Balance)">
                     <i class="fa-solid fa-user-secret"></i>
                     <span>Guest</span>
                 </button>
@@ -349,12 +363,12 @@ const App = {
                     <div class="drawer-guest-card">
                         <div class="guest-card-top">
                             <span class="guest-badge"><i class="fa-solid fa-user-secret"></i> Guest Simulation</span>
-                            <span class="guest-balance-hint font-mono">$5,000.00 Balance</span>
+                            <span class="guest-balance-hint font-mono">$10,000 + 1 BTC</span>
                         </div>
                         <p class="guest-card-desc">Practice real-time trading risk-free. Create an account to save your portfolio and trade history across devices.</p>
                         <div class="guest-card-actions">
                             <button type="button" class="btn btn-outline" onclick="AuthModals.showLogin(); App.closeDrawer();">Sign In</button>
-                            <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister(); App.closeDrawer();">Register & Claim $5,000</button>
+                            <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister(); App.closeDrawer();">Register & Claim $10k + 1 BTC</button>
                         </div>
                     </div>
                 `;
@@ -419,6 +433,10 @@ const App = {
 
         this.renderNav();
 
+        if (typeof PortfolioView !== 'undefined' && PortfolioView.stopCron) {
+            PortfolioView.stopCron();
+        }
+
         if (routePath === 'dashboard' || routePath === '') {
             await DashboardView.render(container);
         } else if (routePath === 'markets') {
@@ -429,6 +447,10 @@ const App = {
         } else if (routePath === 'simulator') {
             const preselectedCoin = queryParams.get('coin');
             await SimulatorView.render(container, preselectedCoin);
+        } else if (routePath === 'swap') {
+            const fromCoin = queryParams.get('from');
+            const toCoin = queryParams.get('to');
+            await SwapView.render(container, { fromCoin, toCoin });
         } else if (routePath === 'portfolio') {
             await PortfolioView.render(container);
         } else if (routePath === 'learning') {

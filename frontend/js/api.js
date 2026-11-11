@@ -6,34 +6,91 @@
  * Seamlessly talks to the Express 5.x backend, with automatic direct-to-CoinGecko
  * and direct-to-Forex client-side simulation when hosted on static environments like GitHub Pages.
  */
+const NINJA_API_KEY = 'mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN';
+
 const CLIENT_STATIC_COINS = [
-    { id: 1, name: 'Bitcoin', symbol: 'BTC', slug: 'bitcoin', logo_url: './assets/coins/btc.svg', blockchain: 'Bitcoin Core (SHA-256 Proof of Work)', current_price_usd: 78245, change_24h: 1.52, high_24h: 79100, low_24h: 76800, volume_24h: 31170000000, market_cap_usd: 1572000000000, risk_level: 'Medium', educational_content: 'Bitcoin is the first decentralized digital currency introduced in 2008 by Satoshi Nakamoto.', risk_information: 'High market dominance, institutional flows, macroeconomic cycles.', sort_order: 1, is_active: 1, is_visible: 1 },
-    { id: 2, name: 'Ethereum', symbol: 'ETH', slug: 'ethereum', logo_url: './assets/coins/eth.svg', blockchain: 'Ethereum Proof of Stake (Smart Contracts & EVM)', current_price_usd: 2314.75, change_24h: 1.71, high_24h: 2350, low_24h: 2280, volume_24h: 11150000000, market_cap_usd: 282400000000, risk_level: 'Medium', educational_content: 'Ethereum is a global platform for smart contracts and decentralized applications.', risk_information: 'Smart contract vulnerability risks and gas fee variations.', sort_order: 2, is_active: 1, is_visible: 1 },
-    { id: 3, name: 'Monero', symbol: 'XMR', slug: 'monero', logo_url: './assets/coins/xmr.svg', blockchain: 'RandomX Proof of Work (Ring Confidential Transactions)', current_price_usd: 639.06, change_24h: 2.50, high_24h: 650, low_24h: 620, volume_24h: 194000000, market_cap_usd: 12040000000, risk_level: 'High', educational_content: 'Monero is the leading privacy-focused cryptocurrency with untraceable transactions.', risk_information: 'Regulatory scrutiny surrounding privacy coins.', sort_order: 3, is_active: 1, is_visible: 1 },
-    { id: 4, name: 'Beldex', symbol: 'BDX', slug: 'beldex', logo_url: './assets/coins/bdx.png', blockchain: 'Proof of Stake Private Ecosystem (Masternodes & POS)', current_price_usd: 0.0722, change_24h: -0.61, high_24h: 0.074, low_24h: 0.071, volume_24h: 9420000, market_cap_usd: 568900000, risk_level: 'High', educational_content: 'Beldex is a privacy-first web3 ecosystem providing private messaging and Masternode validation.', risk_information: 'Emerging ecosystem token with privacy coin regulatory exposure.', sort_order: 4, is_active: 1, is_visible: 1 },
-    { id: 5, name: 'Solana', symbol: 'SOL', slug: 'solana', logo_url: './assets/coins/sol.svg', blockchain: 'Proof of History + Proof of Stake Hybrid Engine', current_price_usd: 92.72, change_24h: -0.08, high_24h: 94.5, low_24h: 91.2, volume_24h: 2715000000, market_cap_usd: 54700000000, risk_level: 'Medium', educational_content: 'Solana is a high-performance blockchain designed for mainstream adoption.', risk_information: 'Historical network congestion outages.', sort_order: 5, is_active: 1, is_visible: 1 }
+    { id: 1, name: 'Bitcoin', symbol: 'BTC', slug: 'bitcoin', logo_url: './assets/coins/btc.svg', blockchain: 'Bitcoin Core (SHA-256 Proof of Work)', current_price_usd: 73932.53, change_24h: 2.15, high_24h: 74800, low_24h: 72600, volume_24h: 34120000000, market_cap_usd: 1460000000000, categories: ['Top 10', 'Layer 1'], risk_level: 'Medium', educational_content: 'Bitcoin is the pioneer decentralized digital cryptocurrency introduced in 2008 by Satoshi Nakamoto with a strict 21M hard cap.', risk_information: 'Macroeconomic cycles, ETF capital flows, market dominance shifts.', sort_order: 1, is_active: 1, is_visible: 1, sparkline: [71000, 71500, 72200, 71800, 73000, 72500, 73932] },
+    { id: 2, name: 'Ethereum', symbol: 'ETH', slug: 'ethereum', logo_url: './assets/coins/eth.svg', blockchain: 'Ethereum Proof of Stake (Smart Contracts & EVM)', current_price_usd: 2056.93, change_24h: 1.45, high_24h: 2110, low_24h: 2020, volume_24h: 14850000000, market_cap_usd: 247000000000, categories: ['Top 10', 'Layer 1', 'DeFi'], risk_level: 'Medium', educational_content: 'Ethereum powers programmable smart contracts and decentralized finance (DeFi) applications across the globe.', risk_information: 'Gas fee fluctuations, smart contract vulnerabilities, layer-2 execution risks.', sort_order: 2, is_active: 1, is_visible: 1, sparkline: [1980, 2010, 2040, 2020, 2070, 2050, 2056.93] },
+    { id: 3, name: 'Tether', symbol: 'USDT', slug: 'tether', logo_url: './assets/coins/usdt.svg', blockchain: 'Multi-Chain Fiat Collateralized Stablecoin', current_price_usd: 1.00, change_24h: 0.02, high_24h: 1.002, low_24h: 0.998, volume_24h: 52100000000, market_cap_usd: 120000000000, categories: ['Top 10'], risk_level: 'Low', educational_content: 'USDT is a collateralized stablecoin pegged 1:1 to the US Dollar, facilitating liquidity and trading.', risk_information: 'Centralized issuer counterparty and reserve backing risk.', sort_order: 3, is_active: 1, is_visible: 1, sparkline: [1.0, 1.001, 0.999, 1.0, 1.001, 1.0, 1.0] },
+    { id: 4, name: 'BNB', symbol: 'BNB', slug: 'binancecoin', logo_url: './assets/coins/bnb.svg', blockchain: 'BNB Smart Chain (Proof of Staked Authority)', current_price_usd: 585.40, change_24h: 0.85, high_24h: 595, low_24h: 575, volume_24h: 1150000000, market_cap_usd: 85400000000, categories: ['Top 10', 'Layer 1', 'DeFi'], risk_level: 'Medium', educational_content: 'BNB fuels the BNB Chain ecosystem and offers gas discounts and DeFi utility.', risk_information: 'Ecosystem centralization and regulatory scrutiny.', sort_order: 4, is_active: 1, is_visible: 1, sparkline: [565, 572, 580, 578, 588, 582, 585.4] },
+    { id: 5, name: 'Solana', symbol: 'SOL', slug: 'solana', logo_url: './assets/coins/sol.svg', blockchain: 'Proof of History + Proof of Stake Hybrid Engine', current_price_usd: 83.75, change_24h: 3.12, high_24h: 86.5, low_24h: 80.2, volume_24h: 3850000000, market_cap_usd: 39500000000, categories: ['Top 10', 'Layer 1', 'DeFi'], risk_level: 'Medium', educational_content: 'Solana is a high-throughput blockchain capable of thousands of transactions per second with sub-cent fees.', risk_information: 'Validator hardware demands and historical network congestion.', sort_order: 5, is_active: 1, is_visible: 1, sparkline: [78, 80, 82, 79, 84, 82, 83.75] },
+    { id: 6, name: 'XRP', symbol: 'XRP', slug: 'ripple', logo_url: './assets/coins/xrp.svg', blockchain: 'XRP Ledger (Consensus Protocol)', current_price_usd: 0.528, change_24h: -0.45, high_24h: 0.542, low_24h: 0.519, volume_24h: 1420000000, market_cap_usd: 29800000000, categories: ['Top 10'], risk_level: 'Medium', educational_content: 'XRP is built for real-time cross-border settlements and enterprise payment facilitation.', risk_information: 'Regulatory ongoing litigation and escrow lock releases.', sort_order: 6, is_active: 1, is_visible: 1, sparkline: [0.51, 0.52, 0.53, 0.525, 0.535, 0.522, 0.528] },
+    { id: 7, name: 'Dogecoin', symbol: 'DOGE', slug: 'dogecoin', logo_url: './assets/coins/doge.svg', blockchain: 'Scrypt Proof of Work (AuxPoW)', current_price_usd: 0.142, change_24h: 5.80, high_24h: 0.151, low_24h: 0.134, volume_24h: 1950000000, market_cap_usd: 20700000000, categories: ['Top 10', 'Meme'], risk_level: 'High', educational_content: 'Dogecoin is the original meme cryptocurrency created in 2013 featuring the Shiba Inu dog.', risk_information: 'Social sentiment volatility and inflationary tokenomics.', sort_order: 7, is_active: 1, is_visible: 1, sparkline: [0.128, 0.132, 0.135, 0.138, 0.145, 0.140, 0.142] },
+    { id: 8, name: 'Cardano', symbol: 'ADA', slug: 'cardano', logo_url: './assets/coins/ada.svg', blockchain: 'Ouroboros Proof of Stake (Peer-Reviewed Protocol)', current_price_usd: 0.362, change_24h: 1.15, high_24h: 0.375, low_24h: 0.354, volume_24h: 420000000, market_cap_usd: 12900000000, categories: ['Top 10', 'Layer 1'], risk_level: 'Medium', educational_content: 'Cardano is a research-first blockchain platform built on peer-reviewed academic papers.', risk_information: 'Development roadmap pacing and adoption competition.', sort_order: 8, is_active: 1, is_visible: 1, sparkline: [0.345, 0.35, 0.355, 0.36, 0.365, 0.358, 0.362] },
+    { id: 9, name: 'Avalanche', symbol: 'AVAX', slug: 'avalanche-2', logo_url: './assets/coins/avax.svg', blockchain: 'Avalanche Consensus (Multi-Subnet Architecture)', current_price_usd: 24.85, change_24h: 2.40, high_24h: 25.6, low_24h: 23.9, volume_24h: 380000000, market_cap_usd: 9950000000, categories: ['Layer 1', 'DeFi'], risk_level: 'Medium', educational_content: 'Avalanche is a smart contract platform capable of sub-second finality with custom subnets.', risk_information: 'Unlocks schedule and subnet validation economics.', sort_order: 9, is_active: 1, is_visible: 1, sparkline: [23.1, 23.8, 24.2, 24.0, 25.1, 24.5, 24.85] },
+    { id: 10, name: 'Chainlink', symbol: 'LINK', slug: 'chainlink', logo_url: './assets/coins/link.svg', blockchain: 'Decentralized Oracle Network (Cross-Chain CCIP)', current_price_usd: 11.24, change_24h: 0.95, high_24h: 11.6, low_24h: 10.9, volume_24h: 290000000, market_cap_usd: 6850000000, categories: ['DeFi'], risk_level: 'Medium', educational_content: 'Chainlink connects smart contracts with real-world external data feeds, off-chain computation, and APIs.', risk_information: 'Oracle node collaterals and multi-chain bridge integrations.', sort_order: 10, is_active: 1, is_visible: 1, sparkline: [10.5, 10.8, 11.1, 10.95, 11.35, 11.15, 11.24] },
+    { id: 11, name: 'Polkadot', symbol: 'DOT', slug: 'polkadot', logo_url: './assets/coins/dot.svg', blockchain: 'Nominated Proof of Stake (Heterogeneous Parachains)', current_price_usd: 4.15, change_24h: -0.80, high_24h: 4.28, low_24h: 4.08, volume_24h: 185000000, market_cap_usd: 5950000000, categories: ['Layer 1'], risk_level: 'Medium', educational_content: 'Polkadot unites independent blockchains into a shared security and interoperability network.', risk_information: 'Parachain slot renewal dynamics and inflation rate.', sort_order: 11, is_active: 1, is_visible: 1, sparkline: [4.05, 4.12, 4.2, 4.18, 4.24, 4.14, 4.15] },
+    { id: 12, name: 'TRON', symbol: 'TRX', slug: 'tron', logo_url: './assets/coins/trx.svg', blockchain: 'Delegated Proof of Stake (High-Throughput DPoS)', current_price_usd: 0.165, change_24h: 1.05, high_24h: 0.168, low_24h: 0.161, volume_24h: 650000000, market_cap_usd: 14300000000, categories: ['Top 10', 'Layer 1'], risk_level: 'Medium', educational_content: 'TRON is a decentralized platform known for hosting the largest volume of global USDT transfers.', risk_information: 'Validator centralization and governance concentration.', sort_order: 12, is_active: 1, is_visible: 1, sparkline: [0.158, 0.161, 0.163, 0.162, 0.167, 0.164, 0.165] },
+    { id: 13, name: 'Monero', symbol: 'XMR', slug: 'monero', logo_url: './assets/coins/xmr.svg', blockchain: 'RandomX Proof of Work (Ring Confidential Transactions)', current_price_usd: 158.40, change_24h: 2.50, high_24h: 162.0, low_24h: 154.5, volume_24h: 194000000, market_cap_usd: 2910000000, categories: ['Privacy'], risk_level: 'High', educational_content: 'Monero is the leading privacy-focused cryptocurrency with untraceable stealth transactions and ring signatures.', risk_information: 'Regulatory exchange delistings and jurisdiction prohibitions.', sort_order: 13, is_active: 1, is_visible: 1, sparkline: [152, 155, 157, 154, 160, 156, 158.4] },
+    { id: 14, name: 'Beldex', symbol: 'BDX', slug: 'beldex', logo_url: './assets/coins/bdx.png', blockchain: 'Proof of Stake Private Ecosystem (Masternodes & POS)', current_price_usd: 0.0722, change_24h: 3.41, high_24h: 0.075, low_24h: 0.069, volume_24h: 9420000, market_cap_usd: 568900000, categories: ['Privacy'], risk_level: 'High', educational_content: 'Beldex is a privacy-first web3 ecosystem providing BChat confidential messaging, BelNet dVPN, and Masternode validation.', risk_information: 'Altcoin liquidity profile and Masternode collateral requirements.', sort_order: 14, is_active: 1, is_visible: 1, sparkline: [0.066, 0.068, 0.071, 0.069, 0.074, 0.070, 0.0722] },
+    { id: 15, name: 'Shiba Inu', symbol: 'SHIB', slug: 'shiba-inu', logo_url: './assets/coins/shib.svg', blockchain: 'Ethereum ERC-20 + Shibarium Layer-2 Ecosystem', current_price_usd: 0.0000185, change_24h: 4.25, high_24h: 0.0000192, low_24h: 0.0000176, volume_24h: 520000000, market_cap_usd: 10900000000, categories: ['Meme', 'DeFi'], risk_level: 'Very High', educational_content: 'Shiba Inu is a community-driven meme ecosystem expanding into DEXs and Shibarium Layer-2.', risk_information: 'Massive circulating token supply and high speculative swings.', sort_order: 15, is_active: 1, is_visible: 1, sparkline: [0.000017, 0.0000178, 0.0000182, 0.0000179, 0.0000189, 0.0000183, 0.0000185] },
+    { id: 16, name: 'Pepe', symbol: 'PEPE', slug: 'pepe', logo_url: './assets/coins/pepe.svg', blockchain: 'Ethereum ERC-20 Deflationary Meme Token', current_price_usd: 0.0000098, change_24h: 7.90, high_24h: 0.0000105, low_24h: 0.0000089, volume_24h: 880000000, market_cap_usd: 4120000000, categories: ['Meme'], risk_level: 'Very High', educational_content: 'Pepe is a culture-centric viral meme coin on Ethereum with a burning redistribution mechanism.', risk_information: 'Meme sentiment volatility and zero inherent utility.', sort_order: 16, is_active: 1, is_visible: 1, sparkline: [0.0000085, 0.000009, 0.0000094, 0.0000091, 0.0000102, 0.0000096, 0.0000098] },
+    { id: 17, name: 'Sui', symbol: 'SUI', slug: 'sui', logo_url: './assets/coins/sui.svg', blockchain: 'Move Language Object-Centric Layer 1', current_price_usd: 1.95, change_24h: 6.20, high_24h: 2.05, low_24h: 1.82, volume_24h: 750000000, market_cap_usd: 5460000000, categories: ['Layer 1', 'DeFi'], risk_level: 'High', educational_content: 'Sui is an innovative Layer 1 blockchain using the Move programming language for parallel execution.', risk_information: 'Token unlock vesting schedule and early developer adoption curve.', sort_order: 17, is_active: 1, is_visible: 1, sparkline: [1.75, 1.82, 1.89, 1.84, 1.98, 1.91, 1.95] },
+    { id: 18, name: 'NEAR Protocol', symbol: 'NEAR', slug: 'near', logo_url: './assets/coins/near.svg', blockchain: 'Nightshade Sharding Proof of Stake (AI & Web3)', current_price_usd: 4.82, change_24h: 3.45, high_24h: 5.05, low_24h: 4.65, volume_24h: 410000000, market_cap_usd: 5880000000, categories: ['Layer 1', 'AI'], risk_level: 'Medium', educational_content: 'NEAR Protocol is a high-speed sharded blockchain focused on user-friendly abstraction and decentralized AI.', risk_information: 'Sharding complexity and market competition among smart contract chains.', sort_order: 18, is_active: 1, is_visible: 1, sparkline: [4.45, 4.58, 4.72, 4.65, 4.92, 4.75, 4.82] },
+    { id: 19, name: 'Litecoin', symbol: 'LTC', slug: 'litecoin', logo_url: './assets/coins/ltc.svg', blockchain: 'Scrypt Proof of Work (Silver to Bitcoin Gold)', current_price_usd: 68.20, change_24h: 1.05, high_24h: 70.1, low_24h: 66.8, volume_24h: 360000000, market_cap_usd: 5120000000, categories: ['Layer 1'], risk_level: 'Medium', educational_content: 'Litecoin was launched in 2011 by Charlie Lee as a lightweight peer-to-peer payment alternative to Bitcoin.', risk_information: 'Mining reward halving cycles and low relative market beta.', sort_order: 19, is_active: 1, is_visible: 1, sparkline: [65.5, 66.8, 68.0, 67.2, 69.1, 67.8, 68.2] },
+    { id: 20, name: 'Uniswap', symbol: 'UNI', slug: 'uniswap', logo_url: './assets/coins/uni.svg', blockchain: 'Ethereum Automated Market Maker (AMM DEX Governance)', current_price_usd: 7.65, change_24h: 2.10, high_24h: 7.95, low_24h: 7.42, volume_24h: 280000000, market_cap_usd: 4590000000, categories: ['DeFi'], risk_level: 'Medium', educational_content: 'Uniswap is the largest decentralized automated market maker exchange protocol across EVM networks.', risk_information: 'Fee-switch governance debates and decentralized liquidity concentration.', sort_order: 20, is_active: 1, is_visible: 1, sparkline: [7.2, 7.35, 7.55, 7.48, 7.8, 7.58, 7.65] }
 ];
 
-async function fetchDirectCoinGeckoPrices() {
+async function fetchDirectMarketPrices() {
+    // 1. Fetch live prices for top coins from API Ninjas using user's key
     try {
-        const res = await fetch('https://api.coingecko.com/api/v3/simple/price?ids=bitcoin,ethereum,monero,beldex,solana&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true');
+        const ninjaPairs = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'LTC', 'DOT'];
+        await Promise.all(ninjaPairs.map(async sym => {
+            try {
+                const res = await fetch(`https://api.api-ninjas.com/v1/cryptoprice?symbol=${sym}USD`, {
+                    headers: { 'X-Api-Key': NINJA_API_KEY }
+                });
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.price) {
+                        const c = CLIENT_STATIC_COINS.find(x => x.symbol === sym);
+                        if (c) {
+                            const newP = parseFloat(data.price);
+                            c.current_price_usd = newP;
+                            if (c.sparkline) {
+                                c.sparkline.push(newP);
+                                if (c.sparkline.length > 10) c.sparkline.shift();
+                            }
+                        }
+                    }
+                }
+            } catch (e) {}
+        }));
+    } catch (e) {}
+
+    // 2. Fetch CoinGecko prices for privacy coins, altcoins, and market metrics
+    try {
+        const geckoIds = 'bitcoin,ethereum,monero,beldex,solana,ripple,dogecoin,cardano,avalanche-2,chainlink,polkadot,tron,shiba-inu,pepe,sui,near,litecoin,uniswap,tether,binancecoin';
+        const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${geckoIds}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`);
         if (res.ok) {
             const data = await res.json();
-            const map = { bitcoin: 'BTC', ethereum: 'ETH', monero: 'XMR', beldex: 'BDX', solana: 'SOL' };
+            const map = {
+                bitcoin: 'BTC', ethereum: 'ETH', monero: 'XMR', beldex: 'BDX', solana: 'SOL',
+                ripple: 'XRP', dogecoin: 'DOGE', cardano: 'ADA', 'avalanche-2': 'AVAX', chainlink: 'LINK',
+                polkadot: 'DOT', tron: 'TRX', 'shiba-inu': 'SHIB', pepe: 'PEPE', sui: 'SUI',
+                near: 'NEAR', litecoin: 'LTC', uniswap: 'UNI', tether: 'USDT', binancecoin: 'BNB'
+            };
             for (const [id, m] of Object.entries(data)) {
                 const sym = map[id];
                 const c = CLIENT_STATIC_COINS.find(x => x.symbol === sym);
                 if (c && m && typeof m.usd === 'number') {
-                    c.current_price_usd = m.usd;
-                    c.change_24h = Number((m.usd_24h_change || 0).toFixed(2));
+                    if (!['BTC', 'ETH', 'SOL', 'XRP', 'DOGE'].includes(sym) || !c.current_price_usd) {
+                        c.current_price_usd = m.usd;
+                    }
+                    if (typeof m.usd_24h_change === 'number') {
+                        c.change_24h = Number(m.usd_24h_change.toFixed(2));
+                    }
                     c.volume_24h = m.usd_24h_vol || c.volume_24h;
                     c.market_cap_usd = m.usd_market_cap || c.market_cap_usd;
                 }
             }
         }
     } catch (e) {}
+
     return CLIENT_STATIC_COINS;
 }
+
+const fetchDirectCoinGeckoPrices = fetchDirectMarketPrices;
 
 const API = {
     baseUrl: '/api',
@@ -177,16 +234,34 @@ const API = {
             try {
                 return await API.request(`/cryptos/${id}/chart?timeframe=${timeframe}`);
             } catch (e) {
-                // Generate simulated chart points anchored to current price
-                const coin = CLIENT_STATIC_COINS.find(c => c.id === Number(id)) || CLIENT_STATIC_COINS[0];
+                // Generate simulated OHLC candlestick and line chart points anchored to current price
+                const coin = CLIENT_STATIC_COINS.find(c => c.id === Number(id) || c.symbol === id) || CLIENT_STATIC_COINS[0];
                 const base = coin.current_price_usd;
                 const points = [];
-                for (let i = 24; i >= 0; i--) {
+                const candles = [];
+                let walk = base * (1 - (coin.change_24h / 100));
+                const numPoints = 24;
+
+                for (let i = numPoints - 1; i >= 0; i--) {
                     const t = new Date(Date.now() - i * 3600000).toISOString();
-                    const walk = base * (1 + (Math.random() - 0.5) * 0.02);
-                    points.push({ timestamp: t, price: i === 0 ? base : Number(walk.toFixed(base < 1 ? 4 : 2)) });
+                    const open = walk;
+                    const volatility = base * 0.015;
+                    const delta = (Math.random() - 0.48) * volatility;
+                    const close = i === 0 ? base : Math.max(base * 0.4, open + delta);
+                    const high = Math.max(open, close) + Math.random() * volatility * 0.5;
+                    const low = Math.max(base * 0.2, Math.min(open, close) - Math.random() * volatility * 0.5);
+                    walk = close;
+
+                    points.push({ timestamp: t, price: Number(close.toFixed(base < 1 ? 4 : 2)) });
+                    candles.push({
+                        timestamp: t,
+                        open: Number(open.toFixed(base < 1 ? 4 : 2)),
+                        high: Number(high.toFixed(base < 1 ? 4 : 2)),
+                        low: Number(low.toFixed(base < 1 ? 4 : 2)),
+                        close: Number(close.toFixed(base < 1 ? 4 : 2))
+                    });
                 }
-                return { success: true, timeframe, data: points };
+                return { success: true, timeframe, data: points, candles };
             }
         },
         getOrderBook: async (id) => {
@@ -270,33 +345,117 @@ const API = {
                 };
             }
         },
+        swap: async (swapData) => {
+            try {
+                return await API.request('/simulator/swap', { method: 'POST', body: JSON.stringify(swapData) });
+            } catch (err) {
+                const fromSym = (swapData.fromSymbol || swapData.from_symbol || '').toUpperCase();
+                const toSym = (swapData.toSymbol || swapData.to_symbol || '').toUpperCase();
+                const fromCrypto = (State.cryptos && State.cryptos.find(c => c.symbol === fromSym)) || CLIENT_STATIC_COINS.find(c => c.symbol === fromSym);
+                const toCrypto = (State.cryptos && State.cryptos.find(c => c.symbol === toSym)) || CLIENT_STATIC_COINS.find(c => c.symbol === toSym);
+
+                if (!fromCrypto || !toCrypto) throw new Error('Selected cryptocurrency not found.');
+
+                if (typeof ClientDB !== 'undefined' && State.currentUser) {
+                    const res = ClientDB.trades.executeSwap({
+                        userId: State.currentUser.id,
+                        fromCrypto,
+                        toCrypto,
+                        fromQuantity: swapData.fromQuantity,
+                        slippageTolerance: swapData.slippageTolerance || 0.005,
+                        networkFeePct: swapData.networkFeePct || 0.0015,
+                        handlingFeePct: swapData.handlingFeePct || 0.0025
+                    });
+                    State.wallet = res.wallet;
+                    State.notify('wallet');
+                    return res;
+                }
+
+                return State.updateGuestSwap({
+                    fromCrypto,
+                    toCrypto,
+                    fromQuantity: swapData.fromQuantity,
+                    slippagePct: swapData.slippageTolerance || 0.005,
+                    networkFeePct: swapData.networkFeePct || 0.0015,
+                    handlingFeePct: swapData.handlingFeePct || 0.0025
+                });
+            }
+        },
         getPortfolio: async () => {
             try {
-                return await API.request('/simulator/portfolio');
-            } catch (e) {
-                if (typeof ClientDB !== 'undefined' && State.currentUser) {
-                    const wallet = ClientDB.wallets.getByUserId(State.currentUser.id);
-                    const trades = ClientDB.trades.getByUserId(State.currentUser.id);
+                const res = await API.request('/simulator/portfolio');
+                if (res && res.success) {
+                    const p = res.portfolio || res.wallet;
                     return {
                         success: true,
-                        wallet: wallet || { availableCashUsd: 5000.00, totalInvestedUsd: 0, totalPortfolioValueUsd: 5000.00, holdings: [] },
-                        holdings: wallet ? (wallet.holdings || []) : [],
-                        trades: trades || []
+                        portfolio: p,
+                        wallet: p,
+                        holdings: (p && p.holdings) || res.holdings || [],
+                        trades: res.trades || [],
+                        transactions: res.transactions || []
                     };
                 }
-                const g = State.guestSession || { temporaryBalanceUsd: 5000.00, holdings: [], trades: [] };
+            } catch (e) {
+                // Fallback to in-browser storage
+            }
+
+            if (typeof ClientDB !== 'undefined' && State.currentUser) {
+                const wallet = ClientDB.wallets.getByUserId(State.currentUser.id);
+                const trades = ClientDB.trades.getByUserId(State.currentUser.id);
+                const txs = ClientDB.transactions ? ClientDB.transactions.getByUserId(State.currentUser.id) : [];
                 return {
                     success: true,
-                    wallet: {
-                        availableCashUsd: g.temporaryBalanceUsd,
-                        totalInvestedUsd: 0,
-                        totalPortfolioValueUsd: g.temporaryBalanceUsd,
-                        holdings: g.holdings || []
-                    },
-                    holdings: g.holdings || [],
-                    trades: g.trades || []
+                    portfolio: wallet,
+                    wallet: wallet,
+                    holdings: wallet ? (wallet.holdings || []) : [],
+                    trades: trades || [],
+                    transactions: txs || []
                 };
             }
+
+            const g = State.guestSession || { temporaryBalanceUsd: 10000.00, holdings: [], trades: [] };
+            let guestInvested = 0;
+            const enrichedGuestHoldings = (g.holdings || []).map(h => {
+                const liveCoin = (State.cryptos && State.cryptos.find(c => c.symbol === h.symbol)) || CLIENT_STATIC_COINS.find(c => c.symbol === h.symbol) || { current_price_usd: h.avg_buy_price_usd || 1 };
+                const curVal = h.quantity * liveCoin.current_price_usd;
+                guestInvested += curVal;
+                return {
+                    ...h,
+                    current_price_usd: liveCoin.current_price_usd,
+                    current_value_usd: curVal,
+                    pnl_usd: curVal - (h.total_invested_usd || 0),
+                    pnl_percent: h.total_invested_usd > 0 ? ((curVal - h.total_invested_usd) / h.total_invested_usd) * 100 : 0
+                };
+            });
+
+            const guestPortfolio = {
+                availableCashUsd: g.temporaryBalanceUsd,
+                investedUsd: guestInvested,
+                totalPortfolioValueUsd: g.temporaryBalanceUsd + guestInvested,
+                totalDepositedUsd: 10000.00,
+                totalProfitLossUsd: (g.temporaryBalanceUsd + guestInvested) - 10000.00,
+                totalProfitLossPercent: (((g.temporaryBalanceUsd + guestInvested) - 10000.00) / 10000.00) * 100,
+                holdings: enrichedGuestHoldings
+            };
+
+            const guestTransactions = (g.trades || []).map(t => ({
+                transaction_ref: t.tradeRef || `TX-${Date.now()}`,
+                type: t.type === 'BUY' ? 'BUY_ORDER' : (t.type === 'SELL' ? 'SELL_ORDER' : 'SWAP'),
+                amount_usd: t.totalValueUsd,
+                balance_after_usd: g.temporaryBalanceUsd,
+                description: t.type === 'SWAP' ? `Guest Swap ${t.fromQuantity} ${t.fromSymbol} → ${t.toSymbol}` : `Guest ${t.type} ${t.quantity} ${t.symbol}`,
+                audit_reason: t.type === 'SWAP' ? `Network & Handling Fee: $${((t.networkFeeUsd || 0) + (t.handlingFeeUsd || 0)).toFixed(2)} USD` : 'Simulated execution',
+                created_at: t.date || new Date().toISOString()
+            }));
+
+            return {
+                success: true,
+                portfolio: guestPortfolio,
+                wallet: guestPortfolio,
+                holdings: enrichedGuestHoldings,
+                trades: g.trades || [],
+                transactions: guestTransactions
+            };
         },
         getTrades: async () => {
             try {
@@ -316,6 +475,40 @@ const API = {
             try {
                 return await API.request('/currency/status');
             } catch (e) {
+                // Primary: Query API Ninjas exchange rates with user key
+                try {
+                    const ninjaKey = 'mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN';
+                    const pairs = ['USD_INR', 'USD_EUR', 'USD_GBP', 'USD_AED', 'USD_JPY'];
+                    const rates = { USD: 1.0 };
+
+                    await Promise.all(pairs.map(async pair => {
+                        const target = pair.replace('USD_', '');
+                        try {
+                            const res = await fetch(`https://api.api-ninjas.com/v1/exchangerate?pair=${pair}`, {
+                                headers: { 'X-Api-Key': ninjaKey }
+                            });
+                            if (res.ok) {
+                                const d = await res.json();
+                                if (d && d.exchange_rate) {
+                                    rates[target] = Number(d.exchange_rate);
+                                }
+                            }
+                        } catch (err) {}
+                    }));
+
+                    if (rates.INR && rates.EUR) {
+                        return {
+                            success: true,
+                            baseCurrency: 'USD',
+                            rates,
+                            lastUpdated: new Date().toISOString(),
+                            isStale: false,
+                            provider: 'API Ninjas Live Forex'
+                        };
+                    }
+                } catch (err) {}
+
+                // Secondary fallback: open.er-api.com
                 try {
                     const res = await fetch('https://open.er-api.com/v6/latest/USD');
                     const data = await res.json();
@@ -325,11 +518,11 @@ const API = {
                             baseCurrency: 'USD',
                             rates: {
                                 USD: 1.0,
-                                INR: data.rates.INR || 94.8,
-                                EUR: data.rates.EUR || 0.89,
-                                GBP: data.rates.GBP || 0.74,
-                                AED: data.rates.AED || 3.67,
-                                JPY: data.rates.JPY || 158.4
+                                INR: data.rates.INR || 93.59,
+                                EUR: data.rates.EUR || 0.895,
+                                GBP: data.rates.GBP || 0.749,
+                                AED: data.rates.AED || 3.672,
+                                JPY: data.rates.JPY || 158.71
                             },
                             provider: 'OpenExchangeAPI (Live Direct)',
                             lastUpdated: new Date().toISOString(),
@@ -339,7 +532,7 @@ const API = {
                 } catch (err) {}
                 return {
                     success: true,
-                    rates: { USD: 1.0, INR: 94.8, EUR: 0.89, GBP: 0.74, AED: 3.67, JPY: 158.4 },
+                    rates: { USD: 1.0, INR: 93.59, EUR: 0.895, GBP: 0.749, AED: 3.672, JPY: 158.71 },
                     provider: 'Client Fallback',
                     lastUpdated: new Date().toISOString(),
                     isStale: false

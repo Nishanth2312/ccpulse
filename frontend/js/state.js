@@ -7,9 +7,29 @@ const State = {
     currentUser: null,
     isGuest: !localStorage.getItem('ccpulse_jwt'),
     guestSession: JSON.parse(localStorage.getItem('ccpulse_guest_session') || 'null') || {
-        temporaryBalanceUsd: 5000.00,
-        holdings: [],
-        trades: []
+        temporaryBalanceUsd: 10000.00,
+        holdings: [
+            {
+                crypto_id: 1,
+                symbol: 'BTC',
+                name: 'Bitcoin',
+                quantity: 1.0,
+                avg_buy_price_usd: 73932.53,
+                total_invested_usd: 73932.53,
+                logo_url: './assets/coins/btc.svg'
+            }
+        ],
+        trades: [
+            {
+                tradeRef: 'GUEST-WB-BTC-001',
+                symbol: 'BTC',
+                type: 'BUY',
+                quantity: 1.0,
+                priceUsd: 73932.53,
+                totalValueUsd: 73932.53,
+                date: new Date().toISOString()
+            }
+        ]
     },
 
     // User's permanent wallet (when authenticated)
@@ -86,9 +106,29 @@ const State = {
 
         if (!this.guestSession) {
             this.guestSession = {
-                temporaryBalanceUsd: 5000.00,
-                holdings: [],
-                trades: []
+                temporaryBalanceUsd: 10000.00,
+                holdings: [
+                    {
+                        crypto_id: 1,
+                        symbol: 'BTC',
+                        name: 'Bitcoin',
+                        quantity: 1.0,
+                        avg_buy_price_usd: 73932.53,
+                        total_invested_usd: 73932.53,
+                        logo_url: './assets/coins/btc.svg'
+                    }
+                ],
+                trades: [
+                    {
+                        tradeRef: 'GUEST-WB-BTC-001',
+                        symbol: 'BTC',
+                        type: 'BUY',
+                        quantity: 1.0,
+                        priceUsd: 73932.53,
+                        totalValueUsd: 73932.53,
+                        date: new Date().toISOString()
+                    }
+                ]
             };
         }
         localStorage.setItem('ccpulse_guest_session', JSON.stringify(this.guestSession));
@@ -181,6 +221,85 @@ const State = {
         this.notify('wallet');
     },
 
+    updateGuestSwap({ fromCrypto, toCrypto, fromQuantity, slippagePct = 0.005, networkFeePct = 0.0015, handlingFeePct = 0.0025 }) {
+        const fromQty = parseFloat(fromQuantity);
+        if (isNaN(fromQty) || fromQty <= 0) throw new Error('Please enter a valid swap quantity.');
+
+        const existingFrom = (this.guestSession.holdings || []).find(h => h.symbol === fromCrypto.symbol);
+        if (!existingFrom || existingFrom.quantity < fromQty) {
+            const avail = existingFrom ? existingFrom.quantity : 0;
+            throw new Error(`Insufficient ${fromCrypto.symbol} balance. Trying to swap: ${fromQty}, Available: ${avail}.`);
+        }
+
+        const fromPrice = fromCrypto.current_price_usd;
+        const toPrice = toCrypto.current_price_usd;
+        const grossValueUsd = fromQty * fromPrice;
+
+        const networkFeeUsd = grossValueUsd * networkFeePct;
+        const handlingFeeUsd = grossValueUsd * handlingFeePct;
+        const netValueUsd = Math.max(0, grossValueUsd - networkFeeUsd - handlingFeeUsd);
+        const toQuantityReceived = netValueUsd / toPrice;
+
+        // Deduct from holding
+        existingFrom.quantity -= fromQty;
+        existingFrom.total_invested_usd = Math.max(0, existingFrom.quantity * existingFrom.avg_buy_price_usd);
+        if (existingFrom.quantity <= 0.00000001) {
+            this.guestSession.holdings = this.guestSession.holdings.filter(h => h.symbol !== fromCrypto.symbol);
+        }
+
+        // Add to destination holding
+        if (!this.guestSession.holdings) this.guestSession.holdings = [];
+        const existingTo = this.guestSession.holdings.find(h => h.symbol === toCrypto.symbol);
+        if (existingTo) {
+            const newTotalQty = existingTo.quantity + toQuantityReceived;
+            const newTotalCost = existingTo.total_invested_usd + netValueUsd;
+            existingTo.quantity = newTotalQty;
+            existingTo.avg_buy_price_usd = newTotalCost / newTotalQty;
+            existingTo.total_invested_usd = newTotalCost;
+        } else {
+            this.guestSession.holdings.push({
+                crypto_id: toCrypto.id,
+                symbol: toCrypto.symbol,
+                name: toCrypto.name,
+                logo_url: toCrypto.logo_url,
+                quantity: toQuantityReceived,
+                avg_buy_price_usd: toPrice,
+                total_invested_usd: netValueUsd
+            });
+        }
+
+        const swapRef = `GUEST-SWAP-${Date.now()}`;
+        if (!this.guestSession.trades) this.guestSession.trades = [];
+        this.guestSession.trades.unshift({
+            tradeRef: swapRef,
+            symbol: `${fromCrypto.symbol} → ${toCrypto.symbol}`,
+            type: 'SWAP',
+            quantity: toQuantityReceived,
+            fromQuantity: fromQty,
+            fromSymbol: fromCrypto.symbol,
+            toSymbol: toCrypto.symbol,
+            priceUsd: toPrice,
+            totalValueUsd: netValueUsd,
+            networkFeeUsd,
+            handlingFeeUsd,
+            date: new Date().toISOString()
+        });
+
+        localStorage.setItem('ccpulse_guest_session', JSON.stringify(this.guestSession));
+        this.notify('wallet');
+        return {
+            success: true,
+            swapRef,
+            fromSymbol: fromCrypto.symbol,
+            toSymbol: toCrypto.symbol,
+            fromQuantity: fromQty,
+            toQuantityReceived,
+            networkFeeUsd,
+            handlingFeeUsd,
+            wallet: this.guestSession
+        };
+    },
+
     getCoinLogo(crypto) {
         if (!crypto) return './assets/coins/generic.svg';
         const sym = (crypto.symbol || '').toLowerCase();
@@ -189,7 +308,22 @@ const State = {
             eth: './assets/coins/eth.svg',
             xmr: './assets/coins/xmr.svg',
             bdx: './assets/coins/bdx.png',
-            sol: './assets/coins/sol.svg'
+            sol: './assets/coins/sol.svg',
+            usdt: './assets/coins/usdt.svg',
+            bnb: './assets/coins/bnb.svg',
+            xrp: './assets/coins/xrp.svg',
+            doge: './assets/coins/doge.svg',
+            ada: './assets/coins/ada.svg',
+            avax: './assets/coins/avax.svg',
+            link: './assets/coins/link.svg',
+            dot: './assets/coins/dot.svg',
+            trx: './assets/coins/trx.svg',
+            shib: './assets/coins/shib.svg',
+            pepe: './assets/coins/pepe.svg',
+            sui: './assets/coins/sui.svg',
+            near: './assets/coins/near.svg',
+            ltc: './assets/coins/ltc.svg',
+            uni: './assets/coins/uni.svg'
         };
         if (localSvgs[sym]) return localSvgs[sym];
         if (crypto.logo_url && crypto.logo_url.startsWith('/assets/')) return '.' + crypto.logo_url;

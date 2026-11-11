@@ -1,10 +1,12 @@
 const db = require('../database/db');
 
+const NINJA_API_KEY = process.env.API_NINJAS_KEY || 'mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN';
+
 // In-memory cache + DB synchronization
 let cachedRates = {};
 let lastFetchedAt = null;
 let isStale = false;
-let lastProvider = 'ForexExchangeLive (Cached)';
+let lastProvider = 'API Ninjas / ForexLive (Cached)';
 
 // Default fallback exchange rates (USD base)
 const DEFAULT_FALLBACK_RATES = {
@@ -56,11 +58,75 @@ function loadRatesFromDb() {
 loadRatesFromDb();
 
 /**
- * Fetch real-time exchange rates from external Forex API with graceful degradation
+ * Fetch real-time exchange rates from API Ninjas or fallback Forex API with graceful degradation
  */
 async function fetchLiveExchangeRates(manual = false) {
+    // 1. Try API Ninjas first using configured API key
     try {
-        // Attempt open public exchange rates API (open.er-api.com is free and reliable)
+        const ninjaCurrencies = ['INR', 'EUR', 'GBP', 'AED', 'JPY'];
+        const ninjaResults = {};
+
+        await Promise.all(ninjaCurrencies.map(async code => {
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 3500);
+            try {
+                const res = await fetch(`https://api.api-ninjas.com/v1/exchangerate?pair=USD_${code}`, {
+                    headers: { 'X-Api-Key': NINJA_API_KEY },
+                    signal: controller.signal
+                });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const json = await res.json();
+                    if (json && json.exchange_rate) {
+                        ninjaResults[code] = Number(json.exchange_rate);
+                    }
+                }
+            } catch (e) {
+                clearTimeout(tid);
+            }
+        }));
+
+        if (Object.keys(ninjaResults).length >= 2) {
+            const now = new Date().toISOString();
+            ninjaResults['USD'] = 1.0;
+
+            const updateCur = db.prepare(`
+                UPDATE supported_currencies
+                SET exchange_rate_to_usd = ?, last_updated_at = ?
+                WHERE code = ?
+            `);
+            const insertHistory = db.prepare(`
+                INSERT INTO exchange_rates (base_currency, target_currency, rate, provider, is_stale)
+                VALUES ('USD', ?, ?, 'API Ninjas', 0)
+            `);
+
+            db.transaction(() => {
+                for (const [code, rate] of Object.entries(ninjaResults)) {
+                    updateCur.run(rate, now, code);
+                    insertHistory.run(code, rate);
+                }
+            })();
+
+            cachedRates = { ...cachedRates, ...ninjaResults };
+            lastFetchedAt = now;
+            isStale = false;
+            lastProvider = 'API Ninjas (Live Forex)';
+
+            return {
+                success: true,
+                provider: lastProvider,
+                rates: cachedRates,
+                lastFetchedAt,
+                isStale: false,
+                message: 'Forex rates refreshed from API Ninjas.'
+            };
+        }
+    } catch (e) {
+        // Fall through to public OpenExchangeAPI
+    }
+
+    // 2. Fallback to open.er-api.com
+    try {
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 4000);
 

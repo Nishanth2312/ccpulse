@@ -7,15 +7,16 @@ const { logAdminAction } = require('./auditService');
 function getConfiguredWelcomeBonus() {
     try {
         const row = db.prepare("SELECT value FROM system_settings WHERE key = 'default_welcome_bonus'").get();
-        return row ? parseFloat(row.value) : 5000.00;
+        return row ? parseFloat(row.value) : 10000.00;
     } catch (e) {
-        return 5000.00;
+        return 10000.00;
     }
 }
 
 /**
  * Atomically credit welcome bonus to a newly registered user
- * Guaranteed exactly once per user account
+ * Guaranteed exactly once per user account:
+ * Grants $10,000.00 USD Virtual Cash + 1.00000000 Bitcoin (BTC)
  */
 function creditWelcomeBonus(userId) {
     const bonusAmount = getConfiguredWelcomeBonus();
@@ -48,7 +49,7 @@ function creditWelcomeBonus(userId) {
 
         let walletId;
         if (!existingWallet) {
-            // Create new wallet
+            // Create new wallet with $10,000 USD
             const insertWallet = db.prepare(`
                 INSERT INTO virtual_wallets (
                     user_id, currency, balance_usd, invested_usd, total_deposited_usd,
@@ -69,19 +70,41 @@ function creditWelcomeBonus(userId) {
             `).run(newBalance, newTotalDep, walletId);
         }
 
-        // 3. Record transaction in auditable ledger
+        // 3. Record cash transaction in auditable ledger
         const txRef = `WB-${Date.now()}-${userId}`;
         db.prepare(`
             INSERT INTO virtual_wallet_transactions (
                 wallet_id, user_id, transaction_ref, type, amount_usd,
                 currency, balance_before_usd, balance_after_usd, description, audit_reason
-            ) VALUES (?, ?, ?, 'WELCOME_BONUS', ?, 'USD', 0.00, ?, 'CCPulse Welcome Bonus', 'Automated Registration Welcome Credit')
+            ) VALUES (?, ?, ?, 'WELCOME_BONUS', ?, 'USD', 0.00, ?, 'CCPulse Welcome Bonus ($10,000 USD + 1.0 BTC)', 'Automated Registration Welcome Credit')
         `).run(walletId, userId, txRef, bonusAmount, bonusAmount);
 
-        // 4. Create mandatory welcome notification
+        // 4. Also grant 1.00000000 Bitcoin (BTC) welcome bonus holding
+        const btc = db.prepare("SELECT * FROM cryptocurrencies WHERE symbol = 'BTC'").get();
+        if (btc) {
+            const btcPrice = btc.current_price_usd || 73932.53;
+            db.prepare(`
+                INSERT INTO virtual_holdings (wallet_id, user_id, crypto_id, symbol, quantity, avg_buy_price_usd, total_invested_usd)
+                VALUES (?, ?, ?, 'BTC', 1.00000000, ?, ?)
+                ON CONFLICT(user_id, crypto_id) DO UPDATE SET quantity = quantity + 1.0
+            `).run(walletId, userId, btc.id, btcPrice, btcPrice);
+
+            // Record BTC transaction
+            const btcTxRef = `WB-BTC-${Date.now()}-${userId}`;
+            db.prepare(`
+                INSERT INTO virtual_wallet_transactions (
+                    wallet_id, user_id, transaction_ref, type, amount_usd,
+                    currency, balance_before_usd, balance_after_usd, description, audit_reason
+                ) VALUES (?, ?, ?, 'WELCOME_BONUS', ?, 'USD', ?, ?, 'Welcome Bonus: 1.00000000 BTC Gift Credited', 'Automated Registration BTC Welcome Gift')
+            `).run(walletId, userId, btcTxRef, btcPrice, bonusAmount, bonusAmount);
+
+            db.prepare('UPDATE virtual_wallets SET invested_usd = ? WHERE id = ?').run(btcPrice, walletId);
+        }
+
+        // 5. Create mandatory welcome notification
         db.prepare(`
             INSERT INTO notifications (user_id, title, message, type)
-            VALUES (?, 'Welcome to CCPulse!', 'Welcome to CCPulse! Your $5,000 virtual trading balance is ready. Start learning, explore the markets, and practice trading without risking real money.', 'WELCOME_BONUS')
+            VALUES (?, 'Welcome to CCPulse!', 'Welcome to CCPulse! Your $10,000 virtual trading cash and 1.0 Bitcoin bonus are ready. Start learning, explore the markets, and practice trading without risking real money.', 'WELCOME_BONUS')
         `).run(userId);
 
         const updatedWallet = db.prepare('SELECT * FROM virtual_wallets WHERE id = ?').get(walletId);
@@ -91,7 +114,7 @@ function creditWelcomeBonus(userId) {
             alreadyCredited: false,
             amount: bonusAmount,
             wallet: updatedWallet,
-            notificationMessage: 'Welcome to CCPulse! Your $5,000 virtual trading balance is ready. Start learning, explore the markets, and practice trading without risking real money.'
+            notificationMessage: 'Welcome to CCPulse! Your $10,000 virtual trading cash and 1.0 Bitcoin bonus are ready. Start learning, explore the markets, and practice trading without risking real money.'
         };
     })();
 }
@@ -420,11 +443,163 @@ function getBonusDistributionHistory(limit = 100) {
     `).all(limit);
 }
 
+/**
+ * Execute simulated cryptocurrency swap (Coin-to-Coin DEX simulation)
+ */
+function executeSimulatedSwap({
+    userId,
+    fromCryptoId,
+    toCryptoId,
+    fromQuantity,
+    slippageTolerance = 0.5,
+    networkFeePct = 0.15,
+    handlingFeePct = 0.25
+}) {
+    if (!userId) {
+        throw new Error('User ID required for simulated swap.');
+    }
+
+    const fromQty = parseFloat(fromQuantity);
+    if (isNaN(fromQty) || fromQty <= 0) {
+        throw new Error('From quantity must be a positive number.');
+    }
+
+    if (String(fromCryptoId) === String(toCryptoId)) {
+        throw new Error('Cannot swap a token to itself. Please choose two different assets.');
+    }
+
+    return db.transaction(() => {
+        // 1. Fetch both cryptocurrencies (support id or symbol)
+        let fromCrypto = db.prepare('SELECT * FROM cryptocurrencies WHERE id = ?').get(fromCryptoId);
+        if (!fromCrypto && typeof fromCryptoId === 'string') {
+            fromCrypto = db.prepare('SELECT * FROM cryptocurrencies WHERE LOWER(symbol) = LOWER(?)').get(fromCryptoId);
+        }
+
+        let toCrypto = db.prepare('SELECT * FROM cryptocurrencies WHERE id = ?').get(toCryptoId);
+        if (!toCrypto && typeof toCryptoId === 'string') {
+            toCrypto = db.prepare('SELECT * FROM cryptocurrencies WHERE LOWER(symbol) = LOWER(?)').get(toCryptoId);
+        }
+
+        if (!fromCrypto || !toCrypto) {
+            throw new Error('One or both selected cryptocurrencies could not be found.');
+        }
+
+        const fromPrice = fromCrypto.current_price_usd;
+        const toPrice = toCrypto.current_price_usd;
+
+        if (fromPrice <= 0 || toPrice <= 0) {
+            throw new Error('Invalid market pricing for selected swap pair.');
+        }
+
+        // 2. Fetch User Wallet and Holding
+        const wallet = db.prepare('SELECT * FROM virtual_wallets WHERE user_id = ?').get(userId);
+        if (!wallet) {
+            throw new Error('User virtual wallet not found.');
+        }
+
+        const fromHolding = db.prepare('SELECT * FROM virtual_holdings WHERE user_id = ? AND crypto_id = ?').get(userId, fromCrypto.id);
+        if (!fromHolding || fromHolding.quantity < fromQty) {
+            const avail = fromHolding ? fromHolding.quantity : 0;
+            throw new Error(`Insufficient ${fromCrypto.symbol} balance. Required: ${fromQty}, Available: ${avail}`);
+        }
+
+        // 3. Compute Gross Value and Realistic DEX Fees
+        const grossUsd = fromQty * fromPrice;
+        const netFeeUsd = grossUsd * (networkFeePct / 100);
+        const handFeeUsd = grossUsd * (handlingFeePct / 100);
+        const totalFeesUsd = netFeeUsd + handFeeUsd;
+        const netUsd = grossUsd - totalFeesUsd;
+
+        if (netUsd <= 0) {
+            throw new Error('Swap value is too low to cover transaction and handling fees.');
+        }
+
+        const toQuantity = netUsd / toPrice;
+        const minReceived = toQuantity * (1 - (slippageTolerance / 100));
+        const rate = fromPrice / toPrice;
+
+        // 4. Update fromHolding
+        const newFromQty = fromHolding.quantity - fromQty;
+        const costBasisPortion = fromHolding.avg_buy_price_usd * fromQty;
+        const newFromInvested = Math.max(0, fromHolding.total_invested_usd - costBasisPortion);
+
+        db.prepare(`
+            UPDATE virtual_holdings
+            SET quantity = ?, total_invested_usd = ?, updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `).run(newFromQty, newFromInvested, fromHolding.id);
+
+        // 5. Update or insert toHolding
+        const toHolding = db.prepare('SELECT * FROM virtual_holdings WHERE user_id = ? AND crypto_id = ?').get(userId, toCrypto.id);
+        if (toHolding) {
+            const newToQty = toHolding.quantity + toQuantity;
+            const newToInvested = toHolding.total_invested_usd + netUsd;
+            const newAvgPrice = newToInvested / newToQty;
+
+            db.prepare(`
+                UPDATE virtual_holdings
+                SET quantity = ?, avg_buy_price_usd = ?, total_invested_usd = ?, updated_at = CURRENT_TIMESTAMP
+                WHERE id = ?
+            `).run(newToQty, newAvgPrice, newToInvested, toHolding.id);
+        } else {
+            db.prepare(`
+                INSERT INTO virtual_holdings (wallet_id, user_id, crypto_id, symbol, quantity, avg_buy_price_usd, total_invested_usd)
+                VALUES (?, ?, ?, ?, ?, ?, ?)
+            `).run(wallet.id, userId, toCrypto.id, toCrypto.symbol, toQuantity, toPrice, netUsd);
+        }
+
+        // Update wallet invested_usd
+        const newInvestedUsd = Math.max(0, (wallet.invested_usd - costBasisPortion) + netUsd);
+        db.prepare('UPDATE virtual_wallets SET invested_usd = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newInvestedUsd, wallet.id);
+
+        // 6. Record in virtual_wallet_transactions
+        const swapRef = `SWAP-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
+        db.prepare(`
+            INSERT INTO virtual_wallet_transactions (
+                wallet_id, user_id, transaction_ref, type, amount_usd,
+                currency, balance_before_usd, balance_after_usd, description, audit_reason
+            ) VALUES (?, ?, ?, 'SWAP', ?, 'USD', ?, ?, ?, ?)
+        `).run(
+            wallet.id, userId, swapRef, grossUsd, wallet.balance_usd, wallet.balance_usd,
+            `DEX Swap: ${fromQty.toFixed(4)} ${fromCrypto.symbol} -> ${toQuantity.toFixed(4)} ${toCrypto.symbol} (Fees: $${totalFeesUsd.toFixed(2)})`,
+            `DEX Swap Execution (Network Gas: ${networkFeePct}%, Liquidity Handling: ${handlingFeePct}%)`
+        );
+
+        // 7. Record in simulated_trades
+        db.prepare(`
+            INSERT INTO simulated_trades (
+                trade_ref, user_id, is_guest, crypto_id, symbol,
+                type, quantity, price_usd, total_value_usd, status
+            ) VALUES (?, ?, 0, ?, ?, 'SWAP', ?, ?, ?, 'EXECUTED')
+        `).run(swapRef, userId, toCrypto.id, `${fromCrypto.symbol}->${toCrypto.symbol}`, toQuantity, toPrice, netUsd);
+
+        return {
+            success: true,
+            swapRef,
+            fromSymbol: fromCrypto.symbol,
+            toSymbol: toCrypto.symbol,
+            fromQuantity: fromQty,
+            toQuantity,
+            rate,
+            fromPriceUsd: fromPrice,
+            toPriceUsd: toPrice,
+            grossUsd,
+            networkFeeUsd: netFeeUsd,
+            handlingFeeUsd: handFeeUsd,
+            totalFeesUsd,
+            netUsd,
+            minReceived,
+            message: `Successfully swapped ${fromQty} ${fromCrypto.symbol} for ${toQuantity.toFixed(6)} ${toCrypto.symbol}`
+        };
+    })();
+}
+
 module.exports = {
     getConfiguredWelcomeBonus,
     creditWelcomeBonus,
     getUserWallet,
     executeSimulatedTrade,
+    executeSimulatedSwap,
     adminAdjustBalance,
     getWalletTransactions,
     getBonusDistributionHistory

@@ -54,12 +54,12 @@ const SimulatorView = {
                         <div>
                             <strong style="color: var(--text-primary); font-size: 0.95rem;">Guest Simulator Mode Active</strong>
                             <div style="font-size: 0.82rem; color: var(--text-secondary);">
-                                Guest portfolios are stored in temporary browser memory. Register to claim your permanent <strong>$5,000 USD welcome bonus</strong> and synchronize progress across devices!
+                                Guest portfolios are stored in temporary browser memory with $10,000 USD + 1 BTC. Register to claim your permanent <strong>$10,000 USD welcome bonus + 1.0 Bitcoin</strong>!
                             </div>
                         </div>
                     </div>
                     <button type="button" class="btn btn-primary" onclick="AuthModals.showRegister()" style="font-size: 0.85rem; padding: 6px 16px;">
-                        <i class="fa-solid fa-gift"></i> Claim $5,000 Bonus
+                        <i class="fa-solid fa-gift"></i> Claim $10,000 + 1 BTC
                     </button>
                 </div>
             ` : `
@@ -200,7 +200,7 @@ const SimulatorView = {
                             <i class="fa-solid fa-graduation-cap"></i> Practice Sizing Rules
                         </h4>
                         <p style="font-size: 0.85rem; line-height: 1.6; color: var(--text-secondary);">
-                            Professional traders avoid allocating more than 5% to 10% of their total portfolio into a single volatile altcoin position. Use your $5,000 virtual balance to test disciplined position sizing without emotion!
+                            Professional traders avoid allocating more than 5% to 10% of their total portfolio into a single volatile altcoin position. Use your $10,000 virtual balance to test disciplined position sizing without emotion!
                         </p>
                     </div>
                 </div>

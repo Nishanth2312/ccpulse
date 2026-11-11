@@ -144,10 +144,65 @@ const COINGECKO_SLUG_MAP = {
     'binancecoin': 'binancecoin'
 };
 
+const NINJA_API_KEY = process.env.API_NINJAS_KEY || 'mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN';
+
 let lastCryptoFetchTime = null;
 let isCryptoFeedLive = false;
 let cryptoFeedError = null;
-let activeProvider = 'CoinGecko Live API';
+let activeProvider = 'API Ninjas / CoinGecko Live';
+
+/**
+ * Fetch real-time cryptocurrency market data from API Ninjas
+ */
+async function fetchLiveCryptoRatesFromNinja() {
+    try {
+        const cryptos = db.prepare('SELECT id, symbol, current_price_usd FROM cryptocurrencies WHERE is_active = 1').all();
+        const topSymbols = ['BTC', 'ETH', 'SOL', 'XRP', 'DOGE', 'ADA', 'AVAX', 'LINK', 'DOT', 'LTC'];
+        let updated = 0;
+
+        const updateStmt = db.prepare(`
+            UPDATE cryptocurrencies
+            SET current_price_usd = ?, market_data_source = 'API Ninjas Live', updated_at = CURRENT_TIMESTAMP
+            WHERE id = ?
+        `);
+
+        await Promise.all(topSymbols.map(async sym => {
+            const coin = cryptos.find(c => c.symbol === sym);
+            if (!coin) return;
+            const controller = new AbortController();
+            const tid = setTimeout(() => controller.abort(), 3500);
+            try {
+                const res = await fetch(`https://api.api-ninjas.com/v1/cryptoprice?symbol=${sym}USD`, {
+                    headers: { 'X-Api-Key': NINJA_API_KEY },
+                    signal: controller.signal
+                });
+                clearTimeout(tid);
+                if (res.ok) {
+                    const data = await res.json();
+                    if (data && data.price) {
+                        const p = parseFloat(data.price);
+                        if (p > 0) {
+                            updateStmt.run(p, coin.id);
+                            updated++;
+                        }
+                    }
+                }
+            } catch (e) {
+                clearTimeout(tid);
+            }
+        }));
+
+        if (updated > 0) {
+            lastCryptoFetchTime = new Date().toISOString();
+            isCryptoFeedLive = true;
+            cryptoFeedError = null;
+            activeProvider = 'API Ninjas Crypto Live';
+        }
+        return { success: true, updated, provider: activeProvider };
+    } catch (e) {
+        return { success: false, error: e.message };
+    }
+}
 
 /**
  * Fetch real-time cryptocurrency market data directly from CoinGecko API over the internet
@@ -325,5 +380,6 @@ module.exports = {
     getOrderBook,
     simulateMarketTick,
     fetchLiveCryptoRatesFromCoinGecko,
+    fetchLiveCryptoRatesFromNinja,
     getCryptoFeedStatus
 };
