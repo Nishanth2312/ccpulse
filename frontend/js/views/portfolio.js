@@ -222,12 +222,20 @@ const PortfolioView = {
                     </div>
 
                     <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
-                        <!-- 30-Second Cron Live Status -->
-                        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;" title="30-Second Cron recurring auto-update is active">
+                        <!-- 30-Second Cron Live Status with 30m Quota Shield -->
+                        <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(16, 185, 129, 0.12); color: #10B981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 5px 12px; border-radius: 20px; font-size: 0.78rem; font-weight: 700;" title="30-Second Cron candlestick update is active with local simulation">
                             <span style="width: 7px; height: 7px; border-radius: 50%; background: #10B981; box-shadow: 0 0 6px #10B981; display: inline-block;"></span>
-                            <span>Cron 30s Active</span>
+                            <span>Cron 30s</span>
                             <span id="cron-countdown-badge" style="color: var(--text-muted); font-family: var(--font-mono); margin-left: 2px;">(30s)</span>
                         </div>
+
+                        <span style="display: inline-flex; align-items: center; gap: 4px; font-size: 0.74rem; color: #3B82F6; background: rgba(59, 130, 246, 0.12); border: 1px solid rgba(59, 130, 246, 0.3); padding: 4px 10px; border-radius: 20px; font-weight: 700;" title="Rates cached for 30 minutes to protect monthly API quotas">
+                            <i class="fa-solid fa-shield-halved"></i> 30m Quota Shield
+                        </span>
+
+                        <button type="button" class="btn btn-sm btn-outline" id="portfolio-manual-sync-btn" style="padding: 4px 10px; font-size: 0.76rem;" title="Force fresh external API pull (CoinGecko / API Ninjas)">
+                            <i class="fa-solid fa-cloud-arrow-down"></i> Sync Live
+                        </button>
 
                         <!-- Asset Filter -->
                         <select id="chart-asset-filter" style="padding: 6px 12px; font-size: 0.82rem; border-radius: 6px; font-weight: 700;">
@@ -445,7 +453,7 @@ const PortfolioView = {
             };
         }
 
-        // Manual refresh
+        // Manual refresh using cached tick
         const manualRefreshBtn = container.querySelector('#cron-manual-refresh-btn');
         if (manualRefreshBtn) {
             manualRefreshBtn.onclick = async () => {
@@ -453,6 +461,19 @@ const PortfolioView = {
                 if (icon) icon.classList.add('fa-spin');
                 await this.triggerCronTick();
                 if (icon) icon.classList.remove('fa-spin');
+            };
+        }
+
+        // Force external live sync (bypasses 30m cache)
+        const forceSyncBtn = container.querySelector('#portfolio-manual-sync-btn');
+        if (forceSyncBtn) {
+            forceSyncBtn.onclick = async () => {
+                forceSyncBtn.disabled = true;
+                forceSyncBtn.innerHTML = '<i class="fa-solid fa-spinner fa-spin"></i> Syncing...';
+                try {
+                    await API.cryptos.refreshRates(true);
+                    await this.render(container);
+                } catch (e) {}
             };
         }
     },
@@ -479,8 +500,8 @@ const PortfolioView = {
     async triggerCronTick() {
         if (!this.containerRef) return;
         try {
-            // Fetch updated rates from API Ninjas / CoinGecko
-            await API.cryptos.refreshRates();
+            // Uses local 30-minute cache (never calls unwanted external APIs on cron)
+            await API.cryptos.refreshRates(false);
         } catch (e) {}
 
         // Re-render view to refresh metrics and charts

@@ -57,10 +57,30 @@ function loadRatesFromDb() {
 // Initial load
 loadRatesFromDb();
 
+const FOREX_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes cache to avoid quota burn
+
 /**
- * Fetch real-time exchange rates from API Ninjas or fallback Forex API with graceful degradation
+ * Fetch real-time exchange rates with 30-minute cache TTL and multi-tier failover:
+ * Tier 1: API Ninjas
+ * Tier 2: Open Exchange API
+ * Tier 3: Local SQLite Persistent Cache
  */
 async function fetchLiveExchangeRates(manual = false) {
+    // 0. Quota protection: return cached rates if within 30 minutes
+    if (!manual && lastFetchedAt) {
+        const elapsed = Date.now() - new Date(lastFetchedAt).getTime();
+        if (elapsed < FOREX_CACHE_TTL_MS) {
+            return {
+                success: true,
+                provider: lastProvider,
+                rates: cachedRates,
+                lastFetchedAt,
+                isStale,
+                cached: true
+            };
+        }
+    }
+
     // 1. Try API Ninjas first using configured API key
     try {
         const ninjaCurrencies = ['INR', 'EUR', 'GBP', 'AED', 'JPY'];

@@ -145,14 +145,16 @@ const COINGECKO_SLUG_MAP = {
 };
 
 const NINJA_API_KEY = process.env.API_NINJAS_KEY || 'mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN';
+const COINGECKO_API_KEY = process.env.COINGECKO_API_KEY || 'CG-gkSfgK1H4xdgaM7tWABxpbEL';
+const CRYPTO_CACHE_TTL_MS = 30 * 60 * 1000; // 30 minutes cache to strictly protect monthly API quotas
 
 let lastCryptoFetchTime = null;
 let isCryptoFeedLive = false;
 let cryptoFeedError = null;
-let activeProvider = 'API Ninjas / CoinGecko Live';
+let activeProvider = 'CoinGecko Live API (Tier 1)';
 
 /**
- * Fetch real-time cryptocurrency market data from API Ninjas
+ * Fetch real-time cryptocurrency market data from API Ninjas (Tier 2 Secondary Failover)
  */
 async function fetchLiveCryptoRatesFromNinja() {
     try {
@@ -162,7 +164,7 @@ async function fetchLiveCryptoRatesFromNinja() {
 
         const updateStmt = db.prepare(`
             UPDATE cryptocurrencies
-            SET current_price_usd = ?, market_data_source = 'API Ninjas Live', updated_at = CURRENT_TIMESTAMP
+            SET current_price_usd = ?, market_data_source = 'API Ninjas Live (Tier 2)', updated_at = CURRENT_TIMESTAMP
             WHERE id = ?
         `);
 
@@ -196,7 +198,7 @@ async function fetchLiveCryptoRatesFromNinja() {
             lastCryptoFetchTime = new Date().toISOString();
             isCryptoFeedLive = true;
             cryptoFeedError = null;
-            activeProvider = 'API Ninjas Crypto Live';
+            activeProvider = 'API Ninjas (Tier 2 Failover)';
         }
         return { success: true, updated, provider: activeProvider };
     } catch (e) {
@@ -205,7 +207,7 @@ async function fetchLiveCryptoRatesFromNinja() {
 }
 
 /**
- * Fetch real-time cryptocurrency market data directly from CoinGecko API over the internet
+ * Fetch real-time cryptocurrency market data directly from CoinGecko API (Tier 1 Primary)
  */
 async function fetchLiveCryptoRatesFromCoinGecko(manual = false) {
     try {
@@ -239,6 +241,7 @@ async function fetchLiveCryptoRatesFromCoinGecko(manual = false) {
             signal: controller.signal,
             headers: {
                 'Accept': 'application/json',
+                'x-cg-demo-api-key': COINGECKO_API_KEY,
                 'User-Agent': 'CCPulse-Simulation-Lab/2.0'
             }
         });
@@ -274,7 +277,7 @@ async function fetchLiveCryptoRatesFromCoinGecko(manual = false) {
                     const high = Math.max(c.high_24h || 0, price * (1 + Math.max(0, change / 100)));
                     const low = Math.min(c.low_24h > 0 ? c.low_24h : price * 0.98, price * (1 - Math.abs(change / 100)));
 
-                    updateStmt.run(price, change, volume, mcap, high, low, 'CoinGecko Live API', c.id);
+                    updateStmt.run(price, change, volume, mcap, high, low, 'CoinGecko Live API (Tier 1)', c.id);
                     updatedCount++;
                 }
             }
@@ -283,7 +286,7 @@ async function fetchLiveCryptoRatesFromCoinGecko(manual = false) {
         lastCryptoFetchTime = new Date().toISOString();
         isCryptoFeedLive = true;
         cryptoFeedError = null;
-        activeProvider = 'CoinGecko Live API';
+        activeProvider = 'CoinGecko Live API (Tier 1)';
 
         return {
             success: true,
@@ -293,20 +296,64 @@ async function fetchLiveCryptoRatesFromCoinGecko(manual = false) {
             isLive: true
         };
     } catch (err) {
-        console.warn('CoinGecko Live API Warning:', err.message, '- Using cached database prices.');
-        isCryptoFeedLive = false;
-        cryptoFeedError = err.message;
-        activeProvider = 'Cached Database (Offline Fallback)';
-
-        return {
-            success: true,
-            updated: 0,
-            provider: activeProvider,
-            lastUpdated: lastCryptoFetchTime || new Date().toISOString(),
-            isLive: false,
-            warning: `CoinGecko live feed unavailable (${err.message}). Retaining cached market data.`
-        };
+        console.warn('CoinGecko Live API Warning:', err.message, '- Failing over to secondary provider.');
+        throw err;
     }
+}
+
+/**
+ * Multi-Tier Failover Crypto Market Fetcher:
+ * Tier 1: CoinGecko Demo/Pro API with Key
+ * Tier 2: API Ninjas Crypto Price Feed
+ * Tier 3: High-Fidelity Simulation / Database Cache (with procedural micro-ticks)
+ */
+async function fetchMultiTierCryptoRates(manual = false) {
+    // 1. Quota preservation: check 30-minute cache TTL unless manual forced refresh
+    if (!manual && lastCryptoFetchTime) {
+        const elapsed = Date.now() - new Date(lastCryptoFetchTime).getTime();
+        if (elapsed < CRYPTO_CACHE_TTL_MS) {
+            return {
+                success: true,
+                updated: 0,
+                cached: true,
+                provider: activeProvider,
+                lastUpdated: lastCryptoFetchTime,
+                isLive: isCryptoFeedLive
+            };
+        }
+    }
+
+    // 2. Tier 1: CoinGecko API with key
+    try {
+        const cgRes = await fetchLiveCryptoRatesFromCoinGecko(manual);
+        if (cgRes && cgRes.success && cgRes.updated > 0) {
+            return cgRes;
+        }
+    } catch (e1) {
+        console.warn('Tier 1 (CoinGecko) error/quota exceeded:', e1.message, 'Failing over to Tier 2 (API Ninjas)...');
+    }
+
+    // 3. Tier 2: API Ninjas Fallback
+    try {
+        const ninjaRes = await fetchLiveCryptoRatesFromNinja();
+        if (ninjaRes && ninjaRes.success && ninjaRes.updated > 0) {
+            return ninjaRes;
+        }
+    } catch (e2) {
+        console.warn('Tier 2 (API Ninjas) error/quota exceeded:', e2.message, 'Failing over to Tier 3 (Simulation)...');
+    }
+
+    // 4. Tier 3: Local SQLite Database & Micro-Tick Simulation
+    simulateMarketTick();
+    activeProvider = 'High-Fidelity Simulation (Tier 3 Fallback)';
+    return {
+        success: true,
+        updated: 0,
+        provider: activeProvider,
+        lastUpdated: lastCryptoFetchTime || new Date().toISOString(),
+        isLive: false,
+        warning: 'External API quota exceeded. Serving high-fidelity cached simulation.'
+    };
 }
 
 /**
@@ -356,22 +403,22 @@ function simulateMarketTick() {
     }
 }
 
-// Background market ticker (runs every 10 seconds for real-time micro-ticks)
+// Background market ticker (runs every 10 seconds for local real-time micro-ticks without external API calls)
 let tickerInterval = setInterval(simulateMarketTick, 10000);
 if (tickerInterval.unref) {
     tickerInterval.unref();
 }
 
-// Background CoinGecko live feed sync (runs every 60 seconds)
-let geckoInterval = setInterval(() => {
-    fetchLiveCryptoRatesFromCoinGecko().catch(() => {});
-}, 60000);
-if (geckoInterval.unref) {
-    geckoInterval.unref();
+// Background Multi-Tier live feed sync (runs every 30 minutes to protect monthly API quotas)
+let multiTierInterval = setInterval(() => {
+    fetchMultiTierCryptoRates().catch(() => {});
+}, CRYPTO_CACHE_TTL_MS);
+if (multiTierInterval.unref) {
+    multiTierInterval.unref();
 }
 
 // Trigger initial fetch asynchronously
-fetchLiveCryptoRatesFromCoinGecko().catch(() => {});
+fetchMultiTierCryptoRates().catch(() => {});
 
 module.exports = {
     getActiveCryptos,
@@ -381,5 +428,6 @@ module.exports = {
     simulateMarketTick,
     fetchLiveCryptoRatesFromCoinGecko,
     fetchLiveCryptoRatesFromNinja,
+    fetchMultiTierCryptoRates,
     getCryptoFeedStatus
 };

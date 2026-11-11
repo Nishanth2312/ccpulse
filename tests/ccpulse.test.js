@@ -811,6 +811,30 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.strictEqual(updatedWallet.balanceUsd, initialBal + 5000, 'Wallet balance must reflect retroactive airdrop');
     });
 
+    // SCENARIO 32: 30-Minute Quota Shield & Multi-Tier Failover (CoinGecko Demo Key -> API Ninjas -> Simulation)
+    test('Scenario 32: 30-Minute Quota Shield & Multi-Tier Failover (CoinGecko Key -> API Ninjas -> Simulation)', async () => {
+        const { fetchMultiTierCryptoRates, getCryptoFeedStatus } = require('../backend/services/cryptoMarketService');
+        assert.ok(typeof fetchMultiTierCryptoRates === 'function', 'fetchMultiTierCryptoRates must be exported');
+
+        // 1. First call executes live or returns multi-tier result
+        const res1 = await fetchMultiTierCryptoRates(true);
+        assert.strictEqual(res1.success, true, 'Multi-tier fetch must succeed');
+        assert.ok(res1.provider, 'Provider must be indicated');
+
+        // 2. Immediate second call (without manual force flag) MUST hit the 30-minute cache shield (0 external API calls)
+        const res2 = await fetchMultiTierCryptoRates(false);
+        assert.strictEqual(res2.success, true, 'Cached fetch must succeed');
+        assert.strictEqual(res2.cached, true, 'Must return cached data to protect monthly quota');
+
+        // 3. Verify CoinGecko Demo API key and Tier 2 Ninjas key are defined in api.js
+        const fs = require('fs');
+        const apiJs = fs.readFileSync(require('path').join(__dirname, '../frontend/js/api.js'), 'utf8');
+        assert.ok(apiJs.includes('CG-gkSfgK1H4xdgaM7tWABxpbEL'), 'CoinGecko Demo key must be configured in api.js');
+        assert.ok(apiJs.includes('mGMasDhcrG73bhUPj5VPOvxqdd33xgO5XxpROwjN'), 'API Ninjas key must be configured as Tier 2 fallback');
+        assert.ok(apiJs.includes('MARKET_CACHE_TTL_MS = 30 * 60 * 1000'), '30-minute market cache TTL must be defined');
+        assert.ok(apiJs.includes('FOREX_CACHE_TTL_MS = 30 * 60 * 1000'), '30-minute forex cache TTL must be defined');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

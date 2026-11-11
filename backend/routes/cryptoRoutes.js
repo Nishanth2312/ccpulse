@@ -7,6 +7,7 @@ const {
     getHistoricalChartData,
     getOrderBook,
     fetchLiveCryptoRatesFromCoinGecko,
+    fetchMultiTierCryptoRates,
     getCryptoFeedStatus
 } = require('../services/cryptoMarketService');
 const { authenticateToken } = require('../middleware/auth');
@@ -27,11 +28,12 @@ router.get('/', (req, res) => {
 
 /**
  * POST /api/cryptos/refresh
- * Explicitly refresh live cryptocurrency rates from CoinGecko
+ * Refresh live cryptocurrency rates with 30-minute quota caching & multi-tier failover
  */
 router.post('/refresh', async (req, res) => {
     try {
-        const result = await fetchLiveCryptoRatesFromCoinGecko(true);
+        const force = req.query.force === 'true' || req.body?.force === true;
+        const result = await fetchMultiTierCryptoRates(force);
         const cryptos = getActiveCryptos();
         return res.json({ success: true, ...result, count: cryptos.length, cryptos });
     } catch (err) {
