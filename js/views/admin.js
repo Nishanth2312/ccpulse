@@ -1124,7 +1124,17 @@ const AdminView = {
     async renderCurrenciesTab(container) {
         try {
             const status = await API.currency.getStatus();
-            const { currencies, rates, lastUpdated, isStale, provider } = status;
+            const { currencies, rates = {}, lastUpdated, isStale, provider = 'Live Forex Engine' } = status || {};
+
+            const defaultCurrencies = [
+                { code: 'USD', name: 'US Dollar', symbol: '$', exchangeRateToUsd: 1.0, is_active: 1 },
+                { code: 'INR', name: 'Indian Rupee', symbol: '₹', exchangeRateToUsd: rates.INR || 93.59, is_active: 1 },
+                { code: 'EUR', name: 'Euro', symbol: '€', exchangeRateToUsd: rates.EUR || 0.895, is_active: 1 },
+                { code: 'GBP', name: 'British Pound', symbol: '£', exchangeRateToUsd: rates.GBP || 0.749, is_active: 1 },
+                { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', exchangeRateToUsd: rates.AED || 3.672, is_active: 1 },
+                { code: 'JPY', name: 'Japanese Yen', symbol: '¥', exchangeRateToUsd: rates.JPY || 158.71, is_active: 1 }
+            ];
+            const currenciesList = (currencies && currencies.length) ? currencies : defaultCurrencies;
 
             container.innerHTML = `
                 <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 12px;">
@@ -1153,8 +1163,8 @@ const AdminView = {
                             </tr>
                         </thead>
                         <tbody>
-                            ${currencies.map(cur => {
-                                const rate = rates[cur.code] || cur.exchangeRateToUsd;
+                            ${currenciesList.map(cur => {
+                                const rate = rates[cur.code] || cur.exchangeRateToUsd || 1.0;
                                 const exampleBonus = Currency.format(5000, cur.code);
                                 return `
                                     <tr>
