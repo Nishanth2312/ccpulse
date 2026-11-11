@@ -1012,6 +1012,74 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(!simLabJs.includes('HTTP 405'), 'simulationLab.js must never expose raw 405 errors');
     });
 
+    test('Scenario 39: Gamified Achievements & Milestone Badges Engine', () => {
+        const fs = require('fs');
+        const achievementsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/achievements.js'), 'utf8');
+        
+        assert.ok(achievementsJs.includes('AchievementsView'), 'achievements.js must define AchievementsView');
+        assert.ok(achievementsJs.includes('BADGES_DEFINITIONS'), 'achievements.js must specify badge definitions');
+        assert.ok(achievementsJs.includes('Stealth Navigator'), 'achievements.js must include Stealth Navigator privacy badge');
+        assert.ok(achievementsJs.includes('Diamond Hands'), 'achievements.js must include Diamond Hands badge');
+        assert.ok(achievementsJs.includes('computeRank'), 'achievements.js must compute user simulator rank');
+        assert.ok(achievementsJs.includes('window.AchievementsView = AchievementsView'), 'achievements.js must export to window');
+    });
+
+    test('Scenario 40: Dollar Cost Averaging (DCA) Strategy Simulator & Comparative Analysis', () => {
+        const fs = require('fs');
+        const dcaJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/dcaSimulator.js'), 'utf8');
+
+        assert.ok(dcaJs.includes('DCASimulatorView'), 'dcaSimulator.js must define DCASimulatorView');
+        assert.ok(dcaJs.includes('computeDCAResults'), 'dcaSimulator.js must calculate simulation returns');
+        assert.ok(dcaJs.includes('renderChartSVG'), 'dcaSimulator.js must render interactive SVG chart');
+        assert.ok(dcaJs.includes('Lump Sum'), 'dcaSimulator.js must compare against Lump Sum strategy');
+        assert.ok(dcaJs.includes('window.DCASimulatorView = DCASimulatorView'), 'dcaSimulator.js must export to window');
+    });
+
+    test('Scenario 41: Real-time Price Alerts & Simulation Watchlist Engine', () => {
+        const fs = require('fs');
+        const alertsJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/priceAlerts.js'), 'utf8');
+
+        assert.ok(alertsJs.includes('PriceAlertsView'), 'priceAlerts.js must define PriceAlertsView');
+        assert.ok(alertsJs.includes('saveAlerts'), 'priceAlerts.js must implement saveAlerts');
+        assert.ok(alertsJs.includes('checkAlerts'), 'priceAlerts.js must monitor price conditions');
+        assert.ok(alertsJs.includes('getWatchlist'), 'priceAlerts.js must manage watchlist component');
+        assert.ok(alertsJs.includes('window.PriceAlertsView = PriceAlertsView'), 'priceAlerts.js must export to window');
+    });
+
+    test('Scenario 42: Simulated Trading Journal, Performance Analytics & CSV Export', () => {
+        const fs = require('fs');
+        const journalJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/tradeJournal.js'), 'utf8');
+
+        assert.ok(journalJs.includes('TradeJournalView'), 'tradeJournal.js must define TradeJournalView');
+        assert.ok(journalJs.includes('calculateMetrics'), 'tradeJournal.js must compute win rate & trade analytics');
+        assert.ok(journalJs.includes('renderEquityChart'), 'tradeJournal.js must render SVG equity curve');
+        assert.ok(journalJs.includes('exportToCsv'), 'tradeJournal.js must support CSV export');
+        assert.ok(journalJs.includes('window.TradeJournalView = TradeJournalView'), 'tradeJournal.js must export to window');
+    });
+
+    test('Scenario 43: Paper Trading Leaderboard & Simulation League', () => {
+        const fs = require('fs');
+        const leaderboardJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/leaderboard.js'), 'utf8');
+
+        assert.ok(leaderboardJs.includes('LeaderboardView'), 'leaderboard.js must define LeaderboardView');
+        assert.ok(leaderboardJs.includes('calculateUserStanding'), 'leaderboard.js must compute user standing');
+        assert.ok(leaderboardJs.includes('renderPodiumCard'), 'leaderboard.js must render top 3 podium');
+        assert.ok(leaderboardJs.includes('GHOST_TRADERS'), 'leaderboard.js must simulate competitive league participants');
+        assert.ok(leaderboardJs.includes('window.LeaderboardView = LeaderboardView'), 'leaderboard.js must export to window');
+    });
+
+    test('Scenario 44: Fear & Greed Index Sentiment Engine & Multi-Factor Market Psychology', () => {
+        const fs = require('fs');
+        const fearGreedJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/fearGreed.js'), 'utf8');
+
+        assert.ok(fearGreedJs.includes('FearGreedView'), 'fearGreed.js must define FearGreedView');
+        assert.ok(fearGreedJs.includes('computeMarketSentiment'), 'fearGreed.js must compute multi-factor sentiment score');
+        assert.ok(fearGreedJs.includes('renderSvgGauge'), 'fearGreed.js must render SVG semicircular gauge dial');
+        assert.ok(fearGreedJs.includes('Extreme Fear'), 'fearGreed.js must classify Extreme Fear sentiment');
+        assert.ok(fearGreedJs.includes('Extreme Greed'), 'fearGreed.js must classify Extreme Greed sentiment');
+        assert.ok(fearGreedJs.includes('window.FearGreedView = FearGreedView'), 'fearGreed.js must export to window');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);
