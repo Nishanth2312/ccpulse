@@ -12,7 +12,7 @@ const DashboardView = {
             cryptos = State.cryptos || [];
         }
 
-        const bonusFormatted = Currency.format(5000);
+        const bonusFormatted = Currency.format(10000);
         const activeCurrency = Currency.getActiveCode();
 
         const tickerHtml = cryptos.slice(0, 5).map(c => {
@@ -89,7 +89,7 @@ const DashboardView = {
                         Master Cryptocurrency Markets with <span class="pulse-text">Simulated Confidence</span>
                     </h1>
                     <p style="font-size: 1.08rem; line-height: 1.6; color: var(--text-secondary); margin-bottom: 24px; font-family: var(--font-family);">
-                        Practice real-time trading with a guaranteed <strong style="color: var(--color-success);">${bonusFormatted}</strong> virtual welcome bonus. Explore privacy blockchains (Monero, Beldex), stress-test portfolio risk scenarios, and track dynamic multi-currency valuations in <strong>${activeCurrency}</strong>.
+                        Practice real-time trading with a guaranteed <strong style="color: var(--color-success);">${bonusFormatted} USD + 1.0 Bitcoin</strong> virtual welcome bonus. Explore privacy blockchains (Monero, Beldex), stress-test portfolio risk scenarios, and track dynamic multi-currency valuations in <strong>${activeCurrency}</strong>.
                     </p>
                     <div style="display: flex; gap: 14px; flex-wrap: wrap;">
                         ${State.currentUser ? `
