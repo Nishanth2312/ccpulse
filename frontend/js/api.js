@@ -559,66 +559,180 @@ const API = {
     admin: {
         getOverview: async () => {
             try {
-                return await API.request('/admin/overview');
-            } catch (e) {
-                if (typeof ClientDB !== 'undefined') {
-                    const allUsers = ClientDB.users.getAll();
-                    const allTrades = ClientDB.trades.getAll();
-                    return {
-                        success: true,
-                        overview: {
-                            totalRegisteredUsers: allUsers.length,
-                            totalAnonymousGuests: 15,
-                            totalWallets: allUsers.length,
-                            totalTrades: allTrades.length,
-                            totalVirtualDistributedUsd: allUsers.length * 5000,
-                            totalActiveCryptos: 5,
-                            mostViewedCrypto: 'Bitcoin',
-                            mostSimulatedCrypto: 'Bitcoin'
-                        }
-                    };
+                const res = await API.request('/admin/overview');
+                if (res && (res.stats || res.overview)) {
+                    const data = res.stats || res.overview;
+                    return { success: true, stats: data, overview: data };
                 }
-                return {
-                    success: true,
-                    overview: {
-                        totalRegisteredUsers: 2,
-                        totalAnonymousGuests: 15,
-                        totalWallets: 2,
-                        totalTrades: 8,
-                        totalVirtualDistributedUsd: 10000,
-                        totalActiveCryptos: 5,
-                        mostViewedCrypto: 'Bitcoin',
-                        mostSimulatedCrypto: 'Bitcoin'
+            } catch (e) {
+                // Fallback to client-side database
+            }
+
+            if (typeof ClientDB !== 'undefined') {
+                const allUsers = ClientDB.users.getAll();
+                const allTrades = ClientDB.trades.getAll();
+                const snapshot = ClientDB.getSnapshot();
+                const wallets = snapshot.wallets || [];
+                const txs = snapshot.wallet_transactions || [];
+                const adminsCount = allUsers.filter(u => u.role === 'admin').length;
+                const activeCount = allUsers.filter(u => u.isActive && !u.isSuspended).length;
+                const suspendedCount = allUsers.filter(u => u.isSuspended).length;
+                const totalDistributed = wallets.reduce((sum, w) => sum + (w.balanceUsd || 0) + (w.investedUsd || 0), 0);
+
+                const stats = {
+                    totalRegisteredUsers: allUsers.length,
+                    totalAdmins: adminsCount,
+                    totalAnonymousUsers: 15,
+                    activeUsers: activeCount,
+                    suspendedUsers: suspendedCount,
+                    totalVirtualPortfolios: wallets.length,
+                    totalVirtualTradingTransactions: txs.length,
+                    totalSimulatedTrades: allTrades.length,
+                    totalVirtualMoneyDistributedUsd: totalDistributed > 0 ? totalDistributed : allUsers.length * 10000,
+                    totalSupportedCryptocurrencies: CLIENT_STATIC_COINS.length,
+                    configuredWelcomeBonusUsd: 10000.00,
+                    mostViewedCryptos: [
+                        { name: 'Bitcoin', symbol: 'BTC', view_count: 1420, current_price_usd: 73932.53, logo_url: './assets/coins/btc.svg' },
+                        { name: 'Beldex', symbol: 'BDX', view_count: 1105, current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' },
+                        { name: 'Ethereum', symbol: 'ETH', view_count: 980, current_price_usd: 2056.93, logo_url: './assets/coins/eth.svg' },
+                        { name: 'Monero', symbol: 'XMR', view_count: 840, current_price_usd: 158.40, logo_url: './assets/coins/xmr.svg' },
+                        { name: 'Solana', symbol: 'SOL', view_count: 730, current_price_usd: 83.75, logo_url: './assets/coins/sol.svg' }
+                    ],
+                    mostFrequentlySimulatedCryptos: [
+                        { name: 'Beldex', symbol: 'BDX', simulation_count: 85, current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' },
+                        { name: 'Bitcoin', symbol: 'BTC', simulation_count: 64, current_price_usd: 73932.53, logo_url: './assets/coins/btc.svg' },
+                        { name: 'Ethereum', symbol: 'ETH', simulation_count: 42, current_price_usd: 2056.93, logo_url: './assets/coins/eth.svg' }
+                    ],
+                    learningActivity: {
+                        activeLearners: allUsers.length,
+                        enrolledCourses: 3,
+                        completedCourses: 1
                     }
                 };
+
+                return {
+                    success: true,
+                    stats,
+                    overview: stats
+                };
             }
+
+            const fallbackStats = {
+                totalRegisteredUsers: 2,
+                totalAdmins: 1,
+                totalAnonymousUsers: 15,
+                activeUsers: 2,
+                suspendedUsers: 0,
+                totalVirtualPortfolios: 2,
+                totalVirtualTradingTransactions: 8,
+                totalSimulatedTrades: 8,
+                totalVirtualMoneyDistributedUsd: 20000,
+                totalSupportedCryptocurrencies: CLIENT_STATIC_COINS.length,
+                configuredWelcomeBonusUsd: 10000.00,
+                mostViewedCryptos: [
+                    { name: 'Bitcoin', symbol: 'BTC', view_count: 1420, current_price_usd: 73932.53, logo_url: './assets/coins/btc.svg' },
+                    { name: 'Beldex', symbol: 'BDX', view_count: 1105, current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' }
+                ],
+                mostFrequentlySimulatedCryptos: [
+                    { name: 'Beldex', symbol: 'BDX', simulation_count: 85, current_price_usd: 0.0722, logo_url: './assets/coins/bdx.png' },
+                    { name: 'Bitcoin', symbol: 'BTC', simulation_count: 64, current_price_usd: 73932.53, logo_url: './assets/coins/btc.svg' }
+                ],
+                learningActivity: {
+                    activeLearners: 2,
+                    enrolledCourses: 3,
+                    completedCourses: 1
+                }
+            };
+
+            return {
+                success: true,
+                stats: fallbackStats,
+                overview: fallbackStats
+            };
         },
-        getCryptos: () => API.request('/admin/cryptos').catch(() => ({ success: true, count: 5, cryptos: CLIENT_STATIC_COINS })),
+        getCryptos: () => API.request('/admin/cryptos').catch(() => ({ success: true, count: CLIENT_STATIC_COINS.length, cryptos: CLIENT_STATIC_COINS })),
         addCrypto: (data) => API.request('/admin/cryptos', { method: 'POST', body: JSON.stringify(data) }),
         updateCrypto: (id, data) => API.request(`/admin/cryptos/${id}`, { method: 'PUT', body: JSON.stringify(data) }),
         deleteCrypto: (id) => API.request(`/admin/cryptos/${id}`, { method: 'DELETE' }),
         getUsers: async (params = {}) => {
             const query = new URLSearchParams(params).toString();
             try {
-                return await API.request(`/admin/users?${query}`);
-            } catch (e) {
-                if (typeof ClientDB !== 'undefined') {
-                    const users = ClientDB.users.getAll();
-                    return {
-                        success: true,
-                        total: users.length,
-                        users
-                    };
+                const res = await API.request(`/admin/users?${query}`);
+                if (res && res.users && res.users.length > 0) {
+                    return res;
                 }
+            } catch (e) {
+                // Fallback to client database
+            }
+
+            if (typeof ClientDB !== 'undefined') {
+                const rawUsers = ClientDB.users.getAll();
+                const snapshot = ClientDB.getSnapshot();
+                const wallets = snapshot.wallets || [];
+                const enriched = rawUsers.map(u => {
+                    const w = wallets.find(x => x.userId === u.id);
+                    const holdings = w ? (w.holdings || []) : [];
+                    const balanceUsd = w ? (typeof w.balanceUsd === 'number' ? w.balanceUsd : (w.balance_usd || 10000)) : 10000;
+                    const investedUsd = w ? (typeof w.investedUsd === 'number' ? w.investedUsd : 0) : 0;
+                    return {
+                        id: u.id,
+                        uuid: u.uuid || `usr-${u.id}`,
+                        email: u.email,
+                        username: u.username,
+                        fullName: u.fullName || u.full_name || u.username,
+                        role: u.role || 'user',
+                        isActive: u.isActive !== false,
+                        isSuspended: Boolean(u.isSuspended),
+                        emailVerified: true,
+                        createdAt: u.createdAt || new Date().toISOString(),
+                        lastLoginAt: u.lastLoginAt,
+                        wallet: {
+                            balanceUsd,
+                            investedUsd,
+                            totalPortfolioValueUsd: balanceUsd + investedUsd,
+                            holdingsCount: holdings.length
+                        },
+                        learning: {
+                            completedCourses: 0
+                        }
+                    };
+                });
+
                 return {
                     success: true,
-                    total: 2,
-                    users: [
-                        { id: 1, username: 'admin', email: 'admin@ccpulse.com', role: 'admin', isActive: true, availableCashUsd: 5000 },
-                        { id: 2, username: 'trader', email: 'trader@ccpulse.com', role: 'user', isActive: true, availableCashUsd: 5000 }
-                    ]
+                    total: enriched.length,
+                    users: enriched
                 };
             }
+
+            return {
+                success: true,
+                total: 2,
+                users: [
+                    {
+                        id: 1,
+                        username: 'admin',
+                        fullName: 'CCPulse Chief Administrator',
+                        email: 'admin@ccpulse.com',
+                        role: 'admin',
+                        isActive: true,
+                        isSuspended: false,
+                        createdAt: new Date().toISOString(),
+                        wallet: { balanceUsd: 10000, investedUsd: 0, totalPortfolioValueUsd: 10000, holdingsCount: 0 }
+                    },
+                    {
+                        id: 2,
+                        username: 'trader',
+                        fullName: 'Simulated Trader',
+                        email: 'trader@ccpulse.com',
+                        role: 'user',
+                        isActive: true,
+                        isSuspended: false,
+                        createdAt: new Date().toISOString(),
+                        wallet: { balanceUsd: 6390, investedUsd: 77542.53, totalPortfolioValueUsd: 83932.53, holdingsCount: 2 }
+                    }
+                ]
+            };
         },
         updateUserStatus: async (id, statusData) => {
             try {
@@ -646,7 +760,10 @@ const API = {
                 return await API.request('/admin/balances/grant', { method: 'POST', body: JSON.stringify(data) });
             } catch (e) {
                 if (typeof ClientDB !== 'undefined') {
-                    ClientDB.wallets.adjustBalance(data.userId, parseFloat(data.amountUsd), data.reason, 'ADMIN_GRANT');
+                    const targetId = data.target_user_id || data.userId || data.id;
+                    const amt = parseFloat(data.amount || data.amountUsd);
+                    const reason = data.audit_reason || data.reason || 'Administrative credit grant';
+                    ClientDB.wallets.adjustBalance(targetId, amt, reason, 'ADMIN_GRANT');
                     return { success: true, message: 'Balance granted successfully.' };
                 }
                 throw e;
@@ -657,7 +774,10 @@ const API = {
                 return await API.request('/admin/balances/deduct', { method: 'POST', body: JSON.stringify(data) });
             } catch (e) {
                 if (typeof ClientDB !== 'undefined') {
-                    ClientDB.wallets.adjustBalance(data.userId, -parseFloat(data.amountUsd), data.reason, 'ADMIN_DEDUCT');
+                    const targetId = data.target_user_id || data.userId || data.id;
+                    const amt = parseFloat(data.amount || data.amountUsd);
+                    const reason = data.audit_reason || data.reason || 'Administrative credit deduction';
+                    ClientDB.wallets.adjustBalance(targetId, -amt, reason, 'ADMIN_DEDUCT');
                     return { success: true, message: 'Balance deducted successfully.' };
                 }
                 throw e;
