@@ -277,6 +277,42 @@ async function main() {
     assert.strictEqual(adminResult.hasSpamBtn, true, 'User row must provide Spam button');
     console.log('✓ Admin User Governance controls (Increase, Freeze, Block, Spam, Timing) verified!');
 
+    // Test 6: Market Simulation Lab 405 Resilience & Interactive Shock Engine
+    console.log('\n[Test 6: Market Simulation Lab 405 Resilience & Stress Test]');
+    const simLabResult = await evalInPage(`(async () => {
+        window.location.hash = '#simulation-lab';
+        await App.route();
+        await new Promise(r => setTimeout(r, 600));
+
+        const grid = document.getElementById('scenarios-grid');
+        const cards = grid ? grid.querySelectorAll('.scenario-card') : [];
+        const activeCard = grid ? grid.querySelector('.active-scenario') : null;
+        
+        // Trigger Flash Crash scenario
+        const flashCrashCard = grid ? Array.from(cards).find(c => c.textContent.includes('Flash Crash')) : null;
+        if (flashCrashCard) flashCrashCard.click();
+        await new Promise(r => setTimeout(r, 400));
+
+        const output = document.getElementById('sim-results-output');
+        const has405Error = output ? output.textContent.includes('405') : false;
+        const hasTable = output ? (output.querySelectorAll('table.data-table tbody tr').length > 0) : false;
+        const netShiftText = output ? output.querySelector('.font-mono.text-danger, .font-mono.text-success')?.textContent : '';
+
+        return {
+            scenarioCardCount: cards.length,
+            hasActiveCard: activeCard !== null,
+            has405Error,
+            hasTable,
+            netShiftText: netShiftText.trim()
+        };
+    })()`);
+    console.log('Simulation Lab Result:', simLabResult);
+    assert.strictEqual(simLabResult.scenarioCardCount, 5, 'Must render all 5 market scenarios in selection grid');
+    assert.strictEqual(simLabResult.hasActiveCard, true, 'Default scenario must be actively highlighted');
+    assert.strictEqual(simLabResult.has405Error, false, 'Output must NEVER contain 405 Method Not Allowed error');
+    assert.strictEqual(simLabResult.hasTable, true, 'Stress test must render asset-by-asset simulated shock breakdown');
+    console.log('✓ Market Simulation Lab 405 resilience and stress-test calculation verified!');
+
     // Check for runtime errors
     console.log('\nRuntime console errors during test:', consoleErrors);
     assert.strictEqual(consoleErrors.length, 0, 'There should be 0 unhandled console errors');

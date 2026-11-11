@@ -993,6 +993,25 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(marketsJs.includes('rect'), 'renderCandleBars must render open/close candle bodies');
     });
 
+    test('Scenario 38: Market Simulation Lab 405 Resilience & Client-Side Shock Engine', () => {
+        const fs = require('fs');
+        const apiJs = fs.readFileSync(path.join(__dirname, '../frontend/js/api.js'), 'utf8');
+        const simLabJs = fs.readFileSync(path.join(__dirname, '../frontend/js/views/simulationLab.js'), 'utf8');
+
+        // 1. Verify Simulation Lab API client resilience & fallbacks
+        assert.ok(apiJs.includes('simulationLab:'), 'api.js must provide simulationLab service');
+        assert.ok(apiJs.includes('SIMULATION_SCENARIOS'), 'api.js must define client fallback scenarios');
+        assert.ok(apiJs.includes('runClientSideSimulation'), 'api.js must implement client-side simulation engine');
+
+        // 2. Verify Simulation Lab View incorporates fallback scenarios & auto-run
+        assert.ok(simLabJs.includes('DEFAULT_FALLBACK_SCENARIOS'), 'simulationLab.js must include fallback scenarios');
+        assert.ok(simLabJs.includes('runClientSideSimulation'), 'simulationLab.js must link to client simulation engine');
+        assert.ok(simLabJs.includes('scenarios-grid'), 'simulationLab.js must render scenario selection grid');
+        assert.ok(simLabJs.includes('Macro Bull Market Rally'), 'simulationLab.js must include Macro Bull Market Rally');
+        assert.ok(simLabJs.includes('Liquidity Squeeze & Flash Crash'), 'simulationLab.js must include Flash Crash scenario');
+        assert.ok(!simLabJs.includes('HTTP 405'), 'simulationLab.js must never expose raw 405 errors');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);

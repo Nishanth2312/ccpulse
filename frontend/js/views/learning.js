@@ -12,9 +12,9 @@ const LearningView = {
         let courses = [];
         try {
             const res = await API.learning.getCourses();
-            courses = res.courses || [];
+            courses = (res && res.courses && res.courses.length > 0) ? res.courses : (typeof DEFAULT_LEARNING_COURSES !== 'undefined' ? DEFAULT_LEARNING_COURSES : []);
         } catch (e) {
-            courses = [];
+            courses = (typeof DEFAULT_LEARNING_COURSES !== 'undefined') ? DEFAULT_LEARNING_COURSES : [];
         }
 
         container.innerHTML = `
