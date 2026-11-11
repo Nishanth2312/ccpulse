@@ -11,6 +11,7 @@ const MarketsView = {
     searchQuery: '',
     sortBy: 'rank', // 'rank' | 'price' | 'change24h' | 'mcap' | 'volume'
     sortAsc: true,
+    chartMode: (typeof localStorage !== 'undefined' && localStorage.getItem('ccpulse_chart_mode')) || 'curve', // 'curve' | 'candle'
 
     async render(container, queryParams = null) {
         if (queryParams) {
@@ -202,11 +203,21 @@ const MarketsView = {
                     ` : ''}
                 </div>
 
-                <!-- Search & Actions -->
+                <!-- Search & Actions & View Mode Toggle -->
                 <div style="display: flex; gap: 10px; align-items: center; flex-wrap: wrap;">
+                    <!-- View Mode Toggle: Chart Curve vs Candle Bars -->
+                    <div class="cg-view-mode-toggle" style="display: inline-flex; align-items: center; background: var(--bg-surface); border: 1px solid var(--border-color); border-radius: 20px; padding: 2px 4px; gap: 2px;">
+                        <button type="button" id="btn-chart-curve" class="btn ${this.chartMode === 'curve' ? 'btn-primary' : 'btn-outline'}" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 16px; border: none;" title="Flexible Smooth Curve View">
+                            <i class="fa-solid fa-bezier-curve"></i> Chart View
+                        </button>
+                        <button type="button" id="btn-chart-candle" class="btn ${this.chartMode === 'candle' ? 'btn-primary' : 'btn-outline'}" style="font-size: 0.78rem; padding: 4px 10px; border-radius: 16px; border: none;" title="7-Day Candlestick Bar View">
+                            <i class="fa-solid fa-chart-column"></i> Candle View
+                        </button>
+                    </div>
+
                     <div style="position: relative;">
                         <i class="fa-solid fa-magnifying-glass" style="position: absolute; left: 12px; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 0.82rem;"></i>
-                        <input type="text" id="market-search" placeholder="Search coin or symbol..." style="padding-left: 34px; padding-right: 12px; height: 36px; width: 220px; font-size: 0.84rem; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);" value="${this.searchQuery}">
+                        <input type="text" id="market-search" placeholder="Search coin or symbol..." style="padding-left: 34px; padding-right: 12px; height: 36px; width: 200px; font-size: 0.84rem; border-radius: 20px; background: var(--bg-surface); border: 1px solid var(--border-color); color: var(--text-primary);" value="${this.searchQuery}">
                     </div>
                     <a href="#swap" class="btn btn-outline" style="font-size: 0.82rem; padding: 6px 14px; border-radius: 20px; color: #16C784; border-color: rgba(22, 199, 132, 0.4); display: inline-flex; align-items: center; gap: 6px;">
                         <i class="fa-solid fa-repeat"></i> DEX Swap
@@ -228,7 +239,14 @@ const MarketsView = {
                             <th style="width: 85px;">7d</th>
                             <th style="cursor: pointer;" data-sort="volume">24h Volume <i class="fa-solid fa-sort" style="font-size: 0.65rem;"></i></th>
                             <th style="cursor: pointer;" data-sort="mcap">Market Cap <i class="fa-solid fa-sort" style="font-size: 0.65rem;"></i></th>
-                            <th style="text-align: center; width: 140px;">Last 7 Days</th>
+                            <th style="text-align: center; width: 145px;">
+                                <div style="display: flex; align-items: center; justify-content: center; gap: 6px;">
+                                    <span>Last 7 Days</span>
+                                    <button type="button" id="th-toggle-chart-mode" title="Toggle Chart Curve / Candlestick Bars" style="background: none; border: none; color: var(--color-primary); cursor: pointer; padding: 2px 4px; font-size: 0.8rem;">
+                                        <i class="fa-solid ${this.chartMode === 'candle' ? 'fa-chart-column' : 'fa-bezier-curve'}"></i>
+                                    </button>
+                                </div>
+                            </th>
                             <th style="text-align: right; min-width: 130px;">Actions</th>
                         </tr>
                     </thead>
@@ -330,28 +348,113 @@ const MarketsView = {
         `;
     },
 
-    renderSparkline(points, isPositive) {
+    renderSmoothCurve(points, isPositive) {
         if (!points || points.length < 2) {
             points = isPositive ? [10, 10.4, 10.8, 10.5, 11.2, 11.8, 12.2] : [12.2, 11.9, 11.5, 11.7, 11.0, 10.5, 10.2];
         }
         const min = Math.min(...points);
         const max = Math.max(...points);
-        const range = max - min || 1;
+        const range = Math.max(max - min, 0.0001);
         const width = 124;
-        const height = 32;
+        const height = 34;
         const strokeColor = isPositive ? '#16C784' : '#EA3943';
+        const gradId = 'cg-grad-' + Math.random().toString(36).substring(2, 8);
 
-        const coords = points.map((p, i) => {
+        // Normalize points
+        const pts = points.map((p, i) => {
             const x = (i / (points.length - 1)) * width;
-            const y = height - 3 - ((p - min) / range) * (height - 8);
-            return `${x.toFixed(1)},${y.toFixed(1)}`;
-        }).join(' ');
+            const y = height - 4 - ((p - min) / range) * (height - 10);
+            return { x, y };
+        });
+
+        // Compute Catmull-Rom cubic bezier smooth path
+        let linePath = `M ${pts[0].x.toFixed(1)},${pts[0].y.toFixed(1)}`;
+        for (let i = 0; i < pts.length - 1; i++) {
+            const p0 = i > 0 ? pts[i - 1] : pts[0];
+            const p1 = pts[i];
+            const p2 = pts[i + 1];
+            const p3 = i < pts.length - 2 ? pts[i + 2] : p2;
+
+            const cp1x = p1.x + (p2.x - p0.x) / 6;
+            const cp1y = p1.y + (p2.y - p0.y) / 6;
+            const cp2x = p2.x - (p3.x - p1.x) / 6;
+            const cp2y = p2.y - (p3.y - p1.y) / 6;
+
+            linePath += ` C ${cp1x.toFixed(1)},${cp1y.toFixed(1)} ${cp2x.toFixed(1)},${cp2y.toFixed(1)} ${p2.x.toFixed(1)},${p2.y.toFixed(1)}`;
+        }
+
+        const areaPath = `${linePath} L ${width},${height} L 0,${height} Z`;
 
         return `
-            <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="cg-sparkline-svg">
-                <polyline fill="none" stroke="${strokeColor}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" points="${coords}" />
+            <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="cg-sparkline-svg" preserveAspectRatio="none" style="overflow: visible;">
+                <defs>
+                    <linearGradient id="${gradId}" x1="0" y1="0" x2="0" y2="1">
+                        <stop offset="0%" stop-color="${strokeColor}" stop-opacity="0.25" />
+                        <stop offset="100%" stop-color="${strokeColor}" stop-opacity="0.0" />
+                    </linearGradient>
+                </defs>
+                <path fill="url(#${gradId})" d="${areaPath}" />
+                <path fill="none" stroke="${strokeColor}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" d="${linePath}" />
             </svg>
         `;
+    },
+
+    renderCandleBars(points, isPositive) {
+        if (!points || points.length < 2) {
+            points = isPositive ? [10, 10.4, 10.8, 10.5, 11.2, 11.8, 12.2] : [12.2, 11.9, 11.5, 11.7, 11.0, 10.5, 10.2];
+        }
+        const min = Math.min(...points);
+        const max = Math.max(...points);
+        const range = Math.max(max - min, 0.0001);
+        const width = 124;
+        const height = 34;
+
+        const numCandles = Math.min(points.length, 7);
+        const slotWidth = width / numCandles;
+        const barWidth = 9;
+
+        const getY = (val) => height - 3 - ((val - min) / range) * (height - 8);
+
+        const candleElements = [];
+        for (let i = 0; i < numCandles; i++) {
+            const prev = i > 0 ? points[i - 1] : (points[0] * (isPositive ? 0.985 : 1.015));
+            const curr = points[i];
+            const isBullish = curr >= prev;
+            const color = isBullish ? '#16C784' : '#EA3943';
+
+            const spread = Math.abs(curr - prev);
+            const wickPadding = Math.max(spread * 0.4, range * 0.06);
+            const highVal = Math.max(prev, curr) + wickPadding;
+            const lowVal = Math.min(prev, curr) - wickPadding;
+
+            const yOpen = getY(prev);
+            const yClose = getY(curr);
+            const yHigh = Math.max(2, getY(highVal));
+            const yLow = Math.min(height - 2, getY(lowVal));
+
+            const cx = i * slotWidth + slotWidth / 2;
+            const barX = cx - barWidth / 2;
+            const barY = Math.min(yOpen, yClose);
+            const barHeight = Math.max(2.5, Math.abs(yClose - yOpen));
+
+            candleElements.push(`
+                <line x1="${cx.toFixed(1)}" y1="${yHigh.toFixed(1)}" x2="${cx.toFixed(1)}" y2="${yLow.toFixed(1)}" stroke="${color}" stroke-width="1.4" stroke-linecap="round" />
+                <rect x="${barX.toFixed(1)}" y="${barY.toFixed(1)}" width="${barWidth}" height="${barHeight.toFixed(1)}" rx="1.5" fill="${color}" />
+            `);
+        }
+
+        return `
+            <svg width="${width}" height="${height}" viewBox="0 0 ${width} ${height}" class="cg-sparkline-svg" style="overflow: visible;">
+                ${candleElements.join('')}
+            </svg>
+        `;
+    },
+
+    renderSparkline(points, isPositive) {
+        if (this.chartMode === 'candle') {
+            return this.renderCandleBars(points, isPositive);
+        }
+        return this.renderSmoothCurve(points, isPositive);
     },
 
     attachEvents(container, cryptos, watchlistIds) {
@@ -414,6 +517,42 @@ const MarketsView = {
                 this.renderTableRows(cryptos, watchlistIds);
             };
         });
+
+        // Chart View Mode Switcher (Curve vs Candle)
+        const btnCurve = container.querySelector('#btn-chart-curve');
+        const btnCandle = container.querySelector('#btn-chart-candle');
+        const thToggle = container.querySelector('#th-toggle-chart-mode');
+
+        const switchChartMode = (newMode) => {
+            this.chartMode = newMode;
+            try {
+                localStorage.setItem('ccpulse_chart_mode', newMode);
+            } catch (e) {}
+
+            if (btnCurve && btnCandle) {
+                if (newMode === 'curve') {
+                    btnCurve.className = 'btn btn-primary';
+                    btnCandle.className = 'btn btn-outline';
+                } else {
+                    btnCurve.className = 'btn btn-outline';
+                    btnCandle.className = 'btn btn-primary';
+                }
+            }
+
+            if (thToggle) {
+                thToggle.innerHTML = `<i class="fa-solid ${newMode === 'candle' ? 'fa-chart-column' : 'fa-bezier-curve'}"></i>`;
+            }
+
+            this.renderTableRows(cryptos, watchlistIds);
+        };
+
+        if (btnCurve) btnCurve.onclick = () => switchChartMode('curve');
+        if (btnCandle) btnCandle.onclick = () => switchChartMode('candle');
+        if (thToggle) {
+            thToggle.onclick = () => {
+                switchChartMode(this.chartMode === 'curve' ? 'candle' : 'curve');
+            };
+        }
     },
 
     renderTableRows(cryptos, watchlistIds) {

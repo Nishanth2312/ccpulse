@@ -268,6 +268,7 @@ const SwapView = {
                 feedbackEl.style.color = 'var(--color-danger)';
                 feedbackEl.textContent = 'Please specify a valid quantity to swap.';
                 feedbackEl.classList.remove('hidden');
+                if (window.Toast) Toast.error('Please specify a valid quantity to swap.', 'Invalid Quantity');
                 return;
             }
 
@@ -276,7 +277,25 @@ const SwapView = {
                 feedbackEl.style.color = 'var(--color-danger)';
                 feedbackEl.textContent = `Insufficient ${this.fromSymbol} balance. Available: ${currentSourceBal.toFixed(6)} ${this.fromSymbol}.`;
                 feedbackEl.classList.remove('hidden');
+                if (window.Toast) Toast.error(`Insufficient ${this.fromSymbol} balance. Available: ${currentSourceBal.toFixed(6)} ${this.fromSymbol}.`, 'Insufficient Balance');
                 return;
+            }
+
+            // Security PIN Authorization for Authenticated Swaps
+            if (State.currentUser && !State.isGuest) {
+                const fromCrypto = cryptos.find(c => c.symbol === this.fromSymbol);
+                const estPrice = fromCrypto?.current_price_usd || 1;
+                const estTotalUsd = (qty * estPrice).toFixed(2);
+
+                const authRes = await App.promptTransactionSecurity({
+                    title: 'Authorize DEX Token Swap',
+                    actionDescription: `Swap ${qty} ${this.fromSymbol} → ${this.toSymbol} (~$${estTotalUsd} USD)`
+                });
+
+                if (!authRes || !authRes.authorized) {
+                    if (window.Toast) Toast.warning('Swap cancelled: Security PIN not confirmed.');
+                    return;
+                }
             }
 
             executeBtn.disabled = true;
@@ -292,6 +311,9 @@ const SwapView = {
                     handlingFeePct: this.handlingFeePct
                 });
 
+                const receivedQty = res.toQuantityReceived ? res.toQuantityReceived.toFixed(6) : toOutput.value;
+                const txRef = res.txRef || res.swapRef || ('SWAP-' + Math.random().toString(36).substring(2, 8).toUpperCase());
+
                 feedbackEl.style.background = 'rgba(16, 185, 129, 0.1)';
                 feedbackEl.style.color = 'var(--color-success)';
                 feedbackEl.innerHTML = `
@@ -299,7 +321,7 @@ const SwapView = {
                         <i class="fa-solid fa-circle-check"></i> Swap Executed Successfully!
                     </div>
                     <div>
-                        Swapped <strong>${qty.toLocaleString()} ${this.fromSymbol}</strong> for <strong>${res.toQuantityReceived ? res.toQuantityReceived.toFixed(6) : toOutput.value} ${this.toSymbol}</strong>.
+                        Swapped <strong>${qty.toLocaleString()} ${this.fromSymbol}</strong> for <strong>${receivedQty} ${this.toSymbol}</strong>.
                     </div>
                     <div style="margin-top: 8px;">
                         <a href="#portfolio" class="btn btn-outline" style="font-size: 0.78rem; padding: 4px 10px;">
@@ -308,6 +330,14 @@ const SwapView = {
                     </div>
                 `;
                 feedbackEl.classList.remove('hidden');
+
+                if (window.Toast) {
+                    Toast.success(
+                        `Swapped ${qty.toLocaleString()} ${this.fromSymbol} for ${receivedQty} ${this.toSymbol}`,
+                        'Swap Executed',
+                        txRef
+                    );
+                }
 
                 // Reload view after brief delay
                 setTimeout(() => {
@@ -319,6 +349,10 @@ const SwapView = {
                 feedbackEl.style.color = 'var(--color-danger)';
                 feedbackEl.textContent = err.message || 'Failed to execute swap.';
                 feedbackEl.classList.remove('hidden');
+
+                if (window.Toast) {
+                    Toast.error(err.message || 'Failed to execute swap.', 'Swap Failed');
+                }
             } finally {
                 executeBtn.disabled = false;
                 executeBtn.innerHTML = `<i class="fa-solid fa-repeat"></i> Swap ${this.fromSymbol} to ${this.toSymbol}`;

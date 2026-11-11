@@ -302,7 +302,22 @@ const SimulatorView = {
                 feedbackEl.style.color = 'var(--color-danger)';
                 feedbackEl.textContent = 'Please enter a valid positive order quantity.';
                 feedbackEl.classList.remove('hidden');
+                if (window.Toast) Toast.error('Please enter a valid positive order quantity.', 'Invalid Order Quantity');
                 return;
+            }
+
+            // Security PIN Authorization for Authenticated Traders
+            if (State.currentUser && !State.isGuest) {
+                const estPrice = this.selectedCrypto?.current_price_usd || 1;
+                const costUsd = (qty * estPrice).toFixed(2);
+                const authRes = await App.promptTransactionSecurity({
+                    title: `Authorize Simulated ${this.orderType} Order`,
+                    actionDescription: `${this.orderType} ${qty} ${this.selectedCrypto?.symbol} (~$${costUsd} USD)`
+                });
+                if (!authRes || !authRes.authorized) {
+                    if (window.Toast) Toast.warning('Transaction cancelled: Security PIN not confirmed.');
+                    return;
+                }
             }
 
             executeBtn.disabled = true;
@@ -325,6 +340,14 @@ const SimulatorView = {
                         <br><small style="color:var(--text-muted)">Register anytime to keep your portfolio permanently saved.</small>
                     `;
                     feedbackEl.classList.remove('hidden');
+
+                    if (window.Toast) {
+                        Toast.success(
+                            `[Guest Mode] Executed ${this.orderType} order for ${qty.toFixed(4)} ${this.selectedCrypto.symbol}`,
+                            'Order Executed',
+                            'GST-TX-' + Math.random().toString(36).substring(2, 8).toUpperCase()
+                        );
+                    }
                 } else {
                     // Authenticated user atomic trade execution
                     const res = await API.simulator.trade({
@@ -340,10 +363,19 @@ const SimulatorView = {
                     State.wallet = res.wallet;
                     State.notify('wallet');
 
+                    const txRef = res.txRef || res.transaction?.reference || ('TX-' + Math.random().toString(36).substring(2, 8).toUpperCase());
                     feedbackEl.style.background = 'rgba(16, 185, 129, 0.1)';
                     feedbackEl.style.color = 'var(--color-success)';
                     feedbackEl.innerHTML = `<i class="fa-solid fa-circle-check"></i> ${res.message || ('Successfully executed simulated ' + this.orderType + ' for ' + qty.toLocaleString() + ' ' + this.selectedCrypto.symbol + '!')}`;
                     feedbackEl.classList.remove('hidden');
+
+                    if (window.Toast) {
+                        Toast.success(
+                            res.message || `Simulated ${this.orderType} executed: ${qty.toLocaleString()} ${this.selectedCrypto.symbol}`,
+                            'Order Executed',
+                            txRef
+                        );
+                    }
                 }
 
                 // Re-render to refresh balances
@@ -356,6 +388,10 @@ const SimulatorView = {
                 feedbackEl.style.color = 'var(--color-danger)';
                 feedbackEl.textContent = err.message;
                 feedbackEl.classList.remove('hidden');
+
+                if (window.Toast) {
+                    Toast.error(err.message || 'Simulated trade execution failed.', 'Order Failed');
+                }
             } finally {
                 executeBtn.disabled = false;
                 executeBtn.innerHTML = `<i class="fa-solid fa-bolt"></i> Execute ${this.orderType} Order`;

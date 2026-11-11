@@ -34,10 +34,15 @@ const ClientDB = (function() {
                 fullName: 'CCPulse Chief Administrator',
                 role: 'admin',
                 password: 'Admin@CCPulse2026!',
+                transactionPassword: '123456',
                 isActive: true,
                 isSuspended: false,
+                isFrozen: false,
+                isSpam: false,
                 createdAt: '2026-11-01T08:00:00.000Z',
-                lastLoginAt: '2026-11-10T12:00:00.000Z'
+                lastLoginAt: '2026-11-10T12:00:00.000Z',
+                lastActiveAt: '2026-11-11T20:30:00.000Z',
+                lastTradeAt: '2026-11-11T20:25:00.000Z'
             },
             {
                 id: 2,
@@ -47,10 +52,15 @@ const ClientDB = (function() {
                 fullName: 'Simulated Trader',
                 role: 'user',
                 password: 'Trader@123456',
+                transactionPassword: '123456',
                 isActive: true,
                 isSuspended: false,
+                isFrozen: false,
+                isSpam: false,
                 createdAt: '2026-11-02T10:15:00.000Z',
-                lastLoginAt: '2026-11-10T14:30:00.000Z'
+                lastLoginAt: '2026-11-10T14:30:00.000Z',
+                lastActiveAt: '2026-11-11T20:28:00.000Z',
+                lastTradeAt: '2026-11-11T20:20:00.000Z'
             }
         ],
         wallets: [
@@ -349,12 +359,13 @@ const ClientDB = (function() {
         // USERS & AUTHENTICATION TABLE
         // =====================================================================
         users: {
-            register({ full_name, fullName, username, email, password }) {
+            register({ full_name, fullName, username, email, password, transaction_password, transactionPassword }) {
                 const db = loadDatabase();
                 const name = (fullName || full_name || '').trim();
                 const uname = (username || '').trim().toLowerCase();
                 const mail = (email || '').trim().toLowerCase();
                 const pass = (password || '').trim();
+                const txPass = (transactionPassword || transaction_password || '123456').toString().trim();
 
                 if (!name || !uname || !mail || !pass) {
                     throw new Error('Full name, username, email, and password are required.');
@@ -371,6 +382,7 @@ const ClientDB = (function() {
 
                 // New user ID
                 const nextId = db.users.reduce((max, u) => Math.max(max, u.id), 0) + 1;
+                const nowIso = new Date().toISOString();
                 const newUser = {
                     id: nextId,
                     uuid: 'usr-' + Date.now() + '-' + Math.random().toString(36).substring(2, 7),
@@ -379,10 +391,15 @@ const ClientDB = (function() {
                     fullName: name,
                     role: 'user',
                     password: pass,
+                    transactionPassword: txPass,
                     isActive: true,
                     isSuspended: false,
-                    createdAt: new Date().toISOString(),
-                    lastLoginAt: new Date().toISOString()
+                    isFrozen: false,
+                    isSpam: false,
+                    createdAt: nowIso,
+                    lastLoginAt: nowIso,
+                    lastActiveAt: nowIso,
+                    lastTradeAt: null
                 };
 
                 db.users.push(newUser);
@@ -551,22 +568,135 @@ const ClientDB = (function() {
                         role: u.role,
                         isActive: Boolean(u.isActive),
                         isSuspended: Boolean(u.isSuspended),
+                        isFrozen: Boolean(u.isFrozen),
+                        isSpam: Boolean(u.isSpam),
                         createdAt: u.createdAt,
                         lastLoginAt: u.lastLoginAt,
+                        lastActiveAt: u.lastActiveAt || u.lastLoginAt || u.createdAt,
+                        lastTradeAt: u.lastTradeAt || null,
+                        transactionPassword: u.transactionPassword || '123456',
                         availableCashUsd: w ? w.balanceUsd : 5000.00,
                         holdingsCount: w && w.holdings ? w.holdings.length : 0
                     };
                 });
             },
 
-            updateStatus(id, { isActive, isSuspended }) {
+            updateStatus(id, { isActive, isSuspended, isFrozen, isSpam, reason }) {
                 const db = loadDatabase();
                 const user = db.users.find(u => u.id === Number(id));
                 if (!user) throw new Error('User not found');
                 if (isActive !== undefined) user.isActive = Boolean(isActive);
                 if (isSuspended !== undefined) user.isSuspended = Boolean(isSuspended);
+                if (isFrozen !== undefined) user.isFrozen = Boolean(isFrozen);
+                if (isSpam !== undefined) {
+                    user.isSpam = Boolean(isSpam);
+                    if (user.isSpam) {
+                        user.isFrozen = true;
+                        user.isSuspended = true;
+                    }
+                }
+                user.lastActiveAt = new Date().toISOString();
                 saveDatabase();
                 return { success: true, user };
+            },
+
+            freezeUser(id, isFrozen = true, reason = 'Administrative security review') {
+                return this.updateStatus(id, { isFrozen, reason });
+            },
+
+            blockUser(id, isBlocked = true, reason = 'Administrative security policy') {
+                return this.updateStatus(id, { isSuspended: isBlocked, reason });
+            },
+
+            markSpamUser(id, isSpam = true, reason = 'Flagged as spammed account') {
+                return this.updateStatus(id, { isSpam, reason });
+            },
+
+            adjustBalance(id, amountUsd, reason = 'Admin Balance Increase') {
+                const db = loadDatabase();
+                const uid = Number(id);
+                const user = db.users.find(u => u.id === uid);
+                if (!user) throw new Error('User account not found');
+
+                let wallet = db.wallets.find(w => w.userId === uid);
+                if (!wallet) {
+                    wallet = {
+                        id: db.wallets.length + 1,
+                        userId: uid,
+                        balanceUsd: 0,
+                        investedUsd: 0,
+                        welcomeBonusCredited: true,
+                        holdings: []
+                    };
+                    db.wallets.push(wallet);
+                }
+
+                const delta = parseFloat(amountUsd);
+                if (isNaN(delta)) throw new Error('Invalid balance adjustment amount.');
+
+                const before = wallet.balanceUsd;
+                wallet.balanceUsd = Math.max(0, wallet.balanceUsd + delta);
+
+                const nextTxId = db.wallet_transactions.reduce((max, tx) => Math.max(max, tx.id), 0) + 1;
+                const txRef = `TX-ADJ-${Date.now().toString().slice(-6)}`;
+                db.wallet_transactions.push({
+                    id: nextTxId,
+                    transactionRef: txRef,
+                    walletId: wallet.id,
+                    userId: uid,
+                    type: delta >= 0 ? 'ADMIN_CREDIT' : 'ADMIN_DEBIT',
+                    amountUsd: Math.abs(delta),
+                    balanceBeforeUsd: before,
+                    balanceAfterUsd: wallet.balanceUsd,
+                    description: reason || `Admin adjusted virtual cash by ${delta >= 0 ? '+' : ''}$${delta.toFixed(2)} USD`,
+                    createdAt: new Date().toISOString()
+                });
+
+                user.lastActiveAt = new Date().toISOString();
+                saveDatabase();
+
+                return {
+                    success: true,
+                    userId: uid,
+                    txRef,
+                    previousBalanceUsd: before,
+                    newBalanceUsd: wallet.balanceUsd,
+                    adjustmentUsd: delta
+                };
+            },
+
+            verifyTransactionPassword(id, inputPassword) {
+                const db = loadDatabase();
+                const user = db.users.find(u => u.id === Number(id));
+                if (!user) throw new Error('User account not found.');
+                const expected = (user.transactionPassword || '123456').toString().trim();
+                const actual = (inputPassword || '').toString().trim();
+                return expected === actual;
+            },
+
+            setTransactionPassword(id, newPassword) {
+                const db = loadDatabase();
+                const user = db.users.find(u => u.id === Number(id));
+                if (!user) throw new Error('User account not found.');
+                if (!newPassword || newPassword.toString().trim().length < 4) {
+                    throw new Error('Transaction password must be at least 4 characters/digits.');
+                }
+                user.transactionPassword = newPassword.toString().trim();
+                user.lastActiveAt = new Date().toISOString();
+                saveDatabase();
+                return { success: true, message: 'Transaction password successfully updated.' };
+            },
+
+            recordActivity(id, type = 'ACTIVE') {
+                const db = loadDatabase();
+                const user = db.users.find(u => u.id === Number(id));
+                if (user) {
+                    user.lastActiveAt = new Date().toISOString();
+                    if (type === 'TRADE' || type === 'SWAP') {
+                        user.lastTradeAt = new Date().toISOString();
+                    }
+                    saveDatabase();
+                }
             },
 
             resetPassword(id, newPassword) {
@@ -574,6 +704,7 @@ const ClientDB = (function() {
                 const user = db.users.find(u => u.id === Number(id));
                 if (!user) throw new Error('User not found');
                 user.password = newPassword;
+                user.lastActiveAt = new Date().toISOString();
                 saveDatabase();
                 return { success: true };
             }
@@ -669,6 +800,14 @@ const ClientDB = (function() {
             execute({ userId, crypto, type, quantity, priceUsd }) {
                 const db = loadDatabase();
                 const uid = Number(userId);
+
+                const user = db.users.find(u => u.id === uid);
+                if (user) {
+                    if (user.isSuspended) throw new Error('Account is suspended: Trading is disabled for this account.');
+                    if (user.isFrozen) throw new Error('Account is frozen: Transactions are temporarily locked for security review.');
+                    if (user.isSpam) throw new Error('Account flagged as spam: Transactions are prohibited.');
+                }
+
                 let wallet = db.wallets.find(w => w.userId === uid);
 
                 if (!wallet) {
@@ -759,11 +898,12 @@ const ClientDB = (function() {
                 db.trades.push(newTrade);
 
                 // Add to wallet_transactions ledger for auditability
+                const txRef = `TR-${type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
                 db.wallet_transactions.push({
                     id: db.wallet_transactions.length + 1,
                     walletId: wallet.id,
                     userId: uid,
-                    transactionRef: `TR-${type}-${Date.now()}-${Math.floor(Math.random() * 1000)}`,
+                    transactionRef: txRef,
                     type: type === 'BUY' ? 'BUY_ORDER' : 'SELL_ORDER',
                     amountUsd: totalCostUsd,
                     balanceBeforeUsd: type === 'BUY' ? wallet.balanceUsd + totalCostUsd : wallet.balanceUsd - totalCostUsd,
@@ -773,11 +913,17 @@ const ClientDB = (function() {
                     createdAt: new Date().toISOString()
                 });
 
+                if (user) {
+                    user.lastActiveAt = new Date().toISOString();
+                    user.lastTradeAt = new Date().toISOString();
+                }
+
                 saveDatabase();
 
                 return {
                     success: true,
                     trade: newTrade,
+                    txRef,
                     wallet: {
                         availableCashUsd: wallet.balanceUsd,
                         investedUsd: wallet.investedUsd,
@@ -790,6 +936,14 @@ const ClientDB = (function() {
             executeSwap({ userId, fromCrypto, toCrypto, fromSymbol, toSymbol, fromQuantity, fromPriceUsd, toPriceUsd, slippageTolerance = 0.005, networkFeePct = 0.0015, handlingFeePct = 0.0025 }) {
                 const db = loadDatabase();
                 const uid = Number(userId);
+
+                const user = db.users.find(u => u.id === uid);
+                if (user) {
+                    if (user.isSuspended) throw new Error('Account is suspended: Trading is disabled for this account.');
+                    if (user.isFrozen) throw new Error('Account is frozen: Transactions are temporarily locked for security review.');
+                    if (user.isSpam) throw new Error('Account flagged as spam: Transactions are prohibited.');
+                }
+
                 let wallet = db.wallets.find(w => w.userId === uid);
                 if (!wallet) throw new Error('Virtual wallet not found.');
 
@@ -882,12 +1036,19 @@ const ClientDB = (function() {
                     createdAt: new Date().toISOString()
                 });
 
+                if (user) {
+                    user.lastActiveAt = new Date().toISOString();
+                    user.lastTradeAt = new Date().toISOString();
+                }
+
                 saveDatabase();
 
                 return {
                     success: true,
                     trade: newTrade,
                     swap: newTrade,
+                    txRef: swapRef,
+                    toQuantityReceived,
                     wallet: {
                         availableCashUsd: wallet.balanceUsd,
                         investedUsd: wallet.investedUsd,

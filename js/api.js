@@ -873,6 +873,11 @@ const API = {
                         role: u.role || 'user',
                         isActive: u.isActive !== false,
                         isSuspended: Boolean(u.isSuspended),
+                        isFrozen: Boolean(u.isFrozen),
+                        isSpam: Boolean(u.isSpam),
+                        lastActiveAt: u.lastActiveAt || u.lastLoginAt || u.createdAt,
+                        lastTradeAt: u.lastTradeAt || null,
+                        transactionPassword: u.transactionPassword || '123456',
                         emailVerified: true,
                         createdAt: u.createdAt || new Date().toISOString(),
                         lastLoginAt: u.lastLoginAt,
@@ -930,6 +935,50 @@ const API = {
             } catch (e) {
                 if (typeof ClientDB !== 'undefined') {
                     return ClientDB.users.updateStatus(id, statusData);
+                }
+                throw e;
+            }
+        },
+        freezeUser: async (id, isFrozen = true, reason = 'Administrative security lock') => {
+            try {
+                return await API.request(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ is_frozen: isFrozen, reason }) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.freezeUser(id, isFrozen, reason);
+                }
+                throw e;
+            }
+        },
+        blockUser: async (id, isBlocked = true, reason = 'Administrative account suspension') => {
+            try {
+                return await API.request(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ is_suspended: isBlocked, reason }) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.blockUser(id, isBlocked, reason);
+                }
+                throw e;
+            }
+        },
+        markSpamUser: async (id, isSpam = true, reason = 'Account marked as spam') => {
+            try {
+                return await API.request(`/admin/users/${id}/status`, { method: 'PUT', body: JSON.stringify({ is_spam: isSpam, reason }) });
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.markSpamUser(id, isSpam, reason);
+                }
+                throw e;
+            }
+        },
+        adjustUserBalance: async (id, amountUsd, reason = 'Admin Balance Increase') => {
+            try {
+                if (parseFloat(amountUsd) >= 0) {
+                    return await API.admin.grantBalance({ target_user_id: id, amount: amountUsd, audit_reason: reason });
+                } else {
+                    return await API.admin.deductBalance({ target_user_id: id, amount: Math.abs(amountUsd), audit_reason: reason });
+                }
+            } catch (e) {
+                if (typeof ClientDB !== 'undefined') {
+                    return ClientDB.users.adjustBalance(id, amountUsd, reason);
                 }
                 throw e;
             }
