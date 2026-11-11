@@ -597,11 +597,21 @@ const API = {
                     }
                 }));
 
+                const defaultCurrenciesList = (r) => [
+                    { code: 'USD', name: 'US Dollar', symbol: '$', exchangeRateToUsd: 1.0, is_active: 1 },
+                    { code: 'INR', name: 'Indian Rupee', symbol: '₹', exchangeRateToUsd: (r && r.INR) || 93.59, is_active: 1 },
+                    { code: 'EUR', name: 'Euro', symbol: '€', exchangeRateToUsd: (r && r.EUR) || 0.895, is_active: 1 },
+                    { code: 'GBP', name: 'British Pound', symbol: '£', exchangeRateToUsd: (r && r.GBP) || 0.749, is_active: 1 },
+                    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', exchangeRateToUsd: (r && r.AED) || 3.672, is_active: 1 },
+                    { code: 'JPY', name: 'Japanese Yen', symbol: '¥', exchangeRateToUsd: (r && r.JPY) || 158.71, is_active: 1 }
+                ];
+
                 if (rates.INR && rates.EUR) {
                     cachedForexData = {
                         success: true,
                         baseCurrency: 'USD',
                         rates,
+                        currencies: defaultCurrenciesList(rates),
                         lastUpdated: new Date().toISOString(),
                         isStale: false,
                         provider: 'API Ninjas Live Forex (Tier 1)'
@@ -619,17 +629,26 @@ const API = {
                 clearTimeout(tid);
                 const data = await res.json();
                 if (data && data.rates) {
+                    const r = {
+                        USD: 1.0,
+                        INR: data.rates.INR || 93.59,
+                        EUR: data.rates.EUR || 0.895,
+                        GBP: data.rates.GBP || 0.749,
+                        AED: data.rates.AED || 3.672,
+                        JPY: data.rates.JPY || 158.71
+                    };
                     cachedForexData = {
                         success: true,
                         baseCurrency: 'USD',
-                        rates: {
-                            USD: 1.0,
-                            INR: data.rates.INR || 93.59,
-                            EUR: data.rates.EUR || 0.895,
-                            GBP: data.rates.GBP || 0.749,
-                            AED: data.rates.AED || 3.672,
-                            JPY: data.rates.JPY || 158.71
-                        },
+                        rates: r,
+                        currencies: [
+                            { code: 'USD', name: 'US Dollar', symbol: '$', exchangeRateToUsd: 1.0, is_active: 1 },
+                            { code: 'INR', name: 'Indian Rupee', symbol: '₹', exchangeRateToUsd: r.INR, is_active: 1 },
+                            { code: 'EUR', name: 'Euro', symbol: '€', exchangeRateToUsd: r.EUR, is_active: 1 },
+                            { code: 'GBP', name: 'British Pound', symbol: '£', exchangeRateToUsd: r.GBP, is_active: 1 },
+                            { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', exchangeRateToUsd: r.AED, is_active: 1 },
+                            { code: 'JPY', name: 'Japanese Yen', symbol: '¥', exchangeRateToUsd: r.JPY, is_active: 1 }
+                        ],
                         provider: 'OpenExchangeAPI (Tier 2)',
                         lastUpdated: new Date().toISOString(),
                         isStale: false
@@ -640,10 +659,19 @@ const API = {
             } catch (err) {}
 
             // Tier 3: Client Fallback
+            const r3 = { USD: 1.0, INR: 93.59, EUR: 0.895, GBP: 0.749, AED: 3.672, JPY: 158.71 };
             cachedForexData = {
                 success: true,
                 baseCurrency: 'USD',
-                rates: { USD: 1.0, INR: 93.59, EUR: 0.895, GBP: 0.749, AED: 3.672, JPY: 158.71 },
+                rates: r3,
+                currencies: [
+                    { code: 'USD', name: 'US Dollar', symbol: '$', exchangeRateToUsd: 1.0, is_active: 1 },
+                    { code: 'INR', name: 'Indian Rupee', symbol: '₹', exchangeRateToUsd: r3.INR, is_active: 1 },
+                    { code: 'EUR', name: 'Euro', symbol: '€', exchangeRateToUsd: r3.EUR, is_active: 1 },
+                    { code: 'GBP', name: 'British Pound', symbol: '£', exchangeRateToUsd: r3.GBP, is_active: 1 },
+                    { code: 'AED', name: 'UAE Dirham', symbol: 'د.إ', exchangeRateToUsd: r3.AED, is_active: 1 },
+                    { code: 'JPY', name: 'Japanese Yen', symbol: '¥', exchangeRateToUsd: r3.JPY, is_active: 1 }
+                ],
                 provider: 'Offline Static Baseline (Tier 3)',
                 lastUpdated: new Date().toISOString(),
                 isStale: false
