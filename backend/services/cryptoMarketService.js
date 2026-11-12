@@ -206,53 +206,50 @@ async function fetchLiveCryptoRatesFromNinja() {
     }
 }
 
+const KUCOIN_ALL_TICKERS_URL = 'https://api.kucoin.com/api/v1/market/allTickers';
+
 /**
- * Fetch real-time cryptocurrency market data directly from Primary Market API (Tier 1 Primary)
+ * Fetch real-time cryptocurrency market data directly from KuCoin API (Tier 1 First Priority)
+ * Automatically maps spot tickers for all supported cryptocurrencies:
+ * BTC-USDT, ETH-USDT, SOL-USDT, BDX-USDT, XMR-USDT, XRP-USDT, DOGE-USDT, ADA-USDT, AVAX-USDT, LINK-USDT,
+ * DOT-USDT, TRX-USDT, SHIB-USDT, PEPE-USDT, SUI-USDT, NEAR-USDT, LTC-USDT, UNI-USDT, USDT, BNB-USDT
  */
-async function fetchLiveCryptoRatesFromPrimaryProvider(manual = false) {
+async function fetchLiveCryptoRatesFromKuCoin(manual = false) {
     try {
-        const cryptos = db.prepare('SELECT id, symbol, slug, current_price_usd, high_24h, low_24h FROM cryptocurrencies WHERE is_active = 1').all();
+        const cryptos = db.prepare('SELECT id, symbol, slug, current_price_usd, high_24h, low_24h, circulating_supply, market_cap_usd, volume_24h FROM cryptocurrencies WHERE is_active = 1').all();
         if (cryptos.length === 0) {
             return { success: true, updated: 0, isLive: isCryptoFeedLive, provider: activeProvider };
         }
 
-        // Map provider IDs to DB rows
-        const idMap = {};
-        for (const c of cryptos) {
-            const symKey = (c.symbol || '').toLowerCase();
-            const slugKey = (c.slug || '').toLowerCase();
-            const feedId = PRIMARY_FEED_SLUG_MAP[slugKey] || PRIMARY_FEED_SLUG_MAP[symKey] || slugKey;
-            if (feedId) {
-                idMap[feedId] = c;
-            }
-        }
-
-        const ids = Object.keys(idMap).join(',');
-        if (!ids) {
-            return { success: true, updated: 0, isLive: isCryptoFeedLive, provider: activeProvider };
-        }
-
-        const baseUrl = Buffer.from('aHR0cHM6Ly9hcGkuY29pbmdlY2tvLmNvbS9hcGkvdjMvc2ltcGxlL3ByaWNl', 'base64').toString('utf8');
-        const url = `${baseUrl}?ids=${encodeURIComponent(ids)}&vs_currencies=usd&include_24hr_change=true&include_24hr_vol=true&include_market_cap=true`;
-
         const controller = new AbortController();
         const timeoutId = setTimeout(() => controller.abort(), 6000);
 
-        const response = await fetch(url, {
+        const response = await fetch(KUCOIN_ALL_TICKERS_URL, {
             signal: controller.signal,
             headers: {
                 'Accept': 'application/json',
-                'x-cg-demo-api-key': PRIMARY_MARKET_API_KEY,
                 'User-Agent': 'CCPulse-Simulation-Lab/2.0'
             }
         });
         clearTimeout(timeoutId);
 
         if (!response.ok) {
-            throw new Error(`Primary Market API HTTP ${response.status}: ${response.statusText}`);
+            throw new Error(`KuCoin API HTTP ${response.status}: ${response.statusText}`);
         }
 
-        const data = await response.json();
+        const json = await response.json();
+        if (json.code !== '200000' || !json.data || !Array.isArray(json.data.ticker)) {
+            throw new Error(`KuCoin API returned non-success code: ${json.code}`);
+        }
+
+        const tickers = json.data.ticker;
+        const tickerMap = new Map();
+        for (const t of tickers) {
+            if (t.symbol) {
+                tickerMap.set(t.symbol.toUpperCase(), t);
+            }
+        }
+
         const updateStmt = db.prepare(`
             UPDATE cryptocurrencies
             SET current_price_usd = ?,
@@ -268,26 +265,56 @@ async function fetchLiveCryptoRatesFromPrimaryProvider(manual = false) {
 
         let updatedCount = 0;
         db.transaction(() => {
-            for (const [feedId, market] of Object.entries(data)) {
-                const c = idMap[feedId];
-                if (c && market && typeof market.usd === 'number') {
-                    const price = market.usd;
-                    const change = Number((market.usd_24h_change || 0).toFixed(2));
-                    const volume = Math.round(market.usd_24h_vol || 0);
-                    const mcap = Math.round(market.usd_market_cap || 0);
-                    const high = Math.max(c.high_24h || 0, price * (1 + Math.max(0, change / 100)));
-                    const low = Math.min(c.low_24h > 0 ? c.low_24h : price * 0.98, price * (1 - Math.abs(change / 100)));
-
-                    updateStmt.run(price, change, volume, mcap, high, low, 'Live Market Feed (Tier 1)', c.id);
+            for (const c of cryptos) {
+                const sym = (c.symbol || '').toUpperCase();
+                if (sym === 'USDT') {
+                    updateStmt.run(1.00, 0.00, c.volume_24h || 50000000000, 120000000000, 1.001, 0.999, 'KuCoin Live (Tier 1 Priority)', c.id);
                     updatedCount++;
+                    continue;
+                }
+
+                // Check USDT, USDC, or USD quote pair
+                const t = tickerMap.get(`${sym}-USDT`) || 
+                          tickerMap.get(`${sym}-USDC`) || 
+                          tickerMap.get(`${sym}-USD`);
+
+                if (t && t.last) {
+                    const price = parseFloat(t.last);
+                    if (price > 0) {
+                        const changePct = t.changeRate != null 
+                            ? parseFloat((parseFloat(t.changeRate) * 100).toFixed(2)) 
+                            : (c.change_24h || 0);
+                        const volUsd = t.volValue != null 
+                            ? Math.round(parseFloat(t.volValue)) 
+                            : Math.round(parseFloat(t.vol || 0) * price);
+                        const high = t.high != null ? parseFloat(t.high) : price * 1.02;
+                        const low = t.low != null ? parseFloat(t.low) : price * 0.98;
+                        const mcap = c.circulating_supply 
+                            ? Math.round(c.circulating_supply * price) 
+                            : (c.market_cap_usd ? Math.round(c.market_cap_usd * (price / (c.current_price_usd || price))) : Math.round(price * 10000000));
+
+                        updateStmt.run(
+                            price,
+                            isNaN(changePct) ? 0 : changePct,
+                            isNaN(volUsd) ? 1000000 : volUsd,
+                            mcap,
+                            high,
+                            low,
+                            'KuCoin Live (Tier 1 Priority)',
+                            c.id
+                        );
+                        updatedCount++;
+                    }
                 }
             }
         })();
 
-        lastCryptoFetchTime = new Date().toISOString();
-        isCryptoFeedLive = true;
-        cryptoFeedError = null;
-        activeProvider = 'Live Market Feed (Tier 1)';
+        if (updatedCount > 0) {
+            lastCryptoFetchTime = new Date().toISOString();
+            isCryptoFeedLive = true;
+            cryptoFeedError = null;
+            activeProvider = 'KuCoin Live (Tier 1 Priority)';
+        }
 
         return {
             success: true,
@@ -297,16 +324,20 @@ async function fetchLiveCryptoRatesFromPrimaryProvider(manual = false) {
             isLive: true
         };
     } catch (err) {
-        console.warn('Primary Market Feed Warning:', err.message, '- Failing over to secondary provider.');
+        console.warn('KuCoin Live Priority Error:', err.message, '- Failing over to secondary provider.');
+        cryptoFeedError = err.message;
         throw err;
     }
 }
 
+// Alias for backwards compatibility
+const fetchLiveCryptoRatesFromPrimaryProvider = fetchLiveCryptoRatesFromKuCoin;
+
 /**
  * Multi-Tier Failover Crypto Market Fetcher:
- * Tier 1: Primary Market API with Key
- * Tier 2: API Ninjas Crypto Price Feed
- * Tier 3: High-Fidelity Simulation / Database Cache (with procedural micro-ticks)
+ * Tier 1 (First Priority): KuCoin Public Market API (Immediate return on success, avoids calling other APIs)
+ * Tier 2 (Secondary Failover): API Ninjas Crypto Price Feed (Only jumped to upon failure)
+ * Tier 3 (Tertiary Failover): Local Procedural Simulation Engine (Offline sandbox)
  */
 async function fetchMultiTierCryptoRates(manual = false) {
     // 1. Quota preservation: check 30-minute cache TTL unless manual forced refresh
@@ -324,24 +355,25 @@ async function fetchMultiTierCryptoRates(manual = false) {
         }
     }
 
-    // 2. Tier 1: Primary Market API with key
+    // 2. Tier 1 (First Priority): KuCoin Public Market API
+    // When KuCoin succeeds, we avoid calling other APIs completely!
     try {
-        const primaryRes = await fetchLiveCryptoRatesFromPrimaryProvider(manual);
-        if (primaryRes && primaryRes.success && primaryRes.updated > 0) {
-            return primaryRes;
+        const kucoinRes = await fetchLiveCryptoRatesFromKuCoin(manual);
+        if (kucoinRes && kucoinRes.success && kucoinRes.updated > 0) {
+            return kucoinRes;
         }
     } catch (e1) {
-        console.warn('Tier 1 (Primary) error/quota exceeded:', e1.message, 'Failing over to Tier 2 (API Ninjas)...');
+        console.warn('Tier 1 (KuCoin Priority) failed:', e1.message, 'Failing over to Tier 2 (API Ninjas)...');
     }
 
-    // 3. Tier 2: API Ninjas Fallback
+    // 3. Tier 2 (Secondary Failover): ONLY called if KuCoin fails
     try {
         const ninjaRes = await fetchLiveCryptoRatesFromNinja();
         if (ninjaRes && ninjaRes.success && ninjaRes.updated > 0) {
             return ninjaRes;
         }
     } catch (e2) {
-        console.warn('Tier 2 (API Ninjas) error/quota exceeded:', e2.message, 'Failing over to Tier 3 (Simulation)...');
+        console.warn('Tier 2 (API Ninjas) failed:', e2.message, 'Failing over to Tier 3 (Simulation)...');
     }
 
     // 4. Tier 3: Local SQLite Database & Micro-Tick Simulation
@@ -353,7 +385,7 @@ async function fetchMultiTierCryptoRates(manual = false) {
         provider: activeProvider,
         lastUpdated: lastCryptoFetchTime || new Date().toISOString(),
         isLive: false,
-        warning: 'External API quota exceeded. Serving high-fidelity cached simulation.'
+        warning: 'Live market APIs unavailable. Serving high-fidelity cached simulation.'
     };
 }
 
@@ -427,6 +459,7 @@ module.exports = {
     getHistoricalChartData,
     getOrderBook,
     simulateMarketTick,
+    fetchLiveCryptoRatesFromKuCoin,
     fetchLiveCryptoRatesFromPrimaryProvider,
     fetchLiveCryptoRatesFromNinja,
     fetchMultiTierCryptoRates,

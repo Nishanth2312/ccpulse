@@ -1128,6 +1128,28 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(searchContent.includes('window.SearchModal = SearchModal'), 'Must expose SearchModal on window');
     });
 
+    test('Scenario 49: KuCoin First Priority Market Feed & Failover Architecture', async () => {
+        const { fetchLiveCryptoRatesFromKuCoin, fetchMultiTierCryptoRates, getCryptoFeedStatus } = require('../backend/services/cryptoMarketService');
+        assert.ok(typeof fetchLiveCryptoRatesFromKuCoin === 'function', 'fetchLiveCryptoRatesFromKuCoin must be defined');
+
+        // 1. Verify KuCoin direct execution returns success and updates cryptos
+        const kucoinRes = await fetchLiveCryptoRatesFromKuCoin(true);
+        assert.strictEqual(kucoinRes.success, true, 'KuCoin direct fetch must succeed');
+        assert.ok(kucoinRes.updated >= 15, 'KuCoin must update at least 15 active coins in database');
+        assert.strictEqual(kucoinRes.provider, 'KuCoin Live (Tier 1 Priority)', 'Provider must indicate KuCoin Live Priority');
+
+        // 2. Verify multi-tier rate engine prioritizes KuCoin first
+        const feedStatus = getCryptoFeedStatus();
+        assert.strictEqual(feedStatus.isLive, true, 'Crypto feed must be reported as live');
+        assert.strictEqual(feedStatus.provider, 'KuCoin Live (Tier 1 Priority)', 'Feed status provider must report KuCoin');
+
+        // 3. Verify frontend api.js configures KuCoin allTickers endpoint as Tier 1 Priority
+        const fs = require('fs');
+        const apiJs = fs.readFileSync(path.join(__dirname, '../frontend/js/api.js'), 'utf8');
+        assert.ok(apiJs.includes('https://api.kucoin.com/api/v1/market/allTickers'), 'api.js must configure KuCoin allTickers as Tier 1 Priority');
+        assert.ok(apiJs.includes('KuCoin Live (Tier 1 Priority)'), 'api.js must declare KuCoin Live as active market provider');
+    });
+
     after(() => {
         // Clean up transient test accounts and test fixtures to preserve pristine database
         const testUserIds = db.prepare("SELECT id FROM users WHERE email LIKE 'trader_test_%' OR email LIKE 'guest_conv_%' OR email LIKE 'user_b_%'").all().map(r => r.id);
