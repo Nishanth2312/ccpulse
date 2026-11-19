@@ -1,10 +1,10 @@
 /**
- * CCPulse Service Worker - Offline App Shell & Static Asset Caching
+ * TradeForge Service Worker - Offline App Shell & Static Asset Caching
  * Complies with W3C Service Worker standards for Progressive Web Apps (PWA)
  * and Google Play Store Trusted Web Activity (TWA) requirements.
  */
 
-const CACHE_NAME = 'ccpulse-pwa-cache-v3.0.0';
+const CACHE_NAME = 'tradeforge-pwa-cache-v3.0.0';
 
 const PRECACHE_ASSETS = [
     './',

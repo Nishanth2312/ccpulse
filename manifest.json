@@ -1,6 +1,6 @@
 {
-  "name": "CCPulse - Crypto Simulation & Learning Sandbox",
-  "short_name": "CCPulse",
+  "name": "TradeForge - Crypto Simulation & Learning Sandbox",
+  "short_name": "TradeForge",
   "description": "Next-generation cryptocurrency market simulation and educational platform. Practice trading real-time crypto markets with virtual credits without risking real capital.",
   "start_url": "./index.html",
   "scope": "./",

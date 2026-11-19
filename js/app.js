@@ -1,5 +1,5 @@
 /**
- * CCPulse Main Application Entry Point & Single Page Router
+ * TradeForge Main Application Entry Point & Single Page Router
  * Strictly complies with public, authenticated, and administrative navigation structures.
  */
 const App = {
@@ -69,7 +69,7 @@ const App = {
                     deferredPrompt.prompt();
                     const choice = await deferredPrompt.userChoice;
                     if (choice && choice.outcome === 'accepted') {
-                        Toast.success('CCPulse App installed to your device home screen!', 'Installation Complete');
+                        Toast.success('TradeForge App installed to your device home screen!', 'Installation Complete');
                         installBtn.classList.add('hidden');
                     }
                     deferredPrompt = null;
@@ -659,7 +659,7 @@ const Toast = {
             <div class="tx-toast-body">${message}</div>
             <div class="tx-toast-meta">
                 <span><i class="fa-regular fa-clock"></i> ${timeStr}</span>
-                ${txRef ? `<span class="tx-toast-badge">${txRef}</span>` : `<span>CCPulse Engine</span>`}
+                ${txRef ? `<span class="tx-toast-badge">${txRef}</span>` : `<span>TradeForge Engine</span>`}
             </div>
         `;
 
