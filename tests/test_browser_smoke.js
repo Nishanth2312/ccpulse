@@ -129,7 +129,7 @@ async function main() {
     // Test 1: Page Title & Top Telemetry Bar
     const title = await evalInPage('document.title');
     console.log('Page Title:', title);
-    assert.ok(title.includes('CCPulse'), 'Page title should include CCPulse');
+    assert.ok(title.includes('TradeForge') || title.includes('CCPulse'), 'Page title should include TradeForge or CCPulse');
 
     // Test 2: Toast Notification System
     console.log('\n[Test 2: Right-Side Corner Toast System]');

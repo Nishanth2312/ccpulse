@@ -1,4 +1,4 @@
-# CCPulse – Cryptocurrency Educational & Simulation Platform (v2.0)
+# TradeForge – Cryptocurrency Educational & Simulation Platform (v2.0)
 
 A comprehensive, production-grade cryptocurrency simulation and learning ecosystem featuring a dynamic cryptocurrency registry, dedicated admin control panel, auditable virtual wallet with mandatory $5,000 USD welcome bonus, multi-currency real-time conversion (USD, INR, EUR, GBP, AED, JPY), dark/light theme management, and Android hybrid compatibility.
 
@@ -21,7 +21,7 @@ A comprehensive, production-grade cryptocurrency simulation and learning ecosyst
 ### 3. Mandatory $5,000 USD Welcome Bonus
 - Every newly registered authenticated user automatically receives exactly **$5,000.00 USD** in virtual trading credits.
 - Credited atomically via database transactions with duplicate prevention constraints.
-- Recorded in the virtual ledger as `"CCPulse Welcome Bonus"`.
+- Recorded in the virtual ledger as `"TradeForge Welcome Bonus"`.
 - Celebratory welcome notification modal displayed upon registration.
 - Subsequent logins retain existing balances without duplicate credit distributions.
 
@@ -67,7 +67,7 @@ The server will start on port 4000:
 
 | Role | Username | Email | Password |
 | :--- | :--- | :--- | :--- |
-| **Administrator** | `admin` | `admin@ccpulse.com` | `Admin@CCPulse2026!` |
+| **Administrator** | `admin` | `admin@ccpulse.com` | `Admin@TradeForge2026!` |
 | **Standard Trader** | `cryptotrader` | `trader@ccpulse.com` | `Trader@123456` |
 
 ---

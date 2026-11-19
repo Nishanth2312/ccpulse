@@ -262,9 +262,9 @@ const MarketsView = {
                     <div style="display: inline-flex; align-items: center; gap: 6px; background: rgba(22, 199, 132, 0.12); color: #16C784; padding: 4px 14px; border-radius: 20px; font-size: 0.78rem; font-weight: 700; margin-bottom: 10px;">
                         <i class="fa-solid fa-graduation-cap"></i> 100% Risk-Free Simulation Platform
                     </div>
-                    <h2 style="font-size: 1.7rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;">How Does CCPulse Work?</h2>
+                    <h2 style="font-size: 1.7rem; font-weight: 800; letter-spacing: -0.3px; margin-bottom: 8px;">How Does TradeForge Work?</h2>
                     <p style="color: var(--text-secondary); font-size: 0.92rem;">
-                        CCPulse gives developers, traders, and students an authentic cryptocurrency experience with real-time market data feeds, instant DEX swaps, and zero real capital risk.
+                        TradeForge gives developers, traders, and students an authentic cryptocurrency experience with real-time market data feeds, instant DEX swaps, and zero real capital risk.
                     </p>
                 </div>
 

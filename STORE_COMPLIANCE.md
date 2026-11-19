@@ -1,17 +1,17 @@
-# CCPulse - Google Play Store & Apple iOS App Store Compliance & Submission Guide
+# TradeForge - Google Play Store & Apple iOS App Store Compliance & Submission Guide
 
-This document certifies the compliance of **CCPulse** with both the **Google Play Developer Policy** and the **Apple App Store Review Guidelines**.
+This document certifies the compliance of **TradeForge** with both the **Google Play Developer Policy** and the **Apple App Store Review Guidelines**.
 
 ---
 
 ## 1. Apple App Store Compliance (Guideline 3.1.5 - Cryptocurrencies & Financial Services)
 
 ### Guideline 3.1.5 (a) Wallets & Virtual Assets
-* **Assessment**: CCPulse does **not** provide custodial crypto wallets, does not store user private keys, and does not interact with live blockchain nodes to sign real transactions.
+* **Assessment**: TradeForge does **not** provide custodial crypto wallets, does not store user private keys, and does not interact with live blockchain nodes to sign real transactions.
 * **Compliance Statement**: All wallet balances (including the default $10,000 USD virtual credit + 1.0 BTC welcome bonus) are purely educational integers stored in local/simulated sandbox databases. No actual cryptocurrency or fiat money can be deposited or withdrawn.
 
 ### Guideline 3.1.5 (b) Cryptocurrency Exchange & Trading
-* **Assessment**: CCPulse does **not** execute real cryptocurrency exchange transactions.
+* **Assessment**: TradeForge does **not** execute real cryptocurrency exchange transactions.
 * **Compliance Statement**: All order books, trade executions, and market order matches occur in an isolated paper-trading sandbox. The app is classified under **Education / Finance Tools (Educational Simulation)**.
 
 ### Guideline 4.0 Design & Usability
@@ -44,7 +44,7 @@ This document certifies the compliance of **CCPulse** with both the **Google Pla
 
 ## 3. UI/UX Architecture Standards
 
-| Standard | Implementation in CCPulse | Compliance Status |
+| Standard | Implementation in TradeForge | Compliance Status |
 | :--- | :--- | :--- |
 | **Typography** | Native cross-platform system font stack with tabular numerals for real-time price alignment | Verified |
 | **Color Contrast** | WCAG 2.1 AA compliant (Minimum 4.5:1 text-to-background contrast on institutional `#0C0E14` and `#141722`) | Verified |

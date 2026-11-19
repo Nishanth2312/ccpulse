@@ -1,6 +1,6 @@
 {
-  "appId": "com.ccpulse.app",
-  "appName": "CCPulse",
+  "appId": "com.tradeforge.app",
+  "appName": "TradeForge",
   "webDir": "frontend",
   "bundledWebRuntime": false,
   "server": {

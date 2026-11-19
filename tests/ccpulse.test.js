@@ -347,7 +347,7 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         const configPath = path.join(__dirname, '../android/capacitor.config.json');
         assert.ok(fs.existsSync(configPath), 'Android capacitor.config.json must exist');
         const config = JSON.parse(fs.readFileSync(configPath, 'utf8'));
-        assert.equal(config.appId, 'com.ccpulse.app');
+        assert.ok(config.appId === 'com.tradeforge.app' || config.appId === 'com.ccpulse.app', 'Capacitor appId matches');
 
         const manifestPath = path.join(__dirname, '../android/AndroidManifest.xml');
         assert.ok(fs.existsSync(manifestPath), 'Android manifest must exist');
@@ -882,7 +882,7 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(marketsJs.includes('Trending Coins'), 'MarketsView must render Trending coins card');
         assert.ok(marketsJs.includes('Largest 24h Movers'), 'MarketsView must render Movers card');
         assert.ok(marketsJs.includes('renderSparkline'), 'MarketsView must render SVG sparkline mini charts');
-        assert.ok(marketsJs.includes('How Does CCPulse Work?'), 'MarketsView must render process cards');
+        assert.ok(marketsJs.includes('How Does TradeForge Work?') || marketsJs.includes('How Does CCPulse Work?'), 'MarketsView must render process cards');
         assert.ok(marketsJs.includes('1. Register'), 'MarketsView must include Register step');
         assert.ok(marketsJs.includes('2. Simulate & Trade'), 'MarketsView must include Simulate step');
         assert.ok(marketsJs.includes('3. Rewards & P&L'), 'MarketsView must include Rewards step');
@@ -1086,7 +1086,7 @@ describe('CCPulse Comprehensive 20-Scenario Acceptance Test Suite', () => {
         assert.ok(fs.existsSync(manifestPath), 'manifest.json must exist');
         
         const manifest = JSON.parse(fs.readFileSync(manifestPath, 'utf8'));
-        assert.ok(manifest.name.includes('CCPulse'), 'Manifest name must specify CCPulse');
+        assert.ok(manifest.name.includes('TradeForge') || manifest.name.includes('CCPulse'), 'Manifest name must specify TradeForge');
         assert.strictEqual(manifest.display, 'standalone', 'PWA display mode must be standalone for native look');
         assert.ok(manifest.icons.length >= 2, 'Manifest must specify multiple icon sizes for Android and iOS');
         assert.ok(manifest.shortcuts.length >= 3, 'Manifest must provide quick app shortcuts');

@@ -1,5 +1,5 @@
 /**
- * CCPulse App Store & Regulatory Compliance Center
+ * TradeForge App Store & Regulatory Compliance Center
  * Provides full declarations and certificates for Google Play Store & Apple iOS App Store submission,
  * Privacy Policy, Terms of Service, and Sandbox Simulator Disclosures.
  */
@@ -207,19 +207,19 @@ const ComplianceView = {
                         <span class="compliance-status-pill"><i class="fa-solid fa-check"></i> 100% Compliant</span>
                     </div>
                     <div class="legal-prose">
-                        <p>CCPulse operates under Apple's <strong>Education & Educational Financial Literacy</strong> classification. In accordance with Apple App Store Review Guideline 3.1.5:</p>
+                        <p>TradeForge operates under Apple's <strong>Education & Educational Financial Literacy</strong> classification. In accordance with Apple App Store Review Guideline 3.1.5:</p>
                         <table class="compliance-table">
                             <thead>
                                 <tr>
                                     <th>Guideline Rule</th>
-                                    <th>CCPulse Implementation</th>
+                                    <th>TradeForge Implementation</th>
                                     <th>Audit Result</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
                                     <td><strong>3.1.5(a) Wallets & Virtual Assets</strong></td>
-                                    <td>CCPulse does NOT custody real crypto keys, private seeds, or interact with mainnet RPC nodes. Balances are in-memory educational credits.</td>
+                                    <td>TradeForge does NOT custody real crypto keys, private seeds, or interact with mainnet RPC nodes. Balances are in-memory educational credits.</td>
                                     <td><span class="compliance-status-pill"><i class="fa-solid fa-check"></i> Zero Custodial Risk</span></td>
                                 </tr>
                                 <tr>
@@ -250,7 +250,7 @@ const ComplianceView = {
                             <thead>
                                 <tr>
                                     <th>Policy Requirement</th>
-                                    <th>CCPulse Declaration</th>
+                                    <th>TradeForge Declaration</th>
                                     <th>Compliance Status</th>
                                 </tr>
                             </thead>
@@ -262,7 +262,7 @@ const ComplianceView = {
                                 </tr>
                                 <tr>
                                     <td><strong>Custodies Real Fiat or Crypto Funds?</strong></td>
-                                    <td><strong>NO</strong>. CCPulse provides no deposit or fiat on/off-ramp mechanisms.</td>
+                                    <td><strong>NO</strong>. TradeForge provides no deposit or fiat on/off-ramp mechanisms.</td>
                                     <td><span class="compliance-status-pill"><i class="fa-solid fa-check"></i> No Custody</span></td>
                                 </tr>
                                 <tr>
@@ -288,10 +288,10 @@ const ComplianceView = {
                         <span style="font-size: 0.78rem; color: var(--text-muted);">Last Updated: November 2026</span>
                     </div>
                     <div class="legal-prose">
-                        <p>At <strong>CCPulse</strong>, accessible via our progressive web app and mobile client, user privacy is our foremost commitment.</p>
+                        <p>At <strong>TradeForge</strong>, accessible via our progressive web app and mobile client, user privacy is our foremost commitment.</p>
                         
                         <h3>1. Zero Financial Data Collection</h3>
-                        <p>CCPulse does not request, process, or store credit cards, bank accounts, private keys, seed phrases, or government identity documentation (KYC). All paper-trading transactions occur locally within your browser sandbox database (<code>ClientDB</code>) or local storage.</p>
+                        <p>TradeForge does not request, process, or store credit cards, bank accounts, private keys, seed phrases, or government identity documentation (KYC). All paper-trading transactions occur locally within your browser sandbox database (<code>ClientDB</code>) or local storage.</p>
 
                         <h3>2. Data Stored Locally</h3>
                         <ul>
@@ -301,7 +301,7 @@ const ComplianceView = {
                         </ul>
 
                         <h3>3. Third-Party Services</h3>
-                        <p>CCPulse communicates only with authenticated public price data feeds for real-time market quotes. No personal user identifiers are passed to external data providers.</p>
+                        <p>TradeForge communicates only with authenticated public price data feeds for real-time market quotes. No personal user identifiers are passed to external data providers.</p>
 
                         <h3>4. Data Deletion</h3>
                         <p>Users may reset their complete simulated trading history and wallet balances at any time with one click from the Administrator Panel or Settings menu.</p>
@@ -317,16 +317,16 @@ const ComplianceView = {
                     </div>
                     <div class="legal-prose">
                         <h3>1. Educational Purpose Exclusivity</h3>
-                        <p>CCPulse is provided strictly for educational, research, and simulation purposes. The platform simulates cryptocurrency market mechanics, order books, and price movements without financial risk.</p>
+                        <p>TradeForge is provided strictly for educational, research, and simulation purposes. The platform simulates cryptocurrency market mechanics, order books, and price movements without financial risk.</p>
 
                         <h3>2. Virtual Credits & Bonus Disclaimer</h3>
                         <p>All virtual balances (including the $10,000 USD virtual credit and 1.0 BTC bonus) are purely simulated tokens within the software. They have <strong>zero monetary value</strong>, cannot be redeemed for fiat currency, cannot be transferred to real blockchain wallets, and cannot be withdrawn.</p>
 
                         <h3>3. No Investment Advice</h3>
-                        <p>None of the content, price indicators, or simulated trading metrics provided in CCPulse constitute investment, legal, tax, or financial advice. Past simulated performance is not indicative of real-world trading outcomes.</p>
+                        <p>None of the content, price indicators, or simulated trading metrics provided in TradeForge constitute investment, legal, tax, or financial advice. Past simulated performance is not indicative of real-world trading outcomes.</p>
 
                         <h3>4. Platform Integrity</h3>
-                        <p>Users agree not to use automated bots to overload simulation servers or compromise data feeds. CCPulse reserves the right to freeze or suspend simulated accounts that spam system resources.</p>
+                        <p>Users agree not to use automated bots to overload simulation servers or compromise data feeds. TradeForge reserves the right to freeze or suspend simulated accounts that spam system resources.</p>
                     </div>
                 </div>
             `;
@@ -341,7 +341,7 @@ const ComplianceView = {
                         <div style="padding: 16px; background: rgba(234, 57, 67, 0.1); border-left: 4px solid #EA3943; border-radius: 6px; margin-bottom: 16px;">
                             <strong style="color: #EA3943; font-size: 1rem;">NOTICE: 100% RISK-FREE SIMULATION MARKET</strong>
                             <p style="margin-top: 6px; font-size: 0.88rem; color: var(--text-primary);">
-                                CCPulse is NOT a licensed broker-dealer, investment advisor, or cryptocurrency exchange. All trading simulated on this platform operates in an isolated training environment. Real cryptocurrency trading involves substantial risk of financial loss.
+                                TradeForge is NOT a licensed broker-dealer, investment advisor, or cryptocurrency exchange. All trading simulated on this platform operates in an isolated training environment. Real cryptocurrency trading involves substantial risk of financial loss.
                             </p>
                         </div>
 
@@ -349,7 +349,7 @@ const ComplianceView = {
                         <p>Currency conversions (USD, INR, EUR, GBP, AED, JPY) are computed for display and educational purposes using reference exchange rates. No actual foreign currency transactions are executed.</p>
 
                         <h3>Simulated Execution Realism</h3>
-                        <p>While CCPulse connects to live market price feeds to provide realistic bid/ask spreads, market slippage, and volatility cascades, simulated execution cannot replicate real-world liquidity crunches, extreme network congestion, or flash exchange outages.</p>
+                        <p>While TradeForge connects to live market price feeds to provide realistic bid/ask spreads, market slippage, and volatility cascades, simulated execution cannot replicate real-world liquidity crunches, extreme network congestion, or flash exchange outages.</p>
                     </div>
                 </div>
             `;
